@@ -1,0 +1,13 @@
+Package: Rattlesnake
+Version: 0.98.0
+Date: 2018-07-29
+Title: Python for Bioconductor
+Authors@R: c(person("Aaron", "Lun", role=c("aut", "cre", "cph"),
+        email="alun@wehi.edu.au"))
+Depends: reticulate
+biocViews: Infrastructure
+Description: Installs a local version of Python, separate from
+    the system Python and fully controlled by the Bioconductor
+    installation machinery. Any modules are installed inside the 
+    R installation directory for complete isolation.
+License: GPL-3
