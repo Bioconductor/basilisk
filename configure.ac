@@ -34,5 +34,22 @@ fi
 # Building Python.
 echo "building Python..."
 cd ${BASEPYNAME}
-./configure --with-pic --enable-shared=no CC="${CC}" CFLAGS="${CFLAGS} -w"
+USER_INST_DIR="${R_PACKAGE_DIR}/inst/python"
+./configure --enable-shared=no CC="${CC}" CFLAGS="${CFLAGS} -w" --prefix="${USER_INST_DIR}"
 $MAKE
+cd ../../
+
+# Update Makevars variables.
+PYTHON_DIR="${BASEPYNAME}"
+PYTHON_INCLUDE="${BASEPYNAME}/Include"
+PYTHON_LIB="${BASEPYNAME}/libpython3.7m.a"
+AC_SUBST(PYTHON_DIR)
+AC_SUBST(PYTHON_INCLUDE)
+AC_SUBST(PYTHON_LIB)
+AC_SUBST(USER_INST_DIR)
+AC_MSG_NOTICE([   PYTHON_DIR=${PYTHON_DIR}])
+AC_MSG_NOTICE([   PYTHON_INCLUDE=${PYTHON_INCLUDE}])
+AC_MSG_NOTICE([   PYTHON_LIB=${PYTHON_LIB}])
+AC_MSG_NOTICE([   USER_INST_DIR=${USER_INST_DIR}])
+AC_CONFIG_FILES([src/Makevars])
+AC_OUTPUT
