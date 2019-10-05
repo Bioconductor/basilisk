@@ -7,6 +7,10 @@ Authors@R: c(person("Aaron", "Lun", role=c("aut", "cre", "cph"),
 Imports: 
     reticulate,
     httr
+Suggests:
+    knitr,
+    rmarkdown,
+    BiocStyle
 biocViews: Infrastructure
 Description: 
     Installs a local version of Python.
