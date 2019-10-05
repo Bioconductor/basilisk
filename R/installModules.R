@@ -23,9 +23,7 @@
 #' \code{\link{findVersionUpTo}}, to obtain the latest version up to a given date.
 #'
 #' @examples
-#' \dontrun{
-#' installModules(c("pandas", "sklearn"))
-#' }
+#' installModules(c("pandas", "scikit-learn"))
 #' @export 
 installModules <- function(modules) {
     X <- useBiocPython()
