@@ -1,15 +1,15 @@
 # Process this file with autoconf to produce a configure script.
-# author: Aaron Lun (alun@wehi.edu.au)
+# author: Aaron Lun (infinite.monkeys.wit.keyboards@gmail.com)
 
 AC_PREREQ([2.65])
-AC_INIT([Rattlesnake], [0.99.0], [alun@wehi.edu.au])
+AC_INIT([jormungandR], [0.99.0], [infinite.monkeys.with.keyboards@gmail.com])
 AC_CONFIG_SRCDIR([src])
 
 # Check the compiler configured with R
 : ${R_HOME=`R RHOME`}
 if test -z "${R_HOME}"; then
-  echo "could not determine R_HOME"
-  exit 1
+    echo "could not determine R_HOME"
+    exit 1
 fi
 
 CC=`"${R_HOME}/bin/R" CMD config CC`

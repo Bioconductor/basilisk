@@ -1,13 +1,14 @@
-Package: Rattlesnake
+Package: jormungandR
 Version: 0.98.0
-Date: 2018-07-29
+Date: 2019-10-04
 Title: Python for Bioconductor
 Authors@R: c(person("Aaron", "Lun", role=c("aut", "cre", "cph"),
-        email="alun@wehi.edu.au"))
+        email="infinite.monkeys.with.keyboards@gmail.com"))
 Depends: reticulate
 biocViews: Infrastructure
-Description: Installs a local version of Python, separate from
-    the system Python and fully controlled by the Bioconductor
-    installation machinery. Any modules are installed inside the 
-    R installation directory for complete isolation.
+Description: 
+    Installs a local version of Python.
+    This aims to provide a consistent Python version that can be used reliably by Bioconductor packages.
+    Any new modules are installed inside a directory owned by R and are isolated from the system Python installation.
 License: GPL-3
+SystemRequirements: libffi
