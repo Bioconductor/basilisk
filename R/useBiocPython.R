@@ -1,9 +1,9 @@
 #' Use the Bioconductor Python
 #'
-#' Use \pkg{reticulate} to set up the Bioconductor-owned instance of Python provided by \pkg{jormungandR}.
+#' Use \pkg{reticulate} to set up the Bioconductor-owned instance of Python provided by \pkg{basilisk}.
 #'
 #' @return
-#' A string containing the path to the \pkg{jormungandR} Python executable, invisibly.
+#' A string containing the path to the \pkg{basilisk} Python executable, invisibly.
 #'
 #' @author Aaron Lun
 #'
@@ -19,5 +19,5 @@
 #' @export
 #' @importFrom reticulate use_python
 useBiocPython <- function() {
-    use_python(system.file("inst", "python", "bin", "python3", package="jormungandR", mustWork=TRUE), required=TRUE)
+    use_python(system.file("inst", "python", "bin", "python3", package="basilisk", mustWork=TRUE), required=TRUE)
 }

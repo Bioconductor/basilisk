@@ -2,7 +2,7 @@
 # author: Aaron Lun (infinite.monkeys.wit.keyboards@gmail.com)
 
 AC_PREREQ([2.65])
-AC_INIT([jormungandR], [0.99.0], [infinite.monkeys.with.keyboards@gmail.com])
+AC_INIT([basilisk], [0.99.0], [infinite.monkeys.with.keyboards@gmail.com])
 AC_CONFIG_SRCDIR([src])
 
 # Check the compiler configured with R

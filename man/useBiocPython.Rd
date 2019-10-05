@@ -7,10 +7,10 @@
 useBiocPython()
 }
 \value{
-A string containing the path to the \pkg{jormungandR} Python executable, invisibly.
+A string containing the path to the \pkg{basilisk} Python executable, invisibly.
 }
 \description{
-Use \pkg{reticulate} to set up the Bioconductor-owned instance of Python provided by \pkg{jormungandR}.
+Use \pkg{reticulate} to set up the Bioconductor-owned instance of Python provided by \pkg{basilisk}.
 }
 \details{
 This function is intended for use within other Bioconductor packages.

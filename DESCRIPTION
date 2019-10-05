@@ -1,7 +1,7 @@
-Package: jormungandR
+Package: basilisk
 Version: 0.98.0
 Date: 2019-10-04
-Title: Python for Bioconductor
+Title: Freezing Python Versions Inside Bioconductor Packages
 Authors@R: c(person("Aaron", "Lun", role=c("aut", "cre", "cph"),
         email="infinite.monkeys.with.keyboards@gmail.com"))
 Imports: 
@@ -13,9 +13,9 @@ Suggests:
     BiocStyle
 biocViews: Infrastructure
 Description: 
-    Installs a local version of Python.
+    Installs a self-contained Python instance that is managed by the R installation.
     This aims to provide a consistent Python version that can be used reliably by Bioconductor packages.
-    Any new modules are installed inside a directory owned by R and are isolated from the system Python installation.
+    Module versions are also controlled to guarantee consistent behavior on different user systems.
 License: GPL-3
 SystemRequirements: libffi
 RoxygenNote: 6.1.1

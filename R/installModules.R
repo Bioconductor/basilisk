@@ -1,6 +1,6 @@
 #' Install Python modules
 #' 
-#' Install modules for the Bioconductor instance of Python provided by \pkg{jormungandR}.
+#' Install modules for the Bioconductor instance of Python provided by \pkg{basilisk}.
 #'
 #' @param modules Character vector of the names of modules to install.
 #'

@@ -1,5 +1,5 @@
 ---
-title: Taming Python versioning within Bioconductor
+title: Freezing Python versions inside Bioconductor packages
 author: 
 - name: Aaron Lun
   email: infinite.monkeys.with.keyboards@gmail.com
@@ -7,7 +7,7 @@ date: "Revised: 5 October 2019"
 output:
   BiocStyle::html_document:
     toc_float: true
-package: jormungandR
+package: basilisk
 bibliography: 
 vignette: >
   %\VignetteIndexEntry{Motivation}
@@ -17,7 +17,7 @@ vignette: >
 
 ```{r, echo=FALSE, results="hide"}
 knitr::opts_chunk$set(error=FALSE, warning=FALSE, message=FALSE)
-library(jormungandR)
+library(basilisk)
 ```
 
 # Why?
@@ -30,17 +30,15 @@ These versioning issues represent a major inhibitor on the ability of R/Biocondu
 
 # What?
 
-`r Biocpkg("jormungandR")` provides a self-contained Python installation that is fully managed by the Bioconductor installation machinery.
-This means that all downstream Bioconductor packages are working with the same version of Python on all systems.
-Additionally, `r Biocpkg("jormungandR")` will only install modules from a cohort of pre-defined versions, thus ensuring that the same modules are used by all downstream packages on all systems.
+`r Biocpkg("basilisk")` provides a self-contained Python installation that is fully managed by the Bioconductor installation machinery.
+This allows developers of downstream Bioconductor packages to be sure that they are working with the same version of Python on all systems.
+Additionally, `r Biocpkg("basilisk")` will only install modules from a cohort of pre-defined versions, thus ensuring that the same modules are used by all downstream packages.
 (This cohort is currently defined as the latest version of each package up to the 5th October, 2019.)
-Consistency in the execution environment fosters reproducible analysis, simplifies debugging of code and improves interoperability between compliant packages.
+Consistency in the execution environment enables reproducible analysis, simplifies debugging of code and improves interoperability between compliant packages.
 
 # How?
 
-`r Biocpkg("jormungandR")` is primarily intended for developers of R/Bioconductor packages, **not** for end-users.
-
-Consider a downstream package _X_ that depends on, say, `r PyPiLink("scikit-learn")`.
+Consider a downstream Bioconductor package _X_ that depends on, say, `r PyPiLink("scikit-learn")`.
 The following code must be executed during installation of _X_.
 
 ```{r}
@@ -65,6 +63,9 @@ library(reticulate)
 X <- import("sklearn.ensemble")
 names(X)
 ```
+
+`r Biocpkg("basilisk")` is primarily intended for developers of R/Bioconductor packages, **not** for end-users.
+Nonetheless, users can call these functions directly to add modules to the local Python instance.
 
 # Session information
 

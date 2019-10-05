@@ -14,7 +14,7 @@ installModules(modules)
 An installation failure for any module in \code{modules} will raise an error.
 }
 \description{
-Install modules for the Bioconductor instance of Python provided by \pkg{jormungandR}.
+Install modules for the Bioconductor instance of Python provided by \pkg{basilisk}.
 }
 \details{
 Installation is performed to the self-contained Bioconductor-managed instance of Python.
