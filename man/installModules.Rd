@@ -11,12 +11,25 @@ installModules(modules)
 }
 \value{
 \code{NULL}, invisibly.
+An installation failure for any module in \code{modules} will raise an error.
 }
 \description{
 Install modules for the Bioconductor instance of Python provided by \pkg{jormungandR}.
 }
 \details{
-If the module is already present, this function will attempt to upgrade it.
-
-An installation failure for any module in \code{modules} will raise an error.
+The version of each module is set to the latest version uploaded to PyPi as of 5th October, 2019.
+This aims to guarantee that all R packages are installing a consistent cohort of Python modules.
+By doing so, we ensure that all R installations are running the same Python code,
+improving portability and simplifying maintenance and debugging.
+}
+\examples{
+\dontrun{
+installModules(c("pandas", "sklearn"))
+}
+}
+\seealso{
+\code{\link{findVersionUpTo}}, to obtain the latest version up to a given date.
+}
+\author{
+Aaron Lun
 }
