@@ -12,3 +12,5 @@ Description:
     Any new modules are installed inside a directory owned by R and are isolated from the system Python installation.
 License: GPL-3
 SystemRequirements: libffi
+RoxygenNote: 6.1.1
+StagedInstall: false
