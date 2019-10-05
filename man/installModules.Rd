@@ -17,15 +17,16 @@ An installation failure for any module in \code{modules} will raise an error.
 Install modules for the Bioconductor instance of Python provided by \pkg{jormungandR}.
 }
 \details{
+Installation is performed to the self-contained Bioconductor-managed instance of Python.
+This ensures that there are no spill-over effects to or from the system installation of Python and its set of modules.
+
 The version of each module is set to the latest version uploaded to PyPi as of 5th October, 2019.
 This aims to guarantee that all R packages are installing a consistent cohort of Python modules.
 By doing so, we ensure that all R installations are running the same Python code,
 improving portability and simplifying maintenance and debugging.
 }
 \examples{
-\dontrun{
-installModules(c("pandas", "sklearn"))
-}
+installModules(c("pandas", "scikit-learn"))
 }
 \seealso{
 \code{\link{findVersionUpTo}}, to obtain the latest version up to a given date.
