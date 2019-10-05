@@ -1,16 +1,7 @@
 PYTHON_DIR=@PYTHON_DIR@
-PYTHON_INCLUDE=@PYTHON_INCLUDE@
-PYTHON_LIB=@PYTHON_LIB@
-
-USER_INCLUDE = ${R_PACKAGE_DIR}/include
-USER_LIB_DIR = ${R_PACKAGE_DIR}/lib${R_ARCH}
 USER_INST_DIR = @USER_INST_DIR@
 
 # Copy Python headers and libraries:
 copying:
-	mkdir -p "${USER_INCLUDE}"
-	cp -r ${PYTHON_INCLUDE}/* ${USER_INCLUDE}
-	mkdir -p "${USER_LIB_DIR}"
-	cp ${PYTHON_LIB} ${USER_LIB_DIR}
 	mkdir -p "${USER_INST_DIR}"
 	cd ${PYTHON_DIR} && make install 
