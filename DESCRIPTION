@@ -4,7 +4,9 @@ Date: 2019-10-04
 Title: Python for Bioconductor
 Authors@R: c(person("Aaron", "Lun", role=c("aut", "cre", "cph"),
         email="infinite.monkeys.with.keyboards@gmail.com"))
-Depends: reticulate
+Imports: 
+    reticulate,
+    httr
 biocViews: Infrastructure
 Description: 
     Installs a local version of Python.
