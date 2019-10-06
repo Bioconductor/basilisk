@@ -39,30 +39,17 @@ Consistency in the execution environment enables reproducible analysis, simplifi
 # How?
 
 Consider a downstream Bioconductor package _X_ that depends on, say, `r PyPiLink("scikit-learn")`.
-The following code must be executed during installation of _X_.
-
-```{r}
-installModules("scikit-learn")
-```
-
-This can be done by putting the above line directly into an R source file in the `R/` subdirectory of _X_.
-The line will subsequently be evaluated (and the required modules installed) when the R code is executed during _X_'s installation.
-
 Any function in _X_ that depends on the installed modules should call:
 
 ```{r}
 useBiocPython()
-```
-
-This ensures that the Bioconductor-managed instance of Python is used rather than the system installation.
-
-Past this point, we can use standard `r CRANpkg("reticulate")` methods within the relevant function:
-
-```{r}
-library(reticulate)
-X <- import("sklearn.ensemble")
+X <- importModule("sklearn.ensemble")
 names(X)
 ```
+
+The `useBiocPython()` call ensures that the Bioconductor-managed instance of Python is used rather than the system installation.
+The `importModule()` call ensures that `r PyPiLink("scikit-learn")` is installed before any import is attempted.
+We can then use standard `r CRANpkg("reticulate")` code to call specific functions in the loaded module.
 
 `r Biocpkg("basilisk")` is primarily intended for developers of R/Bioconductor packages, **not** for end-users.
 Nonetheless, users can call these functions directly to add modules to the local Python instance.
