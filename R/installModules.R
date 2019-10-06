@@ -8,7 +8,7 @@
 #' An installation failure for any module in \code{modules} will raise an error.
 #'
 #' @details
-#' Installation is performed to the self-contained Bioconductor-managed instance of Python.
+#' Modules are installed in the home directory of the self-contained Bioconductor-managed instance of Python.
 #' This ensures that there are no spill-over effects to or from the system installation of Python and its set of modules.
 #'
 #' The version of each module is set to the latest version uploaded to PyPi as of 5th October, 2019.
