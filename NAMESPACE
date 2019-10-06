@@ -2,9 +2,11 @@
 
 export(PyPiLink)
 export(findVersionUpTo)
+export(importModule)
 export(installModules)
 export(useBiocPython)
 importFrom(httr,GET)
 importFrom(httr,content)
 importFrom(httr,stop_for_status)
+importFrom(reticulate,import)
 importFrom(reticulate,use_python)
