@@ -11,6 +11,5 @@ copying:
 	cd ${PYTHON_DIR} && \
 		./configure --enable-shared=yes CC=${CC} CFLAGS="${CFLAGS}" \
 			--prefix="${USER_INST_DIR}" \
-			--exec-prefix="${USER_INST_DIR}" \
-			--with-openssl="/usr/local/opt/openssl"
+			--exec-prefix="${USER_INST_DIR}" 
 	cd ${PYTHON_DIR} && make install
