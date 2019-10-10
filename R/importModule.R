@@ -1,16 +1,18 @@
 #' Safely import a module
 #'
 #' Safely import a module, loading the Bioconductor-managed instance of Python
-#' and installing the module if it is not already available.
+#' and installing the corresponding package if it is not already available.
 #'
-#' @param module String containing the module name.
-#' @return A Python module, as returned by \code{\link[reticulate]{import}}.
+#' @param module String containing the name of the module to import.
+#' @param package String containing the name of the package to download containing \code{module}.
+#' 
+#' @return A Python Module object, as returned by \code{\link[reticulate]{import}}.
 #' 
 #' @author Aaron Lun
 #'
 #' @details
 #' This function allows developers to safely load Python modules inside R functions
-#' by installing the module if it is not already available.
+#' by installing the corresponding package if it is not already available.
 #' End users can also use this to easily load modules in their own analyses.
 #'
 #' @examples
@@ -24,7 +26,7 @@
 #' 
 #' @export
 #' @importFrom reticulate import
-importModule <- function(module) {
+importModule <- function(module, package=module) {
     useBiocPython()
 
     x <- try(import(module), silent=TRUE)
@@ -32,6 +34,6 @@ importModule <- function(module) {
         return(x) 
     }
 
-    installModules(module)
+    installPythonPackages(package)
     import(module)
 }
