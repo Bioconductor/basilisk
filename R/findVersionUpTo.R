@@ -1,8 +1,8 @@
-#' Find the module version up to a given date
+#' Find the package version up to a given date
 #'
-#' Find the version of a Python module in PyPi up to a given date.
+#' Find the version of a Python package in PyPi up to a given date.
 #'
-#' @param module String containing the name of the module.
+#' @param package String containing the name of the package.
 #' @param date String containing the date.
 #'
 #' @details
@@ -27,8 +27,8 @@
 #' 
 #' @export
 #' @importFrom httr GET content stop_for_status
-findVersionUpTo <- function(module, date) {
-    out <- GET(sprintf("https://pypi.org/pypi/%s/json", module))
+findVersionUpTo <- function(package, date) {
+    out <- GET(sprintf("https://pypi.org/pypi/%s/json", package))
     stop_for_status(out)
     releases <- content(out)$releases
 
@@ -50,7 +50,7 @@ findVersionUpTo <- function(module, date) {
     }
 
     if (is.null(candidate)) {
-        stop("no '", module, "' version is available before '", date, "'")
+        stop("no '", package, "' version is available before '", date, "'")
     }
     
     candidate 

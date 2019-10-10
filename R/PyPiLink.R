@@ -1,11 +1,11 @@
 #' Link to PyPi
 #'
-#' Helper function to create a Markdown link to the PyPi landing package for a module.
+#' Helper function to create a Markdown link to the PyPi landing page for a Python package.
 #' Intended primarily for use inside vignettes.
 #'
-#' @param module String containing the name of the Python module.
+#' @param package String containing the name of the Python package.
 #' 
-#' @return String containing a Markdown link to the module's landing page.
+#' @return String containing a Markdown link to the package's landing page.
 #' @author Aaron Lun
 #'
 #' @examples
@@ -13,6 +13,6 @@
 #' PyPiLink("scikit-learn")
 #' 
 #' @export
-PyPiLink <- function(module) {
-    sprintf("[%s](https://pypi.org/project/%s)", module, module)
+PyPiLink <- function(package) {
+    sprintf("[%s](https://pypi.org/project/%s)", package, package)
 }
