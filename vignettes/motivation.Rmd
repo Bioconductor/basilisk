@@ -32,27 +32,26 @@ These versioning issues represent a major inhibitor on the ability of R/Biocondu
 
 `r Biocpkg("basilisk")` provides a self-contained Python installation that is fully managed by the Bioconductor installation machinery.
 This allows developers of downstream Bioconductor packages to be sure that they are working with the same version of Python on all systems.
-Additionally, `r Biocpkg("basilisk")` will only install modules from a cohort of pre-defined versions, thus ensuring that the same modules are used by all downstream packages.
-(This cohort is currently defined as the latest version of each package up to the 5th October, 2019.)
+Additionally, `r Biocpkg("basilisk")` provides utilities to manage different Python virtual environments within a single R session,
+thus allowing multiple Bioconductor packages to use incompatible versions of Python packages in the course of a single analysis.
 Consistency in the execution environment enables reproducible analysis, simplifies debugging of code and improves interoperability between compliant packages.
 
 # How?
 
-Consider a downstream Bioconductor package _X_ that depends on, say, `r PyPiLink("scikit-learn")`.
-Any function in _X_ that depends on the installed modules should call:
+The _son.of.basilisk_ package (in the `inst/example` directory of this package) 
+is provided as an example of how a developer might write an R/Bioconductor package that depends on `r Biocpkg("basilisk")`.
+Key points are:
+
+- `StagedInstall: no` should be set, in order to allow the Python packages to be installed in the correct location.
+- A `configure` file should be present that calls `setupVirtualEnv()`, to allow the relevant Python packages to be installed during R package installation.
+- Any R functions that use Python code should do so via `callVirtualEnv()`, which ensures that different Bioconductor packages play nice when their dependencies clash.
+
+`r Biocpkg("basilisk")` is primarily intended for developers of R/Bioconductor packages, **not** for end-users.
+Nonetheless, users can call the `useBiocPython()` function directly to access the underlying Python instance:
 
 ```{r}
 useBiocPython()
-X <- importModule("sklearn.ensemble")
-names(X)
 ```
-
-The `useBiocPython()` call ensures that the Bioconductor-managed instance of Python is used rather than the system installation.
-The `importModule()` call ensures that `r PyPiLink("scikit-learn")` is installed before any import is attempted.
-We can then use standard `r CRANpkg("reticulate")` code to call specific functions in the loaded module.
-
-`r Biocpkg("basilisk")` is primarily intended for developers of R/Bioconductor packages, **not** for end-users.
-Nonetheless, users can call these functions directly to add modules to the local Python instance.
 
 # Session information
 
