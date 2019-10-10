@@ -4,21 +4,23 @@
 \alias{importModule}
 \title{Safely import a module}
 \usage{
-importModule(module)
+importModule(module, package = module)
 }
 \arguments{
-\item{module}{String containing the module name.}
+\item{module}{String containing the name of the module to import.}
+
+\item{package}{String containing the name of the package to download containing \code{module}.}
 }
 \value{
-A Python module, as returned by \code{\link[reticulate]{import}}.
+A Python Module object, as returned by \code{\link[reticulate]{import}}.
 }
 \description{
 Safely import a module, loading the Bioconductor-managed instance of Python
-and installing the module if it is not already available.
+and installing the corresponding package if it is not already available.
 }
 \details{
 This function allows developers to safely load Python modules inside R functions
-by installing the module if it is not already available.
+by installing the corresponding package if it is not already available.
 End users can also use this to easily load modules in their own analyses.
 }
 \examples{

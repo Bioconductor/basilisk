@@ -2,12 +2,12 @@
 % Please edit documentation in R/findVersionUpTo.R
 \name{findVersionUpTo}
 \alias{findVersionUpTo}
-\title{Find the module version up to a given date}
+\title{Find the package version up to a given date}
 \usage{
-findVersionUpTo(module, date)
+findVersionUpTo(package, date)
 }
 \arguments{
-\item{module}{String containing the name of the module.}
+\item{package}{String containing the name of the package.}
 
 \item{date}{String containing the date.}
 }
@@ -15,7 +15,7 @@ findVersionUpTo(module, date)
 A string containing the latest package up to a given date.
 }
 \description{
-Find the version of a Python module in PyPi up to a given date.
+Find the version of a Python package in PyPi up to a given date.
 }
 \details{
 Only final release versions of the form \code{X.Y[.Z]} are considered.

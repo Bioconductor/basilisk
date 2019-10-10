@@ -4,16 +4,16 @@
 \alias{PyPiLink}
 \title{Link to PyPi}
 \usage{
-PyPiLink(module)
+PyPiLink(package)
 }
 \arguments{
-\item{module}{String containing the name of the Python module.}
+\item{package}{String containing the name of the Python package.}
 }
 \value{
-String containing a Markdown link to the module's landing page.
+String containing a Markdown link to the package's landing page.
 }
 \description{
-Helper function to create a Markdown link to the PyPi landing package for a module.
+Helper function to create a Markdown link to the PyPi landing page for a Python package.
 Intended primarily for use inside vignettes.
 }
 \examples{

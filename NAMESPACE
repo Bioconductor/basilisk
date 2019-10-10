@@ -3,7 +3,7 @@
 export(PyPiLink)
 export(findVersionUpTo)
 export(importModule)
-export(installModules)
+export(installPythonPackages)
 export(useBiocPython)
 importFrom(httr,GET)
 importFrom(httr,content)
