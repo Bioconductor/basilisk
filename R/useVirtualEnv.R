@@ -1,12 +1,11 @@
 #' Set up and use virtual environments
 #'
-#' Set up and use virtual environments for isolated execution of Python code.
+#' Set up and use Python virtual environments for isolated execution of Python code with appropriate versions of all Python packages.
 #' 
 #' @param envname String containing the name of the virtual environment to create (for \code{setupVirtualEnv}) or use (other functions).
-#' For package developers, this should be the name of the package.
 #' @param packages Character vector containing the names of Python packages to install into the virtual environment.
-#' This is strongly recommended to have version numbers.
-#' @param pkgname String specifying the package name 
+#' It is strongly recommended to include version numbers in each name.
+#' @param pkgname String specifying the package name, if these functions are being used inside an R package.
 #' @param FUN A function to execute in the context of the virtual environment.
 #' Any calls to non-base functions within \code{FUN} should be prefixed with the namespace.
 #' @param ... Further arguments to pass to \code{FUN} or to \code{\link{r}}.
@@ -25,19 +24,23 @@
 #' Developers of Bioconductor packages should call \code{setupVirtualEnv} with an appropriate \code{pkgname} in an \code{configure} script,
 #' to install the relevant Python packages during R package installation process.
 #' Then, functions can simply call \code{callVirtualEnv} to take advantage of the installed packages.
+#' The \pkg{son.of.basilisk} example in the \code{inst} directory of \pkg{basilisk} can be used as an example.
 #'
 #' @section Running Python code:
 #' The \code{callVirtualEnv} function allows multiple virtual environments to be used by different R packages in a single R session.
-#' This avoids a limitation of \pkg{reticulate} where an R session is irrevocably tied to a version of Python and/or modules.
+#' This is done by creating an isolated R process with the \pkg{callr} package and loading the requested virtual environment in that session.
+#' Thus, we avoid a limitation of \pkg{reticulate} where an R session is irrevocably tied to a version of Python and/or modules.
 #'
 #' Writers of \code{FUN} can assume that the virtual environment specified by \code{envname} has already been loaded.
-#' Thus, \code{\link{import}} and related functions will work correctly (though one should prefix them with \code{reticulate::}).
+#' This means that \code{\link{import}} and related functions will work correctly, though developers should namespace the calls with \code{reticulate::}.
+#' The same namespacing process applies for any other non-base functions that are used within \code{FUN}.
 #'
 #' @section Python package version control:
-#' When calling \code{setupVirtualEnv}, it is strongly recommended to have version numbers in \code{packages}.
-#' If version numbers are not provided, we will use those defined by \code{\link{findVersionUpTo}}. 
+#' When calling \code{setupVirtualEnv} during R package installation, it is strongly recommended to have version numbers in \code{packages}.
+#' This makes debugging much easier when the R package is installed and executed on different systems.
+#' If version numbers are not provided for any package, we will use a version number selected by \code{\link{findVersionUpTo}}. 
 #'
-#' The nature of Python package management means that problems can potentially arise if two Python packages have mutually incompatible dependencies.
+#' The nature of Python package management means that conflicts can arise if two Python packages have mutually incompatible dependencies.
 #' This is best handled by setting up separate virtual environments for these packages and calling them separately.
 #' 
 #' @author Aaron Lun
