@@ -75,8 +75,7 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
 }
 
 .get_basilisk_envdir <- function(pkgname) {
-    instdir <- system.file("inst", package=pkgname, mustWork=TRUE)
-    file.path(instdir, "basilisk")
+    file.path(.libPaths(), pkgname, "inst", "basilisk")
 }
 
 #' @export
@@ -92,9 +91,9 @@ useVirtualEnv <- function(envname, pkgname=NULL) {
 
 #' @export
 #' @importFrom callr r
-callVirtualEnv <- function(envname, FUN, ...) {
-    r(func=function(envname, FUN, ...) {
-        basilisk::useVirtualEnv(envname)
+callVirtualEnv <- function(envname, FUN, ..., pkgname=NULL) {
+    r(func=function(envname, pkgname, FUN, ...) {
+        basilisk::useVirtualEnv(envname, pkgname)
         FUN(...)
-    }, args=list(envname=envname, FUN=FUN, ...))
+    }, args=list(envname=envname, pkgname=pkgname, FUN=FUN, ...))
 }
