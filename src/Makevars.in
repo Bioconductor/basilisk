@@ -1,15 +1,12 @@
 PYTHON_DIR=@PYTHON_DIR@
-USER_INST_DIR = @USER_INST_DIR@
-
-CC=`"${R_HOME}/bin/R" CMD config CC`
-CFLAGS=`"${R_HOME}/bin/R" CMD config CFLAGS`
-MAKE=`"${R_HOME}/bin/R" CMD config MAKE`
+USER_INST_DIR=@USER_INST_DIR@
+LDFLAGS2=$(LDFLAGS) @EXTRAFLAGS@
 
 # Copy Python headers and libraries:
 copying:
 	mkdir -p "${USER_INST_DIR}"
 	cd ${PYTHON_DIR} && \
 		./configure --enable-shared=yes CC=${CC} CFLAGS="${CFLAGS}" \
-			--prefix="${USER_INST_DIR}" \
-			--exec-prefix="${USER_INST_DIR}" 
-	cd ${PYTHON_DIR} && make install
+			LDFLAGS="${LDFLAGS2}" \
+			--prefix="${USER_INST_DIR}" 
+	cd ${PYTHON_DIR} && ${MAKE} install
