@@ -4,6 +4,7 @@
 #'
 #' @param package String containing the name of the package.
 #' @param date String containing the date.
+#' The default date represents the chosen \dQuote{cohort} of Python packages for this version of \pkg{basilisk}.
 #'
 #' @details
 #' Only final release versions of the form \code{X.Y[.Z]} are considered.
@@ -27,7 +28,7 @@
 #' 
 #' @export
 #' @importFrom httr GET content stop_for_status
-findVersionUpTo <- function(package, date) {
+findVersionUpTo <- function(package, date="2019-10-10") {
     out <- GET(sprintf("https://pypi.org/pypi/%s/json", package))
     stop_for_status(out)
     releases <- content(out)$releases

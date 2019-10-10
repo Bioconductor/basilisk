@@ -4,12 +4,13 @@
 \alias{findVersionUpTo}
 \title{Find the package version up to a given date}
 \usage{
-findVersionUpTo(package, date)
+findVersionUpTo(package, date = "2019-10-10")
 }
 \arguments{
 \item{package}{String containing the name of the package.}
 
-\item{date}{String containing the date.}
+\item{date}{String containing the date.
+The default date represents the chosen \dQuote{cohort} of Python packages for this version of \pkg{basilisk}.}
 }
 \value{
 A string containing the latest package up to a given date.
