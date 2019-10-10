@@ -6,7 +6,9 @@ LDFLAGS2=$(LDFLAGS) @EXTRAFLAGS@
 copying:
 	mkdir -p "${USER_INST_DIR}"
 	cd ${PYTHON_DIR} && \
-		./configure --enable-shared=yes CC=${CC} CFLAGS="${CFLAGS}" \
+		./configure --enable-shared=yes \
+			CC="${CC}" CFLAGS="${CFLAGS}" \
+			CXX="${CXX}" CXXFLAGS="${CXXFLAGS}" \
 			LDFLAGS="${LDFLAGS2}" \
 			--prefix="${USER_INST_DIR}" 
 	cd ${PYTHON_DIR} && ${MAKE} install
