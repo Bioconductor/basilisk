@@ -19,5 +19,5 @@
 #' @export
 #' @importFrom reticulate use_python
 useBiocPython <- function() {
-    use_python(system.file("inst", "python", "bin", "python3", package="basilisk", mustWork=TRUE), required=TRUE)
+    use_python(system.file("inst", "miniconda", "bin", "python3", package="basilisk", mustWork=TRUE), required=TRUE)
 }
