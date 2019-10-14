@@ -1,0 +1,24 @@
+#!/bin/bash
+
+${R_HOME}/bin/R --slave --no-save -e '
+# Stripped from https://github.com/hafen/rminiconda
+# To be replaced if rminiconda gets into CRAN.
+arch <- paste0("x86", ifelse(.Machine$sizeof.pointer == 8, "_64", ""))
+version <- "4.7.10"
+sysname <- if (Sys.info()[["sysname"]] == "Darwin") {
+    "MacOSX"
+} else {
+    "Linux"
+}
+
+inst_file <- sprintf("Miniconda3-%s-%s-%s.sh", version, sysname, arch)
+base_url <- "https://repo.anaconda.com/miniconda/"
+tmploc <- file.path(tempdir(), inst_file)
+dl_res <- download.file(paste0(base_url, inst_file), tmploc)
+
+dest_path <- file.path(.Library, "basilisk", "inst", "miniconda")
+dir.create(dest_path, showWarnings=FALSE)
+
+inst_args <- sprintf(" %s -b -p %s", tmploc, dest_path)
+system2("bash", inst_args)
+'
