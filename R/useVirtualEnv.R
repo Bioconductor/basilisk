@@ -78,10 +78,11 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
 }
 
 .get_basilisk_envdir <- function(pkgname) {
-    file.path(.libPaths(), pkgname, "inst", "basilisk")
+    file.path(.Library, pkgname, "inst", "basilisk")
 }
 
 #' @export
+#' @rdname setupVirtualEnv 
 #' @importFrom reticulate use_virtualenv virtualenv_root
 useVirtualEnv <- function(envname, pkgname=NULL) {
     if (!is.null(pkgname)) {
@@ -93,6 +94,7 @@ useVirtualEnv <- function(envname, pkgname=NULL) {
 }
 
 #' @export
+#' @rdname setupVirtualEnv 
 #' @importFrom callr r
 callVirtualEnv <- function(envname, FUN, ..., pkgname=NULL) {
     r(func=function(envname, pkgname, FUN, ...) {

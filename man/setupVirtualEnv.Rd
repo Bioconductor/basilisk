@@ -2,9 +2,15 @@
 % Please edit documentation in R/useVirtualEnv.R
 \name{setupVirtualEnv}
 \alias{setupVirtualEnv}
+\alias{useVirtualEnv}
+\alias{callVirtualEnv}
 \title{Set up and use virtual environments}
 \usage{
 setupVirtualEnv(envname, packages, pkgname = NULL)
+
+useVirtualEnv(envname, pkgname = NULL)
+
+callVirtualEnv(envname, FUN, ..., pkgname = NULL)
 }
 \arguments{
 \item{envname}{String containing the name of the virtual environment to create (for \code{setupVirtualEnv}) or use (other functions).}
