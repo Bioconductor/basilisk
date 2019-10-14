@@ -60,7 +60,7 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
     # Creating a virtual environment in an appropriate location.
     if (!is.null(pkgname)) {
         vdir <- .get_basilisk_envdir(pkgname)
-        dir.create(vdir)
+        dir.create(vdir, recursive=TRUE, showWarnings=FALSE)
         old <- Sys.getenv("WORKON_HOME")
         Sys.setenv(WORKON_HOME=vdir)
         on.exit(Sys.setenv(WORKON_HOME=old))
