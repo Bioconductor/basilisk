@@ -14,11 +14,23 @@ sysname <- if (Sys.info()[["sysname"]] == "Darwin") {
 inst_file <- sprintf("Miniconda3-%s-%s-%s.sh", version, sysname, arch)
 base_url <- "https://repo.anaconda.com/miniconda/"
 tmploc <- file.path(tempdir(), inst_file)
-dl_res <- download.file(paste0(base_url, inst_file), tmploc)
-
 dest_path <- file.path(.Library, "basilisk", "inst", "miniconda")
-dir.create(dest_path, showWarnings=FALSE)
 
-inst_args <- sprintf(" %s -b -p %s", tmploc, dest_path)
-system2("bash", inst_args)
+# FOR INTERNAL TESTING ONLY, avoid re-downloading and 
+# re-installing miniconda everytime we update the R package.
+if (FALSE) {
+    dest_path2 <- file.path(path.expand("~"), ".miniconda")
+    if (!file.exists(dest_path2)) {
+        download.file(paste0(base_url, inst_file), tmploc)
+        inst_args <- sprintf(" %s -b -p %s", tmploc, dest_path2)
+        system2("bash", inst_args)
+    }
+
+    dir.create(dirname(dest_path), recursive=TRUE)
+    file.symlink(dest_path2, dest_path)
+} else {
+    download.file(paste0(base_url, inst_file), tmploc)
+    inst_args <- sprintf(" %s -b -p %s", tmploc, dest_path)
+    system2("bash", inst_args)
+}
 '
