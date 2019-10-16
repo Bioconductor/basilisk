@@ -1,4 +1,4 @@
 #!/bin/bash
 
-${R_HOME}/bin/R --slave --quiet -e 'basilisk::setupVirtualEnv("env1", "pandas==0.25.1", pkgname="son.of.basilisk")'
-${R_HOME}/bin/R --slave --quiet -e 'basilisk::setupVirtualEnv("env2", "scikit-learn==0.21.0", pkgname="son.of.basilisk")'
+${R_HOME}/bin/R --slave --quiet -e 'basilisk::setupVirtualEnv("env1", "pandas==0.25.1", pkgpath=tail(commandArgs(), 1))' --args "${R_PACKAGE_DIR}"
+${R_HOME}/bin/R --slave --quiet -e 'basilisk::setupVirtualEnv("env2", "scikit-learn==0.21.0", pkgpath=tail(commandArgs(), 1))' --args "${R_PACKAGE_DIR}"
