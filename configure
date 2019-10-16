@@ -14,7 +14,7 @@ sysname <- if (Sys.info()[["sysname"]] == "Darwin") {
 inst_file <- sprintf("Miniconda3-%s-%s-%s.sh", version, sysname, arch)
 base_url <- "https://repo.anaconda.com/miniconda/"
 tmploc <- file.path(tempdir(), inst_file)
-dest_path <- file.path(.Library, "basilisk", "inst", "miniconda")
+dest_path <- file.path("${R_PACKAGE_DIR}", "inst", "miniconda")
 
 # FOR INTERNAL TESTING ONLY, avoid re-downloading and 
 # re-installing miniconda everytime we update the R package.
