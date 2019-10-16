@@ -55,7 +55,7 @@
 #' @export
 #' @importFrom reticulate virtualenv_create virtualenv_install
 setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
-    useBiocPython()
+    pypath <- useBiocPython()
 
     # Creating a virtual environment in an appropriate location.
     if (!is.null(pkgname)) {
@@ -65,7 +65,7 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
         Sys.setenv(WORKON_HOME=vdir)
         on.exit(Sys.setenv(WORKON_HOME=old))
     }
-    virtualenv_create(envname)
+    virtualenv_create(envname, python=pypath)
 
     # Choosing a package version, if we haven't done so already.
     unversioned <- grep("==", packages, invert=TRUE)
