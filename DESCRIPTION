@@ -18,6 +18,5 @@ Description:
     This aims to provide a consistent Python version that can be used reliably by Bioconductor packages.
     Module versions are also controlled to guarantee consistent behavior on different user systems.
 License: GPL-3
-SystemRequirements: libffi
 RoxygenNote: 6.1.1
 StagedInstall: false
