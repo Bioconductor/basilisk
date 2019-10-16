@@ -6,7 +6,7 @@
 \alias{callVirtualEnv}
 \title{Set up and use virtual environments}
 \usage{
-setupVirtualEnv(envname, packages, pkgname = NULL)
+setupVirtualEnv(envname, packages, pkgpath = NULL)
 
 useVirtualEnv(envname, pkgname = NULL)
 
@@ -18,7 +18,9 @@ callVirtualEnv(envname, FUN, ..., pkgname = NULL)
 \item{packages}{Character vector containing the names of Python packages to install into the virtual environment.
 It is strongly recommended to include version numbers in each name.}
 
-\item{pkgname}{String specifying the package name, if these functions are being used inside an R package.}
+\item{pkgpath}{String specifying the path to the R package installation directory, usually used in an R package installation script.}
+
+\item{pkgname}{String specifying the package name, if the function is used inside an R package.}
 
 \item{FUN}{A function to execute in the context of the virtual environment.
 Any calls to non-base functions within \code{FUN} should be prefixed with the namespace.}
@@ -39,7 +41,7 @@ Set up and use Python virtual environments for isolated execution of Python code
 Use of virtual environments is the recommended approach for Bioconductor packages to interact with the \pkg{basilisk} Python instance.
 This avoids conflicts when different Bioconductor packages require incompatible versions of Python packages.
 
-Developers of Bioconductor packages should call \code{setupVirtualEnv} with an appropriate \code{pkgname} in an \code{configure} script,
+Developers of Bioconductor packages should call \code{setupVirtualEnv} with an appropriate \code{pkgpath} in an \code{configure} script (usually \code{${R_PACKAGBE_DIR}}),
 to install the relevant Python packages during R package installation process.
 Then, functions can simply call \code{callVirtualEnv} to take advantage of the installed packages.
 The \pkg{son.of.basilisk} example in the \code{inst} directory of \pkg{basilisk} can be used as an example.

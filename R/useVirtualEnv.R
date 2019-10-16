@@ -5,7 +5,8 @@
 #' @param envname String containing the name of the virtual environment to create (for \code{setupVirtualEnv}) or use (other functions).
 #' @param packages Character vector containing the names of Python packages to install into the virtual environment.
 #' It is strongly recommended to include version numbers in each name.
-#' @param pkgname String specifying the package name, if these functions are being used inside an R package.
+#' @param pkgpath String specifying the path to the R package installation directory, usually used in an R package installation script.
+#' @param pkgname String specifying the package name, if the function is used inside an R package.
 #' @param FUN A function to execute in the context of the virtual environment.
 #' Any calls to non-base functions within \code{FUN} should be prefixed with the namespace.
 #' @param ... Further arguments to pass to \code{FUN} or to \code{\link{r}}.
@@ -21,7 +22,7 @@
 #' Use of virtual environments is the recommended approach for Bioconductor packages to interact with the \pkg{basilisk} Python instance.
 #' This avoids conflicts when different Bioconductor packages require incompatible versions of Python packages.
 #'
-#' Developers of Bioconductor packages should call \code{setupVirtualEnv} with an appropriate \code{pkgname} in an \code{configure} script,
+#' Developers of Bioconductor packages should call \code{setupVirtualEnv} with an appropriate \code{pkgpath} in an \code{configure} script (usually \code{${R_PACKAGBE_DIR}}),
 #' to install the relevant Python packages during R package installation process.
 #' Then, functions can simply call \code{callVirtualEnv} to take advantage of the installed packages.
 #' The \pkg{son.of.basilisk} example in the \code{inst} directory of \pkg{basilisk} can be used as an example.
@@ -54,12 +55,12 @@
 #'
 #' @export
 #' @importFrom reticulate virtualenv_create virtualenv_install
-setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
+setupVirtualEnv <- function(envname, packages, pkgpath=NULL) {
     pypath <- useBiocPython()
 
     # Creating a virtual environment in an appropriate location.
-    if (!is.null(pkgname)) {
-        vdir <- .get_basilisk_envdir(pkgname)
+    if (!is.null(pkgpath)) {
+        vdir <- file.path(pkgpath, "inst", "basilisk")
         dir.create(vdir, recursive=TRUE, showWarnings=FALSE)
         old <- Sys.getenv("WORKON_HOME")
         Sys.setenv(WORKON_HOME=vdir)
@@ -77,16 +78,12 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
     virtualenv_install(envname, packages)
 }
 
-.get_basilisk_envdir <- function(pkgname) {
-    file.path(.Library, pkgname, "inst", "basilisk")
-}
-
 #' @export
 #' @rdname setupVirtualEnv 
 #' @importFrom reticulate use_virtualenv virtualenv_root
 useVirtualEnv <- function(envname, pkgname=NULL) {
     if (!is.null(pkgname)) {
-        vdir <- .get_basilisk_envdir(pkgname)
+        vdir <- system.file("inst", "basilisk", package=pkgname, mustWork=TRUE)
     } else {
         vdir <- virtualenv_root() 
     }
