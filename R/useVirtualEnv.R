@@ -56,6 +56,11 @@
 #' @export
 #' @importFrom reticulate virtualenv_create virtualenv_install
 setupVirtualEnv <- function(envname, packages, pkgpath=NULL) {
+    # Unsetting this variable, otherwise it seems to override everything.
+    old <- Sys.getenv("RETICULATE_PYTHON")
+    Sys.unsetenv("RETICULATE_PYTHON")
+    on.exit(Sys.setenv(RETICULATE_PYTHON=old))
+
     pypath <- useBiocPython()
 
     # Creating a virtual environment in an appropriate location.
@@ -82,6 +87,10 @@ setupVirtualEnv <- function(envname, packages, pkgpath=NULL) {
 #' @rdname setupVirtualEnv 
 #' @importFrom reticulate use_virtualenv virtualenv_root
 useVirtualEnv <- function(envname, pkgname=NULL) {
+    old <- Sys.getenv("RETICULATE_PYTHON")
+    Sys.unsetenv("RETICULATE_PYTHON")
+    on.exit(Sys.setenv(RETICULATE_PYTHON=old))
+
     if (!is.null(pkgname)) {
         vdir <- system.file("inst", "basilisk", package=pkgname, mustWork=TRUE)
     } else {
@@ -95,6 +104,7 @@ useVirtualEnv <- function(envname, pkgname=NULL) {
 #' @importFrom callr r
 callVirtualEnv <- function(envname, FUN, ..., pkgname=NULL) {
     r(func=function(envname, pkgname, FUN, ...) {
+        Sys.unsetenv("RETICULATE_PYTHON")
         basilisk::useVirtualEnv(envname, pkgname)
         FUN(...)
     }, args=list(envname=envname, pkgname=pkgname, FUN=FUN, ...))
