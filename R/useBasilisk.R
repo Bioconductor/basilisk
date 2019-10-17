@@ -12,13 +12,13 @@
 #' It uses \code{\link{use_python}} to register a consistent Python version that is isolated from the system installation.
 #' 
 #' @examples
-#' useBiocPython()
+#' useBasilisk()
 #' os <- reticulate::import("os")
 #' os$listdir()
 #'
 #' @export
 #' @importFrom reticulate use_python
-useBiocPython <- function() {
+useBasilisk <- function() {
     old <- Sys.getenv("RETICULATE_PYTHON")
     Sys.unsetenv("RETICULATE_PYTHON")
     on.exit(Sys.setenv(RETICULATE_PYTHON=old))

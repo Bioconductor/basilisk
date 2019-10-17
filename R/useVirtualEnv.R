@@ -61,7 +61,7 @@ setupVirtualEnv <- function(envname, packages, pkgpath=NULL) {
     Sys.unsetenv("RETICULATE_PYTHON")
     on.exit(Sys.setenv(RETICULATE_PYTHON=old))
 
-    pypath <- useBiocPython()
+    pypath <- useBasilisk()
 
     # Creating a virtual environment in an appropriate location.
     if (!is.null(pkgpath)) {
