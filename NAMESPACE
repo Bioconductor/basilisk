@@ -2,7 +2,6 @@
 
 export(PyPiLink)
 export(callVirtualEnv)
-export(findVersionUpTo)
 export(setupVirtualEnv)
 export(useBasilisk)
 export(useVirtualEnv)

@@ -16,7 +16,7 @@ callVirtualEnv(envname, FUN, ..., pkgname = NULL)
 \item{envname}{String containing the name of the virtual environment to create (for \code{setupVirtualEnv}) or use (other functions).}
 
 \item{packages}{Character vector containing the names of Python packages to install into the virtual environment.
-It is strongly recommended to include version numbers in each name.}
+It is strongly recommended to include version numbers in each string.}
 
 \item{pkgpath}{String specifying the path to the R package installation directory, usually used in an R package installation script.}
 
@@ -59,9 +59,9 @@ The same namespacing process applies for any other non-base functions that are u
 
 \section{Python package version control}{
 
-When calling \code{setupVirtualEnv} during R package installation, it is strongly recommended to have version numbers in \code{packages}.
+When calling \code{setupVirtualEnv} during R package installation, version numbers must be present in \code{packages}.
 This makes debugging much easier when the R package is installed and executed on different systems.
-If version numbers are not provided for any package, we will use a version number selected by \code{\link{findVersionUpTo}}. 
+Even outside of package contexts, it is strongly recommended to set the version number to ensure reproducibility.
 
 The nature of Python package management means that conflicts can arise if two Python packages have mutually incompatible dependencies.
 This is best handled by setting up separate virtual environments for these packages and calling them separately.
