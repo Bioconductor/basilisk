@@ -59,7 +59,9 @@ setupVirtualEnv <- function(envname, packages, pkgpath=NULL) {
     # Unsetting this variable, otherwise it seems to override everything.
     old <- Sys.getenv("RETICULATE_PYTHON")
     Sys.unsetenv("RETICULATE_PYTHON")
-    on.exit(Sys.setenv(RETICULATE_PYTHON=old))
+    if (old!="") {
+        on.exit(Sys.setenv(RETICULATE_PYTHON=old))
+    }
 
     pypath <- useBasilisk()
 
@@ -88,7 +90,9 @@ setupVirtualEnv <- function(envname, packages, pkgpath=NULL) {
 useVirtualEnv <- function(envname, pkgname=NULL) {
     old <- Sys.getenv("RETICULATE_PYTHON")
     Sys.unsetenv("RETICULATE_PYTHON")
-    on.exit(Sys.setenv(RETICULATE_PYTHON=old))
+    if (old!="") {
+        on.exit(Sys.setenv(RETICULATE_PYTHON=old))
+    }
 
     if (!is.null(pkgname)) {
         vdir <- system.file("inst", "basilisk", package=pkgname, mustWork=TRUE)
