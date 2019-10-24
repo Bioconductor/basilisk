@@ -34,12 +34,14 @@ It is usually good practice to call \code{\link{stopCluster}} once computation i
 setupVirtualEnv('my_package_A', 'pandas==0.25.1')
 useVirtualEnv("my_package_A")
 X <- reticulate::import("pandas")
-reticulate::py_config()
+X$`__version__` 
 
 # Co-exists with our other virtual environment in a separate process:
 setupVirtualEnv('my_package_B', 'pandas==0.24.1')
 cl <- basiliskStart('my_package_B')
-parallel::clusterCall(cl, reticulate::py_config)
+parallel::clusterCall(cl, function() { 
+    X <- reticulate::import("pandas"); X$`__version__` 
+})
 parallel::stopCluster(cl)
 
 }
