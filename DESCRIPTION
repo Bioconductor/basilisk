@@ -1,12 +1,12 @@
 Package: basilisk
-Version: 0.98.1
-Date: 2019-10-16
+Version: 0.98.2
+Date: 2019-10-23
 Title: Freezing Python Versions Inside Bioconductor Packages
 Authors@R: c(person("Aaron", "Lun", role=c("aut", "cre", "cph"),
         email="infinite.monkeys.with.keyboards@gmail.com"))
 Imports: 
     reticulate,
-    callr
+    parallel
 Suggests:
     knitr,
     rmarkdown,
