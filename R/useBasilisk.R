@@ -1,4 +1,4 @@
-#' Use the Bioconductor Python
+#' Use \pkg{basilisk}'s Python instance
 #'
 #' Use \pkg{reticulate} to set up the Bioconductor-owned instance of Python provided by \pkg{basilisk}.
 #'

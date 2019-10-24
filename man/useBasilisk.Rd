@@ -2,7 +2,7 @@
 % Please edit documentation in R/useBasilisk.R
 \name{useBasilisk}
 \alias{useBasilisk}
-\title{Use the Bioconductor Python}
+\title{Use \pkg{basilisk}'s Python instance}
 \usage{
 useBasilisk()
 }
