@@ -4,6 +4,7 @@ Title: Son of Basilisk
 Description: Provides an example of how to set up a 
     package that depends on the basilisk package.
 Imports:
-    basilisk
+    basilisk,
+    parallel
 RoxygenNote: 6.1.1
 StagedInstall: no
