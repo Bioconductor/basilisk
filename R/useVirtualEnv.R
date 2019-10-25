@@ -14,7 +14,8 @@
 #' It returns a character vector containing \code{packages}.
 #'
 #' \code{useVirtualEnv} will load the specified virtual environment into the R session.
-#' It returns a character vector specifying the paths to the Python binary and the virtual environment.
+#' It returns a string specifying the path to the virtual environment.
+#' If \code{dry=TRUE}, the character vector is returned without loading the virtual environment.
 #'
 #' @details
 #' Use of virtual environments is the recommended approach for Bioconductor packages to interact with the \pkg{basilisk} Python instance.
@@ -71,8 +72,9 @@ setupVirtualEnv <- function(envname, packages, pkgpath=NULL) {
 
 #' @export
 #' @rdname setupVirtualEnv
+#' @param dry Logical scalar indicating whether only the directory should be returned without loading the virtual environment.
 #' @importFrom reticulate use_virtualenv virtualenv_root
-useVirtualEnv <- function(envname, pkgname=NULL) {
+useVirtualEnv <- function(envname, pkgname=NULL, dry=FALSE) {
     old <- Sys.getenv("RETICULATE_PYTHON")
     Sys.unsetenv("RETICULATE_PYTHON")
     if (old!="") {
@@ -82,7 +84,12 @@ useVirtualEnv <- function(envname, pkgname=NULL) {
     if (!is.null(pkgname)) {
         vdir <- system.file("inst", "basilisk", package=pkgname, mustWork=TRUE)
     } else {
-        vdir <- virtualenv_root() 
+        vdir <- normalizePath(virtualenv_root())
     }
-    use_virtualenv(file.path(vdir, envname), required=TRUE)
+    vdir <- file.path(vdir, envname)
+
+    if (!dry) {
+        use_virtualenv(vdir, required=TRUE)
+    }
+    vdir
 }
