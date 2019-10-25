@@ -4,6 +4,8 @@
 #'
 #' @inheritParams setupVirtualEnv
 #' @param proc A cluster object pointing to an active R process.
+#' @param fork Logical scalar indicating whether forking should be performed on non-Windows systems.
+#' If \code{FALSE}, a new worker process is created using communication over sockets.
 #'
 #' @return 
 #' \code{basiliskStart} returns a cluster object (same as \code{\link{makePSOCKCluster}}),
@@ -36,9 +38,13 @@
 #' parallel::stopCluster(cl)
 #' 
 #' @export
-#' @importFrom parallel makePSOCKcluster clusterCall
-basiliskStart <- function(envname, pkgname=NULL) {
-    proc <- makePSOCKcluster(1)
+#' @importFrom parallel makePSOCKcluster clusterCall makeForkCluster
+basiliskStart <- function(envname, pkgname=NULL, fork=TRUE) {
+    if (fork && .Platform$OS.type!="windows") {
+        proc <- makeForkCluster(1)
+    } else {
+        proc <- makePSOCKcluster(1)
+    }
     clusterCall(proc, useVirtualEnv, envname=envname, pkgname=pkgname)
     proc 
 }
