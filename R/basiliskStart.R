@@ -115,8 +115,10 @@ basiliskRun <- function(proc=NULL, fun, ..., envname, pkgname=NULL, fork=getBasi
     if (is.environment(proc)) {
         # Ensure any 'assign' calls add to 'proc'.
         proc$.basilisk.args <- list(...)
-        output <- evalq(do.call(fun, .basilisk.args), envir=proc, enclos=proc)
+        proc$.basilisk.fun <- fun
+        output <- evalq(do.call(.basilisk.fun, .basilisk.args), envir=proc, enclos=proc)
         rm(".basilisk.args", envir=proc)
+        rm(".basilisk.fun", envir=proc)
         output
     } else {
         clusterCall(proc, fun=fun, ...)[[1]]
