@@ -70,14 +70,22 @@
 #' 
 #' @export
 #' @importFrom parallel makePSOCKcluster clusterCall makeForkCluster
-#' @importFrom reticulate py_config
+#' @importFrom reticulate py_config py_available
 basiliskStart <- function(envname, pkgname=NULL, fork=getBasiliskFork(), global=getBasiliskGlobal()) {
-    # Seeing if we can just load it successfully.
-    status <- NULL
-    if (global && !is(status <- try(useVirtualEnv(envname, pkgname=pkgname), silent=TRUE), "try-error")) { 
+    if (global && 
+        {
+            # Seeing if we can just load it successfully.
+            requested <- useVirtualEnv(envname, pkgname=pkgname, required=FALSE)
+            identical(requested, py_config()$virtualenv)
+        }) 
+    {
         new.env()
     } else {
-        if (fork && .Platform$OS.type!="windows" && !is(status, "try-error")) {
+        if (fork && .Platform$OS.type!="windows" && 
+            (!py_available() ||
+                identical(useVirtualEnv(envname, pkgname=pkgname, dry=TRUE), py_config()$virtualenv)
+            ))
+        { 
             proc <- makeForkCluster(1)
         } else {
             proc <- makePSOCKcluster(1)
