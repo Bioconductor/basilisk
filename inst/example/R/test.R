@@ -9,22 +9,21 @@
 #' test()
 #' @export
 #' @importFrom reticulate import
-#' @importFrom basilisk basiliskStart
-#' @importFrom parallel stopCluster clusterCall
+#' @importFrom basilisk basiliskStart basiliskRun basiliskStop
 test <- function() {
     cl <- basiliskStart("env1", pkgname="son.of.basilisk")
-    pandas.names <- clusterCall(cl, function() { 
+    pandas.names <- basiliskRun(cl, function() { 
         X <- reticulate::import("pandas")
         names(X) 
     })
-    stopCluster(cl)
+    basiliskStop(cl)
 
     cl <- basiliskStart("env2", pkgname="son.of.basilisk")
-    sklearn.names <- clusterCall(cl, function() { 
+    sklearn.names <- basiliskRun(cl, function() { 
         X <- reticulate::import("sklearn.ensemble")
         names(X)
     })
-    stopCluster(cl)
+    basiliskStop(cl)
 
     list(pandas=pandas.names, sklearn=sklearn.names)
 }
