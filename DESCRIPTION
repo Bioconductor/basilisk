@@ -12,6 +12,7 @@ Suggests:
     rmarkdown,
     BiocStyle,
     testthat,
+    devtools,
     callr
 biocViews: Infrastructure
 Description: 
