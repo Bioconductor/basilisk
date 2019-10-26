@@ -73,8 +73,9 @@ setupVirtualEnv <- function(envname, packages, pkgpath=NULL) {
 #' @export
 #' @rdname setupVirtualEnv
 #' @param dry Logical scalar indicating whether only the directory should be returned without loading the virtual environment.
+#' @param required Logical scalar indicating whether an error should be raised if the requested virtual environment cannot be found.
 #' @importFrom reticulate use_virtualenv virtualenv_root
-useVirtualEnv <- function(envname, pkgname=NULL, dry=FALSE) {
+useVirtualEnv <- function(envname, pkgname=NULL, dry=FALSE, required=TRUE) {
     old <- Sys.getenv("RETICULATE_PYTHON")
     Sys.unsetenv("RETICULATE_PYTHON")
     if (old!="") {
@@ -89,7 +90,7 @@ useVirtualEnv <- function(envname, pkgname=NULL, dry=FALSE) {
     vdir <- file.path(vdir, envname)
 
     if (!dry) {
-        use_virtualenv(vdir, required=TRUE)
+        use_virtualenv(vdir, required=required)
     }
     vdir
 }
