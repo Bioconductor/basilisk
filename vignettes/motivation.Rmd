@@ -44,13 +44,40 @@ Key points are:
 
 - `StagedInstall: no` should be set, in order to allow the Python packages to be installed in the correct location.
 - A `configure` file should be present that calls `setupVirtualEnv()`, to allow the relevant Python packages to be installed during R package installation.
-- Any R functions that use Python code should do so via `callVirtualEnv()`, which ensures that different Bioconductor packages play nice when their dependencies clash.
+- Any R functions that use Python code should do so via `basiliskRun()`, which ensures that different Bioconductor packages play nice when their dependencies clash.
+
+For example, say our package creates a virtual environment named `"aarons_environment"` during its installation.
+To use methods from this environment, the functions in our package will contain a code chunk like this:
+
+```r
+    proc <- basiliskStart("aarons_environment")
+    some_useful_thing <- basiliskCall(proc, function(arg1, arg2) {
+        mod <- import("some_python_package")
+        mod$some_calculation(arg1, arg2)
+    }, arg1=ARG_VALUE_1, arg2=ARG_VALUE_2)
+    basiliskStop(proc)
+```
+
+`basiliskStart()` will behave differently depending on its arguments and the Python configuration in the current R session:
+
+- If `global=TRUE` and no Python version has already been loaded, `basiliskStart()` will load Python directly into the R session from the specified virtual environment.
+Similarly, if the existing virtual environment is the same as the requested environment, `basiliskStart()` will use that directly.
+This mode is most efficient as it avoids creating any new processes, but the use of a global Python configuration may prevent non-`r Biocpkg("basilisk")` packages from working correctly in the same session.
+- Otherwise, if `fork=TRUE` and no Python version has already been loaded and we are not on Windows, `basiliskStart()` will create a new process by forking.
+In the forked process, `basiliskStart()` will load the virtual environment for Python operations.
+This is less efficient as it needs to create a new process but it avoids forcing a Python configuration on other packages in the same R session.
+- Otherwise, `basiliskStart()` will create a parallel socket process containing a separate R session.
+In the new process, `basiliskStart()` will load the virtual environment for Python operations.
+This is the least efficient as it needs to transfer data over sockets but is guaranteed to work.
+
+Note that these choices are automatically and generally do not need to be tuned by the developer.
+End-users can also control these choices via `setBasiliskFork()` and `setBasiliskGlobal()`, which may occasionally be necessary to avoid setting a global Python configuration that is incompatible with other tools.
 
 `r Biocpkg("basilisk")` is primarily intended for developers of R/Bioconductor packages, **not** for end-users.
-Nonetheless, users can call the `useBiocPython()` function directly to access the underlying Python instance:
+Nonetheless, users can call the `useBasilisk()` function directly to access the underlying Python instance:
 
 ```{r}
-useBiocPython()
+useBasilisk()
 ```
 
 # Session information
