@@ -7,7 +7,7 @@
 \usage{
 setupVirtualEnv(envname, packages, pkgpath = NULL)
 
-useVirtualEnv(envname, pkgname = NULL)
+useVirtualEnv(envname, pkgname = NULL, dry = FALSE, required = TRUE)
 }
 \arguments{
 \item{envname}{String containing the name of the virtual environment to create (for \code{setupVirtualEnv}) or use (other functions).}
@@ -19,13 +19,18 @@ It is strongly recommended to include version numbers in each string.}
 If \code{NULL}, it defaults to \code{\link{virtualenv_root}}.}
 
 \item{pkgname}{String specifying the package name, if the function is used inside an R package.}
+
+\item{dry}{Logical scalar indicating whether only the directory should be returned without loading the virtual environment.}
+
+\item{required}{Logical scalar indicating whether an error should be raised if the requested virtual environment cannot be found.}
 }
 \value{
 \code{setupVirtualEnv} will create a virtual environment - at the designated location if \code{pkgpath} is specified, or at the default location for virtual environments otherwise.
 It returns a character vector containing \code{packages}.
 
 \code{useVirtualEnv} will load the specified virtual environment into the R session.
-It returns a character vector specifying the paths to the Python binary and the virtual environment.
+It returns a string specifying the path to the virtual environment.
+If \code{dry=TRUE}, the character vector is returned without loading the virtual environment.
 }
 \description{
 Set up and use Python virtual environments for isolated execution of Python code with appropriate versions of all Python packages.

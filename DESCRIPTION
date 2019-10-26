@@ -1,6 +1,6 @@
 Package: basilisk
-Version: 0.98.2
-Date: 2019-10-23
+Version: 0.98.3
+Date: 2019-10-25
 Title: Freezing Python Versions Inside Bioconductor Packages
 Authors@R: c(person("Aaron", "Lun", role=c("aut", "cre", "cph"),
         email="infinite.monkeys.with.keyboards@gmail.com"))
@@ -10,7 +10,9 @@ Imports:
 Suggests:
     knitr,
     rmarkdown,
-    BiocStyle
+    BiocStyle,
+    testthat,
+    callr
 biocViews: Infrastructure
 Description: 
     Installs a self-contained Python instance that is managed by the R installation.
