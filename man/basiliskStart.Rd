@@ -58,6 +58,23 @@ If \code{proc=NULL} in \code{basiliskRun}, a process will be created and closed 
 This may be convenient in functions where persistence is not required.
 Note that doing so requires specification of \code{pkgname} and \code{envname}.
 }
+\section{Choice of backend}{
+
+\itemize{
+\item If \code{global=TRUE} and no Python version has already been loaded, \code{basiliskStart} will load Python directly into the R session from the specified virtual environment.
+Similarly, if the existing virtual environment is the same as the requested environment, \code{basiliskStart} will use that directly.
+This mode is most efficient as it avoids creating any new processes, but the use of a global Python configuration may prevent non-\pkg{basilisk} packages from working correctly in the same session.
+\item Otherwise, if \code{fork=TRUE}, no Python version has already been loaded and we are not on Windows, \code{basiliskStart} will create a new process by forking.
+In the forked process, \code{basiliskStart} will load the specified virtual environment for operations in Python.
+This is less efficient as it needs to create a new process but it avoids forcing a Python configuration on other packages in the same R session.
+\item Otherwise, \code{basiliskStart} will create a parallel socket process containing a separate R session.
+In the new process, \code{basiliskStart} will load the specified virtual environment for Python operations.
+This is the least efficient as it needs to transfer data over sockets but is guaranteed to work.
+}
+Developers can control these choices directly by explicitly specifying \code{global} or \code{fork},
+while users can control them indirectly with \code{\link{setBasiliskFork}} and \code{\link{setBasiliskGlobal}}.
+}
+
 \examples{
 # Loading one virtual environment into our R session:
 setupVirtualEnv('my_package_A', 'pandas==0.25.1')

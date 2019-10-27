@@ -37,6 +37,11 @@ This is generally more efficient than socket communication when it is available 
 but can be less efficient if any garbage collection occurs inside the new process.
 In such cases, users or developers may wish to turn off forking with \code{setBasiliskFork(FALSE)},
 e.g., in functions where many R-based memory allocations are performed inside \code{\link{basiliskRun}}.
+
+If many \pkg{basilisk}-dependent packages are to be used together on Unix systems, setting \code{setBasiliskGlobal(FALSE)} may be beneficial.
+This allows each package to fork to create a new process as no Python has been loaded in the parent R process (see \code{?\link{basiliskStart}}).
+In contrast, if any package loads Python globally, the others are forced to use parallel socket processes.
+This results in a tragedy of the commons where the efficiency of all other packages is reduced.
 }
 \examples{
 getBasiliskFork()
