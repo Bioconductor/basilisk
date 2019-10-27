@@ -22,3 +22,4 @@ Description:
 License: GPL-3
 RoxygenNote: 6.1.1
 StagedInstall: false
+VignetteBuilder: knitr
