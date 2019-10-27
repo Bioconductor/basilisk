@@ -51,6 +51,18 @@
 #' Developers can control these choices directly by explicitly specifying \code{global} or \code{fork},
 #' while users can control them indirectly with \code{\link{setBasiliskFork}} and \code{\link{setBasiliskGlobal}}.
 #'
+#' @section Function definition:
+#' In \code{basiliskRun}, there is no guarantee that \code{fun} has access to the environment in which \code{basiliskRun} is called.
+#' This has a number of consequences for the type of code that can be written inside \code{fun}:
+#' \itemize{
+#' \item Functions or variables from non-base packages used inside \code{fun} should be prefixed with the package namespace, or the package itself should be reloaded inside \code{fun}.
+#' \item Any other variables used inside \code{fun} should be explicitly passed as an argument.
+#' Developers should not rely on closures to capture variables in the calling environment of \code{basiliskRun}.
+#' \item Relevant global variables should be reset inside \code{fun}.
+#' \item Developers should not attempt to pass complex objects to memory in or out of \code{fun}.
+#' This mostly refers to objects that contain custom pointers to memory, e.g., file handles.
+#' }
+#' 
 #' @author Aaron Lun
 #'
 #' @seealso
