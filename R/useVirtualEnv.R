@@ -29,6 +29,10 @@
 #' This makes debugging much easier when the R package is installed and executed on different systems.
 #' Even outside of package contexts, it is strongly recommended to set the version number to ensure reproducibility.
 #'
+#' A side-effect of \code{useVirtualEnv} with \code{dry=FALSE} is that the \code{"PYTHONPATH"} environment variable is unset for the duration of the R session
+#' (or \pkg{basilisk} process, depending on the back-end chosen by \code{\link{basiliskStart}}).
+#' This is a deliberate choice to avoid compromising the version guarantees if \code{\link{import}} is allowed to search other locations beyond the virtual environment.
+#'
 #' @author Aaron Lun
 #' 
 #' @examples
@@ -42,24 +46,25 @@
 #' @export
 #' @importFrom reticulate virtualenv_create virtualenv_install
 setupVirtualEnv <- function(envname, packages, pkgpath=NULL) {
-    # Unsetting this variable, otherwise it seems to override everything.
-    old <- Sys.getenv("RETICULATE_PYTHON")
+    # Unsetting this variable, otherwise it seems to override the python=
+    # argument in virtualenv_create() (see LTLA/basilisk#1).
+    old.retpy <- Sys.getenv("RETICULATE_PYTHON")
     Sys.unsetenv("RETICULATE_PYTHON")
-    if (old!="") {
-        on.exit(Sys.setenv(RETICULATE_PYTHON=old))
+    if (old.retpy!="") {
+        on.exit(Sys.setenv(RETICULATE_PYTHON=old.retpy))
     }
 
-    pypath <- useBasilisk()
+    py.cmd <- useBasilisk()
 
     # Creating a virtual environment in an appropriate location.
     if (!is.null(pkgpath)) {
         vdir <- file.path(pkgpath, "inst", "basilisk")
         dir.create(vdir, recursive=TRUE, showWarnings=FALSE)
-        old <- Sys.getenv("WORKON_HOME")
+        old.work <- Sys.getenv("WORKON_HOME")
         Sys.setenv(WORKON_HOME=vdir)
-        on.exit(Sys.setenv(WORKON_HOME=old))
+        on.exit(Sys.setenv(WORKON_HOME=old.work), add=TRUE)
     }
-    virtualenv_create(envname, python=pypath)
+    virtualenv_create(envname, python=py.cmd)
 
     # Choosing a package version, if we haven't done so already.
     versioned <- grepl("==", packages)
@@ -76,10 +81,10 @@ setupVirtualEnv <- function(envname, packages, pkgpath=NULL) {
 #' @param required Logical scalar indicating whether an error should be raised if the requested virtual environment cannot be found.
 #' @importFrom reticulate use_virtualenv virtualenv_root
 useVirtualEnv <- function(envname, pkgname=NULL, dry=FALSE, required=TRUE) {
-    old <- Sys.getenv("RETICULATE_PYTHON")
+    old.retpy <- Sys.getenv("RETICULATE_PYTHON")
     Sys.unsetenv("RETICULATE_PYTHON")
-    if (old!="") {
-        on.exit(Sys.setenv(RETICULATE_PYTHON=old))
+    if (old.retpy!="") {
+        on.exit(Sys.setenv(RETICULATE_PYTHON=old.retpy))
     }
 
     if (!is.null(pkgname)) {
@@ -90,6 +95,12 @@ useVirtualEnv <- function(envname, pkgname=NULL, dry=FALSE, required=TRUE) {
     vdir <- file.path(vdir, envname)
 
     if (!dry) {
+        # Don't even try to be nice and add an on.exit() clause to protect the
+        # global session. This is deliberate; if we're using a virtual
+        # environment, and someone tries to import package in the global session,
+        # and Python looks somewhere else other than our virtual environment via
+        # the PYTHONPATH, we can get the wrong package loaded. 
+        Sys.unsetenv("PYTHONPATH")
         use_virtualenv(vdir, required=required)
     }
     vdir

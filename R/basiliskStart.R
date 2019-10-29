@@ -30,7 +30,10 @@
 #' and a corresponding \code{\link{get}} to retrieve that object in later calls. 
 #' See Examples for more details.
 #'
-#' It is good practice to call \code{\link{basiliskStop}} once computation is finished and persistence is no longer required.
+#' It is good practice to call \code{basiliskStop} once computation is finished.
+#' This will close the \pkg{basilisk} processes and restore certain environments to their original state (e.g., \code{"PYTHONPATH"}).
+#' Any Python-related operations between \code{basiliskStart} and \code{basiliskStop} should only occur via \code{basiliskRun};
+#' calling \pkg{reticulate} functions directly will have unpredictable consequences. 
 #'
 #' If \code{proc=NULL} in \code{basiliskRun}, a process will be created and closed automatically.
 #' This may be convenient in functions where persistence is not required.
@@ -102,11 +105,14 @@ basiliskStart <- function(envname, pkgname=NULL, fork=getBasiliskFork(), global=
     if (global && 
         {
             # Seeing if we can just load it successfully.
+            old.pypath <- Sys.getenv("PYTHONPATH")
             requested <- useVirtualEnv(envname, pkgname=pkgname, required=FALSE)
             identical(requested, py_config()$virtualenv)
         }) 
     {
-        new.env()
+        proc <- new.env()
+        proc$.basilisk.pypath <- old.pypath
+        proc
     } else {
         if (fork && .Platform$OS.type!="windows" && 
             (!py_available() ||
@@ -126,7 +132,10 @@ basiliskStart <- function(envname, pkgname=NULL, fork=getBasiliskFork(), global=
 #' @rdname basiliskStart
 #' @importFrom parallel stopCluster
 basiliskStop <- function(proc) {
-    if (!is.environment(proc)) {
+    if (is.environment(proc)) {
+        # Restore the old PYTHONPATH.
+        Sys.setenv(PYTHONPATH=proc$.basilisk.pypath)
+    } else {
         stopCluster(proc)
     }
 }
