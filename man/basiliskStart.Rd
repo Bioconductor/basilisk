@@ -52,7 +52,10 @@ This requires the use of \code{\link{assign}} with \code{envir=parent.frame()} t
 and a corresponding \code{\link{get}} to retrieve that object in later calls. 
 See Examples for more details.
 
-It is good practice to call \code{\link{basiliskStop}} once computation is finished and persistence is no longer required.
+It is good practice to call \code{basiliskStop} once computation is finished.
+This will close the \pkg{basilisk} processes and restore certain environments to their original state (e.g., \code{"PYTHONPATH"}).
+Any Python-related operations between \code{basiliskStart} and \code{basiliskStop} should only occur via \code{basiliskRun};
+calling \pkg{reticulate} functions directly will have unpredictable consequences. 
 
 If \code{proc=NULL} in \code{basiliskRun}, a process will be created and closed automatically.
 This may be convenient in functions where persistence is not required.

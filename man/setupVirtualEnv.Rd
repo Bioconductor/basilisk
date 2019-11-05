@@ -5,7 +5,8 @@
 \alias{useVirtualEnv}
 \title{Set up and use virtual environments}
 \usage{
-setupVirtualEnv(envname, packages, pkgpath = NULL)
+setupVirtualEnv(envname, packages, pkgpath = NULL,
+  ignore_installed = FALSE)
 
 useVirtualEnv(envname, pkgname = NULL, dry = FALSE, required = TRUE)
 }
@@ -17,6 +18,8 @@ It is strongly recommended to include version numbers in each string.}
 
 \item{pkgpath}{String specifying the path to the R package installation directory, usually used in an R package installation script.
 If \code{NULL}, it defaults to \code{\link{virtualenv_root}}.}
+
+\item{ignore_installed}{Logical scalar indicating whether \dQuote{core} packages installed with \pkg{basilisk} should be ignored when constructing the virtual environment.}
 
 \item{pkgname}{String specifying the package name, if the function is used inside an R package.}
 
@@ -47,6 +50,29 @@ When calling \code{setupVirtualEnv} during R package installation, version numbe
 This makes debugging much easier when the R package is installed and executed on different systems.
 Even outside of package contexts, it is strongly recommended to set the version number to ensure reproducibility.
 }
+\section{Reusing core packages}{
+
+By default, \code{ignore_installed=FALSE} to avoid redundant installations of the same Python packages and reduce the size of the installed R package.
+This differs from the default in \code{\link{virtualenv_install}} and may need to be set to \code{TRUE} if there are version conflicts with any \dQuote{core} Python packages.
+
+Core Python packages are installed along with \pkg{basilisk} and refer to common Python infrastructure that is likely required by many packages.
+Currently, the core packages are:
+\itemize{
+\item pandas, 0.25.1
+\item scipy, 1.17.3
+\item numpy, 1.3.1
+\item matplotlib, 3.1.1
+}
+Please contact the \pkg{basilisk} maintainers if you feel that a package should be added to this list.
+}
+
+\section{Wrangling the PYTHONPATH}{
+
+A side-effect of \code{useVirtualEnv} with \code{dry=FALSE} is that the \code{"PYTHONPATH"} environment variable is unset for the duration of the R session
+(or \pkg{basilisk} process, depending on the back-end chosen by \code{\link{basiliskStart}}).
+This is a deliberate choice to avoid compromising the version guarantees if \code{\link{import}} is allowed to search other locations beyond the virtual environment.
+}
+
 \examples{
 setupVirtualEnv('my_package_A', 'pandas==0.25.1')
 useVirtualEnv("my_package_A")
