@@ -18,7 +18,7 @@ base_url <- "https://repo.anaconda.com/miniconda/"
 tmploc <- file.path(tempdir(), inst_file)
 dest_path <- file.path(inst_dir, "inst", "miniconda")
 
-if (FALSE) {
+if (TRUE) {
     # FOR INTERNAL TESTING ONLY, avoid re-downloading and 
     # re-installing miniconda everytime we update the R package.
     dest_path2 <- file.path(path.expand("~/"), ".miniconda")
@@ -35,4 +35,7 @@ if (FALSE) {
     inst_args <- sprintf(" %s -b -p %s", tmploc, dest_path)
     system2("bash", inst_args)
 }
+
+# Installing "core" packages on top.
+system2(file.path(dest_path, "bin", "python3"), c("-m", "pip", "install", readLines(file.path("inst", "core_list"))))
 ' --args "${R_PACKAGE_DIR}"
