@@ -18,7 +18,7 @@ base_url <- "https://repo.anaconda.com/miniconda/"
 tmploc <- file.path(tempdir(), inst_file)
 dest_path <- file.path(inst_dir, "inst", "miniconda")
 
-if (TRUE) {
+if (FALSE) {
     # FOR INTERNAL TESTING ONLY, avoid re-downloading and 
     # re-installing miniconda everytime we update the R package.
     dest_path2 <- file.path(path.expand("~/"), ".miniconda")
