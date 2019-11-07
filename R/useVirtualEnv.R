@@ -60,8 +60,14 @@
 #' \code{\link{basiliskStart}}, for how these virtual environments should be used.
 #'
 #' @export
-#' @importFrom reticulate virtualenv_create virtualenv_install
+#' @importFrom reticulate virtualenv_create virtualenv_install virtualenv_remove
+#' virtualenv_root
 setupVirtualEnv <- function(envname, packages, pkgpath=NULL, ignore_installed=FALSE) {
+    versioned <- grepl("==", packages)
+    if (!all(versioned)) {
+        stop("Python package versions must be explicitly specified")
+    }
+
     # Unsetting this variable, otherwise it seems to override the python=
     # argument in virtualenv_create() (see LTLA/basilisk#1).
     old.retpy <- Sys.getenv("RETICULATE_PYTHON")
@@ -80,15 +86,50 @@ setupVirtualEnv <- function(envname, packages, pkgpath=NULL, ignore_installed=FA
         Sys.setenv(WORKON_HOME=vdir)
         on.exit(Sys.setenv(WORKON_HOME=old.work), add=TRUE)
     }
-    virtualenv_create(envname, python=py.cmd)
 
-    # Choosing a package version, if we haven't done so already.
-    versioned <- grepl("==", packages)
-    if (!is.null(pkgpath) && !all(versioned)) {
-        stop("Python package versions must be explicitly specified")
+    # ROUND 1: Seeing what the incoming packages need.
+    virtualenv_create(envname, python=py.cmd)
+    env.cmd <- file.path(normalizePath(virtualenv_root()), envname, "bin", "python3")
+
+    previous <- system2(env.cmd, c("-m", "pip", "freeze"), stdout=TRUE)
+    virtualenv_install(envname, packages, ignore_installed=ignore_installed)
+    updated <- system2(env.cmd, c("-m", "pip", "freeze"), stdout=TRUE)
+
+    if (identical(sort(union(previous, packages)), sort(updated))) {
+        # If all newly added packages are accounted for, we finish up.
+        return(NULL)
     }
 
+    # Figuring out if any of the newly downloaded packages are core packages.
+    core.pkgs <- readLines(system.file("core_list", package="basilisk"))
+    added <- setdiff(updated, c(previous, packages))
+    core.names <- .full2pkg(core.pkgs)
+    added.names <- .full2pkg(added)
+
+    if (any(unlisted.noncore <- !added.names %in% core.names)) {
+        stop(sprintf("need to list dependency on '%s'", added[unlisted.noncore][1]))
+    }
+    overlaps <- core.names %in% added.names # no error _and_ non-empty 'added' implies that we have at least one TRUE. 
+    system2(py.cmd, c("-m", "pip", "install", core.pkgs[overlaps]))
+
+    # ROUND 2: Trying again after lazy installation of the core packages.
+    virtualenv_remove(envname, confirm=FALSE)
+    virtualenv_create(envname, python=py.cmd) # Removing round 1 packages to potentially allow use of new core packages.
+
+    previous <- system2(env.cmd, c("-m", "pip", "freeze"), stdout=TRUE)
     virtualenv_install(envname, packages, ignore_installed=ignore_installed)
+    updated <- system2(env.cmd, c("-m", "pip", "freeze"), stdout=TRUE)
+
+    if (identical(sort(union(previous, packages)), sort(updated))) {
+        return(NULL)
+    } else {
+        added <- setdiff(updated, c(previous, packages))
+        stop(sprintf("need to list dependency on '%s'", added[1]))
+    }
+}
+
+.full2pkg <- function(packages) {
+    sub("[><=]+.*", "", packages)
 }
 
 #' @export
