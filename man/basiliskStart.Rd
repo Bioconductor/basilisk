@@ -94,13 +94,16 @@ This mostly refers to objects that contain custom pointers to memory, e.g., file
 
 \examples{
 # Loading one virtual environment into our R session:
-setupVirtualEnv('my_package_A', 'pandas==0.25.1')
+setupVirtualEnv('my_package_A', c('pandas==0.25.1',
+    "python-dateutil==2.8.1", "pytz==2019.3"))
 useVirtualEnv("my_package_A")
 X <- reticulate::import("pandas")
 X$`__version__` 
 
 # Co-exists with our other virtual environment in a separate process:
-setupVirtualEnv('my_package_B', 'pandas==0.24.1')
+setupVirtualEnv('my_package_B', c('pandas==0.24.1',
+    "python-dateutil==2.7.1", "pytz==2017.2"))
+
 cl <- basiliskStart('my_package_B')
 basiliskRun(proc=cl, function() { 
     X <- reticulate::import("pandas"); X$`__version__` 
