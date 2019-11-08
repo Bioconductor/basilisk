@@ -2,8 +2,10 @@
 # Setting up the virtual environments.
 
 Sys.setenv(WORKON_HOME="whee")
-setupVirtualEnv('my_package_A', 'pandas==0.25.1')
-setupVirtualEnv('my_package_B', 'pandas==0.24.1')
+setupVirtualEnv('my_package_A', c('pandas==0.25.1',
+    "python-dateutil==2.8.1", "pytz==2019.3"))
+setupVirtualEnv('my_package_B', c('pandas==0.24.1',
+    "python-dateutil==2.7.1", "pytz==2017.2"))
 
 #################################################################
 # Defining a helper function to check for correct persistence.

@@ -43,3 +43,4 @@ test_that("setupVirtualEnv overrides an incompatible core installation", {
 
 unlink(client.dir, recursive=TRUE)
 unlink(basilisk.dir, recursive=TRUE)
+Sys.unsetenv("BASILISK_TEST_PYTHON")
