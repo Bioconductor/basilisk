@@ -31,9 +31,11 @@
 #' See Examples for more details.
 #'
 #' It is good practice to call \code{basiliskStop} once computation is finished.
-#' This will close the \pkg{basilisk} processes and restore certain environments to their original state (e.g., \code{"PYTHONPATH"}).
-#' Any Python-related operations between \code{basiliskStart} and \code{basiliskStop} should only occur via \code{basiliskRun};
-#' calling \pkg{reticulate} functions directly will have unpredictable consequences. 
+#' This will close the \pkg{basilisk} processes and restore certain environment variables to their original state (e.g., \code{"PYTHONPATH"}) so that other non-\pkg{basilisk} operations can operate properly.
+#'
+#' Any Python-related operations between \code{basiliskStart} and \code{basiliskStop} should only occur via \code{basiliskRun}.
+#' Calling \pkg{reticulate} functions directly will have unpredictable consequences,
+#' Similarly, it would be unwise to interact with \code{proc} via any function other than the ones listed here.
 #'
 #' If \code{proc=NULL} in \code{basiliskRun}, a process will be created and closed automatically.
 #' This may be convenient in functions where persistence is not required.
