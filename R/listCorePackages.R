@@ -24,3 +24,7 @@ listCorePackages <- function() {
     names <- .full2pkg(pkgs)
     data.frame(full=pkgs, name=names)
 }
+
+.full2pkg <- function(packages) {
+    sub("[><=]+.*", "", packages)
+}

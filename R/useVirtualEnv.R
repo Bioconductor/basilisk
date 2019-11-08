@@ -63,6 +63,10 @@
 #' @importFrom reticulate virtualenv_create virtualenv_install virtualenv_remove
 #' virtualenv_root
 setupVirtualEnv <- function(envname, packages, pkgpath=NULL, ignore_installed=FALSE) {
+    if (!is.null(pkgpath) && file.exists(file.path(pkgpath, "basilisk", envname))) {
+        return(NULL)
+    }
+
     versioned <- grepl("==", packages)
     if (!all(versioned)) {
         stop("Python package versions must be explicitly specified")
@@ -104,35 +108,39 @@ setupVirtualEnv <- function(envname, packages, pkgpath=NULL, ignore_installed=FA
     }
 
     # Figuring out if any of the newly downloaded packages are core packages.
-    core.pkgs <- readLines(system.file("core_list", package="basilisk"))
-    core.names <- .full2pkg(core.pkgs)
+    # If so, we install them to the base installation if we have access;
+    # otherwise, we add it to our virtual environment.
+    core.data <- listCorePackages()
+    core.pkgs <- core.data$full
+    core.names <- core.data$name
     added.names <- .full2pkg(added)
 
     if (any(unlisted.noncore <- !added.names %in% core.names)) {
         stop(sprintf("need to list dependency on '%s'", added[unlisted.noncore][1]))
     }
-    overlaps <- core.names %in% added.names 
-    system2(py.cmd, c("-m", "pip", "install", core.pkgs[overlaps]))
+
+    virtualenv_remove(envname, confirm=FALSE) # Removing Round 1 to start from a fresh installation.
+
+    if (file.access(system.file(package="basilisk"), 2)==0L) {
+        overlaps <- core.names %in% added.names 
+        system2(py.cmd, c("-m", "pip", "install", core.pkgs[overlaps]))
+        virtualenv_create(envname, python=py.cmd) 
+    } else {
+        virtualenv_create(envname, python=py.cmd) 
+        virtualenv_install(envname, core.packages[overlaps], ignore_installed=ignore_installed)
+    }
 
     # ROUND 2: Trying again after lazy installation of the core packages.
-    # (removing Round 1's packages to potentially allow use of new core packages).
-    virtualenv_remove(envname, confirm=FALSE)
-    virtualenv_create(envname, python=py.cmd) 
-
     previous <- system2(env.cmd, c("-m", "pip", "freeze"), stdout=TRUE)
     virtualenv_install(envname, packages, ignore_installed=ignore_installed)
     updated <- system2(env.cmd, c("-m", "pip", "freeze"), stdout=TRUE)
 
-    if (!identical(sort(union(previous, packages)), sort(updated))) {
+    if (any(!updated %in% c(previous, packages))) {
         added <- setdiff(updated, c(previous, packages))
         stop(sprintf("need to list dependency on '%s'", added[1]))
     }
 
     NULL
-}
-
-.full2pkg <- function(packages) {
-    sub("[><=]+.*", "", packages)
 }
 
 #' @export
