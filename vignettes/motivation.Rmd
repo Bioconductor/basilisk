@@ -77,6 +77,8 @@ To use methods from this environment, the functions in our package will contain 
     It is probably unwise to use `proc` across user-visible functions, i.e., the end-user should never have an opportunity to interact with `proc`.
 `r Biocpkg("basilisk")` is primarily intended for developers of R/Bioconductor packages, **not** for end-users.
 
+- If you generate documentation using `devtools::document()`, it is worthwhile adding `inst/basilisk` to your `.Rbuildignore` and `.gitignore`.
+
 Note that if `r Biocpkg("basilisk")` is reinstalled on any machine, it is imperative that all dependent packages are also re-installed.
 This is because the history of lazily installed Python packages is reset when `r Biocpkg("basilisk")` is reinstalled.
 To prompt reinstallation of dependent packages, we will automatically bump all version numbers if any change to `r Biocpkg("basilisk")` is pushed to the Bioconductor Git server.
