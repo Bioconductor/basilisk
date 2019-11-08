@@ -22,16 +22,17 @@ library(basilisk)
 
 # Why?
 
-Packages like `r CRANpkg("reticulate")` make it easy to use Python modules in our R-based data analyses, allowing us to leverage Python's strengths in fields such as machine learning. 
+Packages like `r CRANpkg("reticulate")` make it easy to use Python modules in our R-based data analyses, allowing us to leverage Python's strengths in fields such as machine learning and image analysis. 
 However, it is notoriously difficult to ensure that a consistent version of Python is available with a consistently versioned set of modules, especially when the system installation of Python is used.
 As a result, we cannot easily guarantee that some Python code executed via `r CRANpkg("reticulate")` on one computer will yield the same results as the same code run on another computer.
 It is also possible that two R packages depend on incompatible versions of Python modules, such that it is impossible to use both packages at the same time.
-These versioning issues represent a major inhibitor on the ability of R/Bioconductor packages to reliably execute Python code across a variety of systems.
+These versioning issues represent a major obstacle to reliable execution of Python code across a variety of systems via R/Bioconductor packages.
 
 # What?
 
 `r Biocpkg("basilisk")` provides a self-contained Python installation that is fully managed by the Bioconductor installation machinery.
 This allows developers of downstream Bioconductor packages to be sure that they are working with the same version of Python on all systems.
+`r Biocpkg("basilisk")` performs lazy installation of a core set of Python packages, encouraging standardization of their versions for greater interoperability between Bioconductor packages. 
 Additionally, `r Biocpkg("basilisk")` provides utilities to manage different Python virtual environments within a single R session,
 thus allowing multiple Bioconductor packages to use incompatible versions of Python packages in the course of a single analysis.
 Consistency in the execution environment enables reproducible analysis, simplifies debugging of code and improves interoperability between compliant packages.
@@ -42,29 +43,43 @@ The _son.of.basilisk_ package (in the `inst/example` directory of this package)
 is provided as an example of how a developer might write an R/Bioconductor package that depends on `r Biocpkg("basilisk")`.
 Key points are:
 
-- `StagedInstall: no` should be set, in order to allow the Python packages to be installed in the correct location.
-- A `configure` file should be present that calls `setupVirtualEnv()`, to allow the relevant Python packages to be installed during R package installation.
-- Any R functions that use Python code should do so via `basiliskRun()`, which ensures that different Bioconductor packages play nice when their dependencies clash.
+- `StagedInstall: no` should be set in the `DESCRIPTION` to ensure that Python packages are installed with the correct hard-coded paths within the R package installation directory.
+- An `.onLoad()` function should be present that calls `setupVirtualEnv()`, to allow the relevant Python packages to be installed during R package installation.
+This requires us to specify the version numbers of all desired packages and their dependencies (excepting core packages, see `listCorePackages()`).
+For example, if we wanted to install `r PyPiLink("scikit-learn")`, we would have:
 
+    ```r
+    .onLoad <- function(libname, pkgname) {
+        setupVirtualEnv("my_env", c("scikit-learn==0.21.1", "joblib==0.14.0"),
+            pkgpath=system.file(package=pkgname))
+    }
+    ```
+
+    Despite its appearance, it actually only gets executed during package installation; 
+    all subsequent calls to `setupVirtualEnv()` are no-ops.
+
+- Any R functions that use Python code should do so via `basiliskRun()`, which ensures that different Bioconductor packages play nice when their dependencies clash.
 For example, say our package creates a virtual environment named `"aarons_environment"` during its installation.
 To use methods from this environment, the functions in our package will contain a code chunk like this:
 
-```r
-    proc <- basiliskStart("aarons_environment")
-    on.exit(basiliskStop(proc))
+    ```r
+    my_arbitrary_function <- function() { 
+        proc <- basiliskStart("aarons_environment")
+        on.exit(basiliskStop(proc))
 
-    some_useful_thing <- basiliskCall(proc, function(arg1, arg2) {
-        mod <- reticulate::import("some_python_package")
-        mod$some_calculation(arg1, arg2)
-    }, arg1=ARG_VALUE_1, arg2=ARG_VALUE_2)
-```
+        some_useful_thing <- basiliskCall(proc, function(arg1, arg2) {
+            mod <- reticulate::import("some_python_package")
+            mod$some_calculation(arg1, arg2)
+        }, arg1=ARG_VALUE_1, arg2=ARG_VALUE_2)
+    }
+    ```
 
+    It is probably unwise to use `proc` across user-visible functions, i.e., the end-user should never have an opportunity to interact with `proc`.
 `r Biocpkg("basilisk")` is primarily intended for developers of R/Bioconductor packages, **not** for end-users.
-Nonetheless, users can call the `useBasilisk()` function directly to access the underlying Python instance:
 
-```{r}
-useBasilisk()
-```
+Note that if `r Biocpkg("basilisk")` is reinstalled on any machine, it is imperative that all dependent packages are also re-installed.
+This is because the history of lazily installed Python packages is reset when `r Biocpkg("basilisk")` is reinstalled.
+To prompt reinstallation of dependent packages, we will automatically bump all version numbers if any change to `r Biocpkg("basilisk")` is pushed to the Bioconductor Git server.
 
 # Session information
 
