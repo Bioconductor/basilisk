@@ -25,5 +25,5 @@ useBasilisk <- function() {
         on.exit(Sys.setenv(RETICULATE_PYTHON=old))
     }
 
-    use_python(system.file("inst", "miniconda", "bin", "python3", package="basilisk", mustWork=TRUE), required=TRUE)
+    use_python(system.file("miniconda", "bin", "python3", package="basilisk", mustWork=TRUE), required=TRUE)
 }

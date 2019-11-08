@@ -1,14 +1,16 @@
-#' @importFrom utils download.file
 .onLoad <- function(libname, pkgname) {
     inst_path <- system.file(package=pkgname)
-    dest_path <- file.path(inst_path, "inst", "miniconda")
+    dest_path <- file.path(inst_path, "miniconda")
     if (dir.exists(dest_path)) {
         return(NULL)
     }
-    dir.create(dirname(dest_path), recursive=TRUE)
+    .minstaller(dest_path, testing=TRUE)
+}
 
+#' @importFrom utils download.file
+.minstaller <- function(dest_path, testing=FALSE) {
     # Stripped from https://github.com/hafen/rminiconda
-    # To be replaced if rminiconda gets into CRAN.
+    # To be replaced if rminiconda gets into CRAN, or if reticulate offers its own solution.
     arch <- paste0("x86", ifelse(.Machine$sizeof.pointer == 8, "_64", ""))
     version <- "4.7.10"
     base_url <- "https://repo.anaconda.com/miniconda/"
@@ -30,7 +32,7 @@
         inst_file <- sprintf("Miniconda3-%s-%s-%s.sh", version, sysname, arch)
         tmploc <- file.path(tempdir(), inst_file)
 
-        if (FALSE) {
+        if (testing) {
             # FOR INTERNAL TESTING ONLY, avoid re-downloading and 
             # re-installing miniconda everytime we update the R package.
             dest_path2 <- file.path(path.expand("~/"), ".miniconda")

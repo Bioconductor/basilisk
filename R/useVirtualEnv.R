@@ -76,11 +76,13 @@ setupVirtualEnv <- function(envname, packages, pkgpath=NULL, ignore_installed=FA
         on.exit(Sys.setenv(RETICULATE_PYTHON=old.retpy))
     }
 
-    py.cmd <- useBasilisk()
+    # Use environment variable as this is for testing purposes only,
+    # and should not be exposed to the user.
+    py.cmd <- Sys.getenv("BASILISK_TEST_PYTHON", useBasilisk())
 
     # Creating a virtual environment in an appropriate location.
     if (!is.null(pkgpath)) {
-        vdir <- file.path(pkgpath, "inst", "basilisk")
+        vdir <- file.path(pkgpath, "basilisk")
         dir.create(vdir, recursive=TRUE, showWarnings=FALSE)
         old.work <- Sys.getenv("WORKON_HOME")
         Sys.setenv(WORKON_HOME=vdir)
@@ -95,37 +97,38 @@ setupVirtualEnv <- function(envname, packages, pkgpath=NULL, ignore_installed=FA
     virtualenv_install(envname, packages, ignore_installed=ignore_installed)
     updated <- system2(env.cmd, c("-m", "pip", "freeze"), stdout=TRUE)
 
-    if (identical(sort(union(previous, packages)), sort(updated))) {
-        # If all newly added packages are accounted for, we finish up.
+    # If all newly added packages are accounted for, we finish up.
+    added <- setdiff(updated, c(previous, packages))
+    if (length(added)==0L) {
         return(NULL)
     }
 
     # Figuring out if any of the newly downloaded packages are core packages.
     core.pkgs <- readLines(system.file("core_list", package="basilisk"))
-    added <- setdiff(updated, c(previous, packages))
     core.names <- .full2pkg(core.pkgs)
     added.names <- .full2pkg(added)
 
     if (any(unlisted.noncore <- !added.names %in% core.names)) {
         stop(sprintf("need to list dependency on '%s'", added[unlisted.noncore][1]))
     }
-    overlaps <- core.names %in% added.names # no error _and_ non-empty 'added' implies that we have at least one TRUE. 
+    overlaps <- core.names %in% added.names 
     system2(py.cmd, c("-m", "pip", "install", core.pkgs[overlaps]))
 
     # ROUND 2: Trying again after lazy installation of the core packages.
+    # (removing Round 1's packages to potentially allow use of new core packages).
     virtualenv_remove(envname, confirm=FALSE)
-    virtualenv_create(envname, python=py.cmd) # Removing round 1 packages to potentially allow use of new core packages.
+    virtualenv_create(envname, python=py.cmd) 
 
     previous <- system2(env.cmd, c("-m", "pip", "freeze"), stdout=TRUE)
     virtualenv_install(envname, packages, ignore_installed=ignore_installed)
     updated <- system2(env.cmd, c("-m", "pip", "freeze"), stdout=TRUE)
 
-    if (identical(sort(union(previous, packages)), sort(updated))) {
-        return(NULL)
-    } else {
+    if (!identical(sort(union(previous, packages)), sort(updated))) {
         added <- setdiff(updated, c(previous, packages))
         stop(sprintf("need to list dependency on '%s'", added[1]))
     }
+
+    NULL
 }
 
 .full2pkg <- function(packages) {
@@ -145,7 +148,7 @@ useVirtualEnv <- function(envname, pkgname=NULL, dry=FALSE, required=TRUE) {
     }
 
     if (!is.null(pkgname)) {
-        vdir <- system.file("inst", "basilisk", package=pkgname, mustWork=TRUE)
+        vdir <- system.file("basilisk", package=pkgname, mustWork=TRUE)
     } else {
         vdir <- normalizePath(virtualenv_root())
     }
