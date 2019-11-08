@@ -91,7 +91,7 @@ setupVirtualEnv <- function(envname, packages, pkgpath=NULL, overwrite=is.null(p
         on.exit(Sys.setenv(WORKON_HOME=old.work), add=TRUE)
     }
 
-    target <- file.path(normalizePath(virtualenv_root()), envname)
+    target <- file.path(path.expand(virtualenv_root()), envname)
     if (file.exists(target)) {
         unlink(target, recursive=TRUE)
     }
@@ -109,6 +109,8 @@ setupVirtualEnv <- function(envname, packages, pkgpath=NULL, overwrite=is.null(p
         return(NULL)
     }
 
+    virtualenv_remove(envname, confirm=FALSE) # Removing Round 1 to start from a fresh installation.
+
     # Figuring out if any of the newly downloaded packages are core packages.
     # If so, we install them to the base installation if we have access;
     # otherwise, we add it to our virtual environment.
@@ -120,16 +122,14 @@ setupVirtualEnv <- function(envname, packages, pkgpath=NULL, overwrite=is.null(p
     if (any(unlisted.noncore <- !added.names %in% core.names)) {
         stop(sprintf("need to list dependency on '%s'", added[unlisted.noncore][1]))
     }
-
-    virtualenv_remove(envname, confirm=FALSE) # Removing Round 1 to start from a fresh installation.
+    overlaps <- core.names %in% added.names 
 
     if (file.access(system.file(package="basilisk"), 2)==0L) {
-        overlaps <- core.names %in% added.names 
         .basilisk_install(core.pkgs[overlaps], py.cmd=py.cmd)
         virtualenv_create(envname, python=py.cmd) 
     } else {
         virtualenv_create(envname, python=py.cmd) 
-        virtualenv_install(envname, core.packages[overlaps], ignore_installed=FALSE)
+        virtualenv_install(envname, core.pkgs[overlaps], ignore_installed=FALSE)
     }
 
     # ROUND 2: Trying again after lazy installation of the core packages.
