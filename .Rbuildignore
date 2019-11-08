@@ -1,4 +1,5 @@
 ^\.gitignore$
 ^tests/testthat/install-.*$
 ^inst/miniconda$
+^package/inst/example/basilisk$
 
