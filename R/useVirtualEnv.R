@@ -46,10 +46,11 @@
 #' @author Aaron Lun
 #' 
 #' @examples
-#' setupVirtualEnv('my_package_A', 'pandas==0.25.1')
+#' setupVirtualEnv('my_package_A', c('pandas==0.25.1',
+#'     "python-dateutil==2.8.1", "pytz==2019.3"))
 #' useVirtualEnv("my_package_A")
 #' X <- reticulate::import("pandas")
-#' X
+#' X$`__version__`
 #' @seealso
 #' \code{\link{basiliskStart}}, for how these virtual environments should be used.
 #'
