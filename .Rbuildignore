@@ -1,2 +1,4 @@
 ^\.gitignore$
-tests/testthat/whee
+^tests/testthat/install-.*$
+^inst/miniconda$
+
