@@ -8,6 +8,8 @@
 #' @param pkgpath String specifying the path to the R package installation directory, usually used in an R package installation script.
 #' If \code{NULL}, it defaults to \code{\link{virtualenv_root}}.
 #' @param pkgname String specifying the package name, if the function is used inside an R package.
+#' @param overwrite Logical scalar indicating whether an existing virtual environment should be overwritten.
+#' If \code{FALSE} and the virtual environment is already present, \code{setupVirtualEnv} is a no-op.
 #' 
 #' @return 
 #' \code{setupVirtualEnv} will create a virtual environment - at the designated location if \code{pkgpath} is specified, or at the default location for virtual environments otherwise.
@@ -58,8 +60,8 @@
 #' @export
 #' @importFrom reticulate virtualenv_create virtualenv_install virtualenv_remove
 #' virtualenv_root
-setupVirtualEnv <- function(envname, packages, pkgpath=NULL) {
-    if (!is.null(pkgpath) && file.exists(file.path(pkgpath, "basilisk", envname))) {
+setupVirtualEnv <- function(envname, packages, pkgpath=NULL, overwrite=is.null(pkgpath)) {
+    if (!overwrite && file.exists(file.path(pkgpath, "basilisk", envname))) {
         return(NULL)
     }
 
@@ -89,13 +91,17 @@ setupVirtualEnv <- function(envname, packages, pkgpath=NULL) {
         on.exit(Sys.setenv(WORKON_HOME=old.work), add=TRUE)
     }
 
-    # ROUND 1: Seeing what the incoming packages need.
+    target <- file.path(normalizePath(virtualenv_root()), envname)
+    if (file.exists(target)) {
+        unlink(target, recursive=TRUE)
+    }
     virtualenv_create(envname, python=py.cmd)
-    env.cmd <- file.path(normalizePath(virtualenv_root()), envname, "bin", "python3")
+    env.cmd <- file.path(target, "bin", "python3")
 
-    previous <- system2(env.cmd, c("-m", "pip", "freeze"), stdout=TRUE)
+    # ROUND 1: Seeing what the incoming packages need.
+    previous <- .basilisk_freeze(env.cmd)
     virtualenv_install(envname, packages, ignore_installed=FALSE)
-    updated <- system2(env.cmd, c("-m", "pip", "freeze"), stdout=TRUE)
+    updated <- .basilisk_freeze(env.cmd)
 
     # If all newly added packages are accounted for, we finish up.
     added <- setdiff(updated, c(previous, packages))
@@ -119,7 +125,7 @@ setupVirtualEnv <- function(envname, packages, pkgpath=NULL) {
 
     if (file.access(system.file(package="basilisk"), 2)==0L) {
         overlaps <- core.names %in% added.names 
-        system2(py.cmd, c("-m", "pip", "install", core.pkgs[overlaps]))
+        .basilisk_install(core.pkgs[overlaps], py.cmd=py.cmd)
         virtualenv_create(envname, python=py.cmd) 
     } else {
         virtualenv_create(envname, python=py.cmd) 
@@ -127,9 +133,9 @@ setupVirtualEnv <- function(envname, packages, pkgpath=NULL) {
     }
 
     # ROUND 2: Trying again after lazy installation of the core packages.
-    previous <- system2(env.cmd, c("-m", "pip", "freeze"), stdout=TRUE)
+    previous <- .basilisk_freeze(env.cmd)
     virtualenv_install(envname, packages, ignore_installed=FALSE)
-    updated <- system2(env.cmd, c("-m", "pip", "freeze"), stdout=TRUE)
+    updated <- .basilisk_freeze(env.cmd)
 
     if (any(!updated %in% c(previous, packages))) {
         added <- setdiff(updated, c(previous, packages))
@@ -137,6 +143,14 @@ setupVirtualEnv <- function(envname, packages, pkgpath=NULL) {
     }
 
     NULL
+}
+
+.basilisk_install <- function(packages, py.cmd=useBasilisk()) {
+    system2(py.cmd, c("-m", "pip", "install", packages))
+}
+
+.basilisk_freeze <- function(py.cmd) {
+    system2(py.cmd, c("-m", "pip", "freeze"), stdout=TRUE)
 }
 
 #' @export
