@@ -4,7 +4,7 @@
     if (dir.exists(dest_path)) {
         return(NULL)
     }
-    .minstaller(dest_path, testing=TRUE)
+    .minstaller(dest_path, testing=FALSE)
 }
 
 #' @importFrom utils download.file
