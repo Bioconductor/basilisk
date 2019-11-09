@@ -73,9 +73,15 @@ setupVirtualEnv <- function(envname, packages, pkgpath=NULL, overwrite=is.null(p
     # Unsetting this variable, otherwise it seems to override the python=
     # argument in virtualenv_create() (see LTLA/basilisk#1).
     old.retpy <- Sys.getenv("RETICULATE_PYTHON")
-    Sys.unsetenv("RETICULATE_PYTHON")
     if (old.retpy!="") {
-        on.exit(Sys.setenv(RETICULATE_PYTHON=old.retpy))
+        Sys.unsetenv("RETICULATE_PYTHON")
+        on.exit(Sys.setenv(RETICULATE_PYTHON=old.retpy), add=TRUE)
+    }
+
+    old.pypath <- Sys.getenv("PYTHONPATH")
+    if (old.pypath!="") {
+        Sys.unsetenv("PYTHONPATH")
+        on.exit(Sys.setenv(PYTHONPATH=old.pypath), add=TRUE)
     }
 
     # Use environment variable as this is for testing purposes only,
