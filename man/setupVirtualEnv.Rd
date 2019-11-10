@@ -56,6 +56,7 @@ which is again necessary to ensure that the same versions are deployed across sy
 
 The only exception to the above rule is for \dQuote{core} packages that are installed into the \pkg{basilisk} Python instance.
 If your requested packages depend on these core packages, \code{setupVirtualEnv} will automatically install them without requiring them to be listed with explicit version numbers in \code{packages}.
+You can also request a core package without specifying the version, which will automatically be pinned for you.
 A full list of core packages with pinned versions is provided at \code{\link{listCorePackages}}.
 
 The exception to the exception occurs when your requested packages are not compatible with the pinned versions of the core packages.
@@ -70,11 +71,16 @@ This is a deliberate choice to avoid compromising the version guarantees if \cod
 }
 
 \examples{
-setupVirtualEnv('my_package_A', c('pandas==0.25.1',
+setupVirtualEnv('my_package_A', c('pandas==0.25.3',
     "python-dateutil==2.8.1", "pytz==2019.3"))
 useVirtualEnv("my_package_A")
 X <- reticulate::import("pandas")
 X$`__version__`
+
+# No need to list versions of core packages, 
+# or to list them at all if they are dependencies.
+setupVirtualEnv('my_package_A_alt', 'pandas')
+
 }
 \seealso{
 \code{\link{basiliskStart}}, for how these virtual environments should be used.
