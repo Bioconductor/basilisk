@@ -22,6 +22,14 @@
 listCorePackages <- function() {
     pkgs <- readLines(system.file("core_list", package="basilisk"))
     names <- .full2pkg(pkgs)
+
+    # For testing purposes, we remove a few packages.
+    if (Sys.getenv("BASILISK_TEST_CORE", FALSE)) {
+        discard <- names %in% c("pandas", "python-dateutil", "pytz")
+        pkgs <- pkgs[!discard]
+        names <- names[!discard]
+    }
+
     data.frame(full=pkgs, name=names, stringsAsFactors=FALSE)
 }
 
