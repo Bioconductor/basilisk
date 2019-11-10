@@ -35,6 +35,7 @@
 #'
 #' The only exception to the above rule is for \dQuote{core} packages that are installed into the \pkg{basilisk} Python instance.
 #' If your requested packages depend on these core packages, \code{setupVirtualEnv} will automatically install them without requiring them to be listed with explicit version numbers in \code{packages}.
+#' You can also request a core package without specifying the version, which will automatically be pinned for you.
 #' A full list of core packages with pinned versions is provided at \code{\link{listCorePackages}}.
 #'
 #' The exception to the exception occurs when your requested packages are not compatible with the pinned versions of the core packages.
@@ -65,11 +66,29 @@ setupVirtualEnv <- function(envname, packages, pkgpath=NULL, overwrite=is.null(p
         return(NULL)
     }
 
+    core.data <- listCorePackages()
+    core.full <- core.data$full
+    core.names <- core.data$name
+
     versioned <- grepl("==", packages)
     if (!all(versioned)) {
-        stop("Python package versions must be explicitly specified")
+        unversioned <- packages[!versioned]
+        core.match <- match(unversioned, core.names)
+        if (!any(is.na(core.match))) {
+            # Core packages only need their name specified, 
+            # and we will automatically use the core version.
+            packages[!versioned] <- core.full[core.match]
+        } else {
+            stop(sprintf("version must be explicitly specified for '%s'", unversioned[is.na(core.match)][1]))
+        }
     }
 
+    pkg.names <- .full2pkg(packages)
+    if (dup <- anyDuplicated(pkg.names)) {
+        stop(sprintf("redundant listing of '%s'", pkg.names[dup]))
+    }
+
+    #############################
     # Unsetting this variable, otherwise it seems to override the python=
     # argument in virtualenv_create() (see LTLA/basilisk#1).
     old.retpy <- Sys.getenv("RETICULATE_PYTHON")
@@ -84,10 +103,11 @@ setupVirtualEnv <- function(envname, packages, pkgpath=NULL, overwrite=is.null(p
         on.exit(Sys.setenv(PYTHONPATH=old.pypath), add=TRUE)
     }
 
-    # Use environment variable as this is for testing purposes only,
-    # and should not be exposed to the user.
+    # Use environment variable for testing purposes only;
+    # this should not be exposed to the clients.
     py.cmd <- Sys.getenv("BASILISK_TEST_PYTHON", useBasilisk())
 
+    #############################
     # Creating a virtual environment in an appropriate location.
     if (!is.null(pkgpath)) {
         vdir <- file.path(pkgpath, "basilisk")
@@ -104,26 +124,26 @@ setupVirtualEnv <- function(envname, packages, pkgpath=NULL, overwrite=is.null(p
     virtualenv_create(envname, python=py.cmd)
     env.cmd <- file.path(target, "bin", "python3")
 
+    #############################
     # ROUND 1: Seeing what the incoming packages need.
     previous <- .basilisk_freeze(env.cmd)
     virtualenv_install(envname, packages, ignore_installed=FALSE)
     updated <- .basilisk_freeze(env.cmd)
 
     # If all newly added packages are accounted for, we finish up.
-    added <- setdiff(updated, c(previous, packages))
+    # We deliberately exclude any core packages in 'packages' so that they show
+    # up in 'added' and thus are candidates for reinstallation into the base basilisk instance.
+    added <- setdiff(updated, c(previous, packages[!packages %in% core.full]))
     if (length(added)==0L) {
         return(NULL)
     }
 
     virtualenv_remove(envname, confirm=FALSE) # Removing Round 1 to start from a fresh installation.
 
+    #############################
     # Figuring out if any of the newly downloaded packages are core packages.
     # If so, we install them to the base installation if we have access;
     # otherwise, we add it to our virtual environment.
-    core.data <- listCorePackages()
-    core.pkgs <- core.data$full
-    core.names <- core.data$name
-    
     added.names <- .full2pkg(added)
     if (any(unlisted.noncore <- !added.names %in% core.names)) {
         stop(sprintf("need to list dependency on '%s'", added[unlisted.noncore][1]))
@@ -131,13 +151,14 @@ setupVirtualEnv <- function(envname, packages, pkgpath=NULL, overwrite=is.null(p
     overlaps <- core.names %in% added.names 
 
     if (file.access(system.file(package="basilisk"), 2)==0L) {
-        .basilisk_install(core.pkgs[overlaps], py.cmd=py.cmd)
+        .basilisk_install(core.full[overlaps], py.cmd=py.cmd)
         virtualenv_create(envname, python=py.cmd) 
     } else {
         virtualenv_create(envname, python=py.cmd) 
-        virtualenv_install(envname, core.pkgs[overlaps], ignore_installed=FALSE)
+        virtualenv_install(envname, core.full[overlaps], ignore_installed=FALSE)
     }
 
+    #############################
     # ROUND 2: Trying again after lazy installation of the core packages.
     previous <- .basilisk_freeze(env.cmd)
     virtualenv_install(envname, packages, ignore_installed=FALSE)
