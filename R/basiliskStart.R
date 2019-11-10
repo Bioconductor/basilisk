@@ -77,7 +77,7 @@
 #' 
 #' @examples
 #' # Loading one virtual environment into our R session:
-#' setupVirtualEnv('my_package_A', c('pandas==0.25.1',
+#' setupVirtualEnv('my_package_A', c('pandas==0.25.3',
 #'     "python-dateutil==2.8.1", "pytz==2019.3"))
 #' useVirtualEnv("my_package_A")
 #' X <- reticulate::import("pandas")
