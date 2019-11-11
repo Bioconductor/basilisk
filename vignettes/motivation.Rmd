@@ -54,7 +54,7 @@ For example, if we wanted to install `r PyPiLink("scikit-learn")`, we would have
         # if we're requesting a package in the core list. However, version numbers
         # and dependencies are required for anything else.
         setupVirtualEnv("my_env", c("scikit-learn==0.21.1", "joblib==0.14.0"),
-            pkgpath=system.file(package=pkgname))
+            pkgname=pkgname)
     }
     ```
 
