@@ -1,5 +1,10 @@
 .onLoad <- function(libname, pkgname) {
     inst_path <- system.file(package=pkgname)
+    if (basename(inst_path)!=pkgname) {
+        # Hack to avoid installing into 'inst'
+        # when devtools::document() is run.
+        return(NULL)
+    }
     dest_path <- file.path(inst_path, "miniconda")
     if (dir.exists(dest_path)) {
         return(NULL)
