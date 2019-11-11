@@ -1,6 +1,7 @@
 #################################################################
 # Setting up the virtual environments.
 
+unlink("whee", recursive=TRUE)
 Sys.setenv(WORKON_HOME="whee")
 setupVirtualEnv('my_package_A', c('pandas==0.25.1',
     "python-dateutil==2.8.1", "pytz==2019.3"))
