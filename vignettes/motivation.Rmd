@@ -3,7 +3,7 @@ title: Freezing Python versions inside Bioconductor packages
 author: 
 - name: Aaron Lun
   email: infinite.monkeys.with.keyboards@gmail.com
-date: "Revised: 5 October 2019"
+date: "Revised: 10 November 2019"
 output:
   BiocStyle::html_document:
     toc_float: true
@@ -50,6 +50,9 @@ For example, if we wanted to install `r PyPiLink("scikit-learn")`, we would have
 
     ```r
     .onLoad <- function(libname, pkgname) {
+        # Technically, we don't need to list need dependencies or version numbers 
+        # if we're requesting a package in the core list. However, version numbers
+        # and dependencies are required for anything else.
         setupVirtualEnv("my_env", c("scikit-learn==0.21.1", "joblib==0.14.0"),
             pkgpath=system.file(package=pkgname))
     }
@@ -67,7 +70,7 @@ To use methods from this environment, the functions in our package will contain 
         proc <- basiliskStart("aarons_environment")
         on.exit(basiliskStop(proc))
 
-        some_useful_thing <- basiliskCall(proc, function(arg1, arg2) {
+        some_useful_thing <- basiliskRun(proc, function(arg1, arg2) {
             mod <- reticulate::import("some_python_package")
             mod$some_calculation(arg1, arg2)
         }, arg1=ARG_VALUE_1, arg2=ARG_VALUE_2)
