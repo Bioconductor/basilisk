@@ -17,7 +17,7 @@ basiliskRun(proc = NULL, fun, ..., envname, pkgname = NULL,
 \arguments{
 \item{envname}{String containing the name of the virtual environment to use.}
 
-\item{pkgname}{String specifying the package name, if the function is used inside an R package.}
+\item{pkgname}{String specifying the name of the R package that owns the virtual environment.}
 
 \item{fork}{Logical scalar indicating whether forking should be performed on non-Windows systems, see \code{\link{getBasiliskFork}}.
 If \code{FALSE}, a new worker process is created using communication over sockets.}
