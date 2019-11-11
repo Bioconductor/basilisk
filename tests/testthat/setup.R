@@ -51,12 +51,34 @@ persistence_check <- function(version, envir, ...) {
 # Defining helper functions to check new process creation.
 
 process_check <- function(version, envir, ...) {
+    # Check code copied from related functions. Do NOT put into a separate function,
+    # as otherwise r() will not find it in its new namespace.
+    library(basilisk)
+    library(testthat)
+    Sys.setenv(WORKON_HOME="whee")
+
+    proc <- basiliskStart(envir, global=FALSE, ...)
+    test.version <- basiliskRun(proc, fun=function() {
+        reticulate::import("pandas")$`__version__`
+    })
+    expect_identical(version, test.version)
+
+    expect_false(is.environment(proc))
+    expect_false(reticulate::py_available())
+
+    basiliskStop(proc)
+
+    TRUE
+}
+
+preloaded_check <- function(version, envir, ...) {
+    # Checking what happens when Python is already loaded.
     library(basilisk)
     library(testthat)
     useBasilisk()
     Sys.setenv(WORKON_HOME="whee")
 
-    proc <- basiliskStart(envir, global=FALSE)
+    proc <- basiliskStart(envir, ...)
     test.version <- basiliskRun(proc, fun=function() {
         reticulate::import("pandas")$`__version__`
     })
