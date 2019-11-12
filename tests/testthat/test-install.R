@@ -48,7 +48,7 @@ test_that("setupVirtualEnv overrides an incompatible core installation", {
     incoming <- basilisk:::.basilisk_freeze(test.py)
     expect_true(test.numpy %in% incoming)
 
-    env.py <- file.path(client.dir, 'thingo', 'bin', 'python3')
+    env.py <- basilisk:::.get_py_cmd(file.path(client.dir, "thingo"))
     incoming <- basilisk:::.basilisk_freeze(env.py)
     expect_true(old.numpy %in% incoming)
 })
