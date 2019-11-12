@@ -3,10 +3,15 @@
 
 unlink("whee", recursive=TRUE)
 Sys.setenv(WORKON_HOME="whee")
-setupVirtualEnv('my_package_A', c('pandas==0.25.1',
-    "python-dateutil==2.8.1", "pytz==2019.3"))
-setupVirtualEnv('my_package_B', c('pandas==0.24.1',
-    "python-dateutil==2.7.1", "pytz==2017.2"))
+Sys.setenv(BASILISK_TEST_CORE=TRUE) # for all tests, we pretend that pandas is NOT a core package.
+
+test.pandas <- "pandas==0.25.3"
+test.pandas.deps <- c("python-dateutil==2.8.1", "pytz==2019.3")
+setupVirtualEnv('my_package_A', c(test.pandas, test.pandas.deps))
+
+old.pandas <- "pandas==0.24.1"
+old.pandas.deps <- c("python-dateutil==2.7.1", "pytz==2017.2")
+setupVirtualEnv('my_package_B', c(old.pandas, old.pandas.deps))
 
 #################################################################
 # Defining a helper function to check for correct persistence.

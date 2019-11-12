@@ -5,6 +5,9 @@
 
 library(callr)
 
+new.version <- sub(".*==", "", test.pandas)
+old.version <- sub(".*==", "", old.pandas)
+
 ###########################################################
 
 test_that("basilisk directly loads Python when possible", {
@@ -36,40 +39,40 @@ test_that("basilisk directly loads Python when possible", {
         TRUE
     }
 
-    expect_true(r(FUN, args=list(version="0.25.1", envir="my_package_A")))
-    expect_true(r(FUN, args=list(version="0.24.1", envir="my_package_B")))
+    expect_true(r(FUN, args=list(version=new.version, envir="my_package_A")))
+    expect_true(r(FUN, args=list(version=old.version, envir="my_package_B")))
 
     # Respects persistence.
-    expect_true(r(persistence_check, args=list(version="0.25.1", envir="my_package_A")))
-    expect_true(r(persistence_check, args=list(version="0.24.1", envir="my_package_B")))
+    expect_true(r(persistence_check, args=list(version=new.version, envir="my_package_A")))
+    expect_true(r(persistence_check, args=list(version=old.version, envir="my_package_B")))
 })
 
 ###########################################################
 
 test_that("basilisk forks when possible", { # ... though on windows, this just uses sockets.
-    expect_true(r(process_check, args=list(version="0.25.1", envir="my_package_A")))
-    expect_true(r(process_check, args=list(version="0.24.1", envir="my_package_B")))
+    expect_true(r(process_check, args=list(version=new.version, envir="my_package_A")))
+    expect_true(r(process_check, args=list(version=old.version, envir="my_package_B")))
 
     # Forcing basilisk to fork by loading another version of Python in advance.
-    expect_true(r(preloaded_check, args=list(version="0.25.1", envir="my_package_A")))
-    expect_true(r(preloaded_check, args=list(version="0.24.1", envir="my_package_B")))
+    expect_true(r(preloaded_check, args=list(version=new.version, envir="my_package_A")))
+    expect_true(r(preloaded_check, args=list(version=old.version, envir="my_package_B")))
 
     # Respects persistence.
-    expect_true(r(persistence_check, args=list(version="0.25.1", envir="my_package_A", global=FALSE)))
-    expect_true(r(persistence_check, args=list(version="0.24.1", envir="my_package_B", global=FALSE)))
+    expect_true(r(persistence_check, args=list(version=new.version, envir="my_package_A", global=FALSE)))
+    expect_true(r(persistence_check, args=list(version=old.version, envir="my_package_B", global=FALSE)))
 })
 
 ###########################################################
 
 test_that("basilisk uses sockets as a fallback", {
-    expect_true(r(process_check, args=list(version="0.25.1", envir="my_package_A", fork=FALSE)))
-    expect_true(r(process_check, args=list(version="0.24.1", envir="my_package_B", fork=FALSE)))
+    expect_true(r(process_check, args=list(version=new.version, envir="my_package_A", fork=FALSE)))
+    expect_true(r(process_check, args=list(version=old.version, envir="my_package_B", fork=FALSE)))
 
     # Forcing basilisk to use sockets by loading another version of Python in advance.
-    expect_true(r(preloaded_check, args=list(version="0.25.1", envir="my_package_A", fork=FALSE)))
-    expect_true(r(preloaded_check, args=list(version="0.24.1", envir="my_package_B", fork=FALSE)))
+    expect_true(r(preloaded_check, args=list(version=new.version, envir="my_package_A", fork=FALSE)))
+    expect_true(r(preloaded_check, args=list(version=old.version, envir="my_package_B", fork=FALSE)))
 
     # Respects persistence.
-    expect_true(r(persistence_check, args=list(version="0.25.1", envir="my_package_A", global=FALSE, fork=FALSE)))
-    expect_true(r(persistence_check, args=list(version="0.24.1", envir="my_package_B", global=FALSE, fork=FALSE)))
+    expect_true(r(persistence_check, args=list(version=new.version, envir="my_package_A", global=FALSE, fork=FALSE)))
+    expect_true(r(persistence_check, args=list(version=old.version, envir="my_package_B", global=FALSE, fork=FALSE)))
 })
