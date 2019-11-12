@@ -1,9 +1,13 @@
 # This updates the core list to use the latest versions of all dependencies.
+# It requires us to define a target date to which we pin all versions.
+date <- "2019-11-08"
+
+###################
+# Querying PyPi versions and finding the latest final release
+# that matches up with the specified date.
+
 library(basilisk)
 pkg <- sub("==.*", "", readLines("core_list"))
-
-# The target date.
-date <- "2019-11-08"
 
 # Collecting all the latest versions.
 library(httr)
@@ -40,9 +44,3 @@ for (module in pkg) {
 }
 
 write(sort(collated), file="replacement_core")
-
-# Conflicts can be checked by reinstalling basilisk and running:
-#
-# library(basilisk)
-# setupVirtualEnv('whee', c(listCorePackages()$full, "pipdeptree==0.13.2"), pkgpath="stuff")
-# system2('stuff/basilisk/whee/bin/python3', c('-m', 'pipdeptree'))
