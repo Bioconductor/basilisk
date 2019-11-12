@@ -132,8 +132,14 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
     if (file.exists(target)) {
         unlink(target, recursive=TRUE)
     }
+
     virtualenv_create(envname, python=py.cmd)
-    env.cmd <- file.path(target, "bin", "python3")
+    env.cmd <- .get_py_cmd(target)
+
+    # Code only reaches this point if we're creating the common basilisk environment.
+    if (length(packages)==0L) {
+        return(invisible(NULL))
+    }
 
     #############################
     # ROUND 1: Seeing what the incoming packages need.
@@ -141,12 +147,17 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
     virtualenv_install(envname, packages, ignore_installed=FALSE)
     updated <- .basilisk_freeze(env.cmd)
 
+    # Identifying the implicitly added packages. We deliberately exclude any
+    # core packages in 'packages' so that they show up in 'implicit.added' and
+    # thus are candidates for reinstallation into the base basilisk instance.
+    in.core <- packages %in% core.full
+    implicit.added <- setdiff(updated, c(previous, packages[!in.core]))
+
     # If all newly added packages are accounted for, we finish up.
-    # We deliberately exclude any core packages in 'packages' so that they show
-    # up in 'added' and thus are candidates for reinstallation into the base basilisk instance.
-    added <- setdiff(updated, c(previous, packages[!packages %in% core.full]))
-    if (length(added)==0L) {
-        return(NULL)
+    # The exception is if all requested packages are in the core list, in which case
+    # we want to continue to see if we can use the common basilisk environment.
+    if (length(implicit.added)==0L && !all(in.core)) {
+        return(invisible(NULL))
     }
 
     virtualenv_remove(envname, confirm=FALSE) # Removing Round 1 to start from a fresh installation.
@@ -155,22 +166,28 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
     # Figuring out if any of the newly downloaded packages are core packages.
     # If so, we install them to the base installation if we have access;
     # otherwise, we add it to our virtual environment.
-    added.names <- .full2pkg(added)
+    added.names <- .full2pkg(implicit.added)
     if (any(unlisted.noncore <- !added.names %in% core.names)) {
-        stop(sprintf("need to list dependency on '%s'", added[unlisted.noncore][1]))
+        stop(sprintf("need to list dependency on '%s'", implicit.added[unlisted.noncore][1]))
     }
-    overlaps <- core.names %in% added.names 
 
-    if (file.access(system.file(package="basilisk"), 2)==0L) {
-        .basilisk_install(core.full[overlaps], py.cmd=py.cmd)
-        virtualenv_create(envname, python=py.cmd) 
+    overlaps <- core.names %in% added.names 
+    if (any(overlaps)) {
+        to.install <- core.full[overlaps]
+        if (file.access(system.file(package="basilisk"), 2)==0L) {
+            .basilisk_install(to.install, py.cmd=py.cmd)
+            virtualenv_create(envname, python=py.cmd) 
+        } else {
+            virtualenv_create(envname, python=py.cmd) 
+            virtualenv_install(envname, to.install, ignore_installed=FALSE)
+        }
     } else {
         virtualenv_create(envname, python=py.cmd) 
-        virtualenv_install(envname, core.full[overlaps], ignore_installed=FALSE)
     }
 
     #############################
-    # ROUND 2: Trying again after lazy installation of the core packages.
+    # ROUND 2: Trying again after lazy installation of the core packages,
+    # to see if the dependencies are now satisfied.
     previous <- .basilisk_freeze(env.cmd)
     virtualenv_install(envname, packages, ignore_installed=FALSE)
     updated <- .basilisk_freeze(env.cmd)
@@ -178,10 +195,17 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
     if (any(!updated %in% c(previous, packages))) {
         added <- setdiff(updated, c(previous, packages))
         stop(sprintf("need to list dependency on '%s'", added[1]))
+    } else if (identical(previous, updated)) {
+        # If everything is perfectly satisfied by the core installation, we
+        # remove the venv and make a symlink. 
+        virtualenv_remove(envname, confirm=FALSE) 
+        file.symlink(.get_common_env(), target)
     }
 
     invisible(NULL)
 }
+
+#########################################
 
 .basilisk_install <- function(packages, py.cmd=useBasilisk()) {
     system2(py.cmd, c("-m", "pip", "install", packages))
@@ -190,6 +214,8 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
 .basilisk_freeze <- function(py.cmd) {
     system2(py.cmd, c("-m", "pip", "freeze"), stdout=TRUE)
 }
+
+#########################################
 
 #' @export
 #' @rdname setupVirtualEnv
@@ -204,11 +230,15 @@ useVirtualEnv <- function(envname, pkgname=NULL, dry=FALSE, required=TRUE) {
     }
 
     if (!is.null(pkgname)) {
-        vdir <- system.file("basilisk", package=pkgname, mustWork=TRUE)
+        vdir <- .get_env_root(pkgname)
     } else {
-        vdir <- normalizePath(virtualenv_root())
+        vdir <- virtualenv_root()
     }
+
+    # Resolve soft-links to encourage use of the soft-linked common environment.
+    # Thus, it is very important that normalizePath() is run *after* file.path()!
     vdir <- file.path(vdir, envname)
+    vdir <- normalizePath(vdir)
 
     if (!dry) {
         # Don't even try to be nice and add an on.exit() clause to protect the

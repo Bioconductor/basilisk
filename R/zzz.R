@@ -5,11 +5,17 @@
         # when devtools::document() is run.
         return(NULL)
     }
+
     dest_path <- file.path(inst_path, "miniconda")
     if (dir.exists(dest_path)) {
+        # No-op if it is already installed.
         return(NULL)
     }
-    .minstaller(dest_path, testing=FALSE)
+
+    .minstaller(dest_path, testing=TRUE)
+
+    # Create a common virtual environment.
+    setupVirtualEnv(.common_env, character(0), pkgname="basilisk")
 }
 
 #' @importFrom utils download.file
