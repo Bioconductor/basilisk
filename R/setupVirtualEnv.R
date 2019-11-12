@@ -159,12 +159,13 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
     if (any(overlaps <- core.names %in% added.names)) {
         to.install <- core.names[overlaps]
 
-        # Pulling down DEPENDENCIES as well, to make sure those don't slip through the net.
+        # Adding dependencies as well, to make sure those don't slip through the net
+        # if the latest version of a core dependency has different dependencies altogether
+        # compared to a pinned version of the dependency.
         stuff <- read.delim(system.file("core_deps", package="basilisk"), header=FALSE)
         to.install <- c(to.install, stuff[stuff[,1] %in% to.install,2])
-
         to.install <- unique(to.install)
-        to.install <- core.full[core.pkgs %in% to.install]
+        to.install <- core.full[core.names %in% to.install]
 
         if (file.access(system.file(package="basilisk"), 2)==0L) {
             .basilisk_install(to.install, py.cmd=py.cmd)
