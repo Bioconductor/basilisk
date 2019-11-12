@@ -12,7 +12,7 @@
         return(NULL)
     }
 
-    .minstaller(dest_path, testing=TRUE)
+    .minstaller(dest_path, testing=FALSE)
 
     # Create a common virtual environment.
     setupVirtualEnv(.common_env, character(0), pkgname="basilisk")
