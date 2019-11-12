@@ -74,13 +74,24 @@ core.pkgs0 <- sub("_", "-", core.pkgs0)
 keep <- collated0[,1] %in% core.pkgs0 & collated0[,2] %in% core.pkgs0
 collated0 <- collated0[keep,]
 
+# Creating a graph to get all children.
+library(igraph)
+g <- make_graph(t(collated0))
+expanded <- list()
+for (curpkg in names(V(g))) {
+    children <- names(subcomponent(g, curpkg, mode="out"))
+    children <- setdiff(children, curpkg)
+    if (length(children)) {
+        expanded[[curpkg]] <- cbind(curpkg, children)
+    }
+}
+expanded <- do.call(rbind, expanded)
+
 # Restoring the package names.
-m <- match(collated0, core.pkgs0)
+m <- match(expanded, core.pkgs0)
 stopifnot(all(!is.na(m)))
-
-final <- collated0
+final <- expanded
 final[] <- core.pkgs[m]
-
 write(t(final), sep="\t", "replacement_deps", ncolumns=2)
 ```
 
