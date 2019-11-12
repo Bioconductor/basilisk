@@ -135,9 +135,10 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
     #############################
     # ROUND 1: Seeing what the incoming packages need. We rely on pip to tell us the
     # identity of the dependencies for the requested version of each package. It also 
-    # smoothly 'extras', which would require manual parsing if we did a GET to PyPi
-    # to determine the dependencies. We will overwrite this installation later, but
-    # the downloads are cached, so the time cost is not too bad.
+    # smoothly handles 'extras' and 'python_version', which would require manual parsing 
+    # if we did a GET to PyPi to determine the dependencies. (And the GET itself would
+    # require a dependency on httr, which is undesirable for faster loads.) We will 
+    # delete this installation, but the downloads are cached, so little time is wasted.
 
     previous <- .basilisk_freeze(env.cmd)
     virtualenv_install(envname, packages, ignore_installed=FALSE)
@@ -156,7 +157,15 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
     added.names <- .full2pkg(implicit.added)
     clean.venv <- TRUE 
     if (any(overlaps <- core.names %in% added.names)) {
-        to.install <- core.full[overlaps]
+        to.install <- core.names[overlaps]
+
+        # Pulling down DEPENDENCIES as well, to make sure those don't slip through the net.
+        stuff <- read.delim(system.file("core_deps", package="basilisk"), header=FALSE)
+        to.install <- c(to.install, stuff[stuff[,1] %in% to.install,2])
+
+        to.install <- unique(to.install)
+        to.install <- core.full[core.pkgs %in% to.install]
+
         if (file.access(system.file(package="basilisk"), 2)==0L) {
             .basilisk_install(to.install, py.cmd=py.cmd)
             virtualenv_create(envname, python=py.cmd) 
