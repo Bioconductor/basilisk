@@ -89,6 +89,7 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
     }
 
     #############################
+
     # Unsetting this variable, otherwise it seems to override the python=
     # argument in virtualenv_create() (see LTLA/basilisk#1).
     old.retpy <- Sys.getenv("RETICULATE_PYTHON")
@@ -108,6 +109,7 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
     py.cmd <- Sys.getenv("BASILISK_TEST_PYTHON", useBasilisk())
 
     #############################
+
     # Creating a virtual environment in an appropriate location.
     if (!is.null(pkgname)) {
         vdir <- file.path(instdir, "basilisk")
@@ -131,23 +133,18 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
     }
 
     #############################
-    # ROUND 1: Seeing what the incoming packages need.
+    # ROUND 1: Seeing what the incoming packages need. We rely on pip to tell us the
+    # identity of the dependencies for the requested version of each package. It also 
+    # smoothly 'extras', which would require manual parsing if we did a GET to PyPi
+    # to determine the dependencies. We will overwrite this installation later, but
+    # the downloads are cached, so the time cost is not too bad.
+
     previous <- .basilisk_freeze(env.cmd)
     virtualenv_install(envname, packages, ignore_installed=FALSE)
     updated <- .basilisk_freeze(env.cmd)
 
-    # Identifying the implicitly added packages. We deliberately exclude any
-    # core packages in 'packages' so that they show up in 'implicit.added' and
-    # thus are candidates for reinstallation into the base basilisk instance.
-    in.core <- packages %in% core.full
-    implicit.added <- setdiff(updated, c(previous, packages[!in.core]))
-
-    # If all newly added packages are accounted for, we finish up.
-    # The exception is if all requested packages are in the core list, in which case
-    # we want to continue to see if we can use the common basilisk environment.
-    if (length(implicit.added)==0L && !all(in.core)) {
-        return(invisible(NULL))
-    }
+    # Identifying the implicitly added packages. 
+    implicit.added <- setdiff(updated, previous)
 
     virtualenv_remove(envname, confirm=FALSE) # Removing Round 1 to start from a fresh installation.
 
@@ -155,13 +152,10 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
     # Figuring out if any of the newly downloaded packages are core packages.
     # If so, we install them to the base installation if we have access;
     # otherwise, we add it to our virtual environment.
-    added.names <- .full2pkg(implicit.added)
-    if (any(unlisted.noncore <- !added.names %in% core.names)) {
-        stop(sprintf("need to list dependency on '%s'", implicit.added[unlisted.noncore][1]))
-    }
 
-    overlaps <- core.names %in% added.names 
-    if (any(overlaps)) {
+    added.names <- .full2pkg(implicit.added)
+    clean.venv <- TRUE 
+    if (any(overlaps <- core.names %in% added.names)) {
         to.install <- core.full[overlaps]
         if (file.access(system.file(package="basilisk"), 2)==0L) {
             .basilisk_install(to.install, py.cmd=py.cmd)
@@ -169,6 +163,7 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
         } else {
             virtualenv_create(envname, python=py.cmd) 
             virtualenv_install(envname, to.install, ignore_installed=FALSE)
+            clean.venv <- FALSE
         }
     } else {
         virtualenv_create(envname, python=py.cmd) 
@@ -176,7 +171,10 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
 
     #############################
     # ROUND 2: Trying again after lazy installation of the core packages,
-    # to see if the dependencies are now satisfied.
+    # to see if the dependencies are now satisfied. We rely on pip again
+    # to tell us (empirically) whether the dependencies are satisfied or 
+    # if an upgrade is necessary.
+
     previous <- .basilisk_freeze(env.cmd)
     virtualenv_install(envname, packages, ignore_installed=FALSE)
     updated <- .basilisk_freeze(env.cmd)
@@ -184,7 +182,7 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
     if (any(!updated %in% c(previous, packages))) {
         added <- setdiff(updated, c(previous, packages))
         stop(sprintf("need to list dependency on '%s'", added[1]))
-    } else if (identical(previous, updated)) {
+    } else if (identical(previous, updated) && clean.venv) {
         # If everything is perfectly satisfied by the core installation, we
         # remove the venv and make a symlink. 
         virtualenv_remove(envname, confirm=FALSE) 
