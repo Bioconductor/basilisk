@@ -6,13 +6,24 @@
 \alias{basiliskRun}
 \title{Start and stop \pkg{basilisk}-related processes}
 \usage{
-basiliskStart(envname, pkgname = NULL, fork = getBasiliskFork(),
-  global = getBasiliskGlobal())
+basiliskStart(
+  envname,
+  pkgname = NULL,
+  fork = getBasiliskFork(),
+  global = getBasiliskGlobal()
+)
 
 basiliskStop(proc)
 
-basiliskRun(proc = NULL, fun, ..., envname, pkgname = NULL,
-  fork = getBasiliskFork(), global = getBasiliskGlobal())
+basiliskRun(
+  proc = NULL,
+  fun,
+  ...,
+  envname,
+  pkgname = NULL,
+  fork = getBasiliskFork(),
+  global = getBasiliskGlobal()
+)
 }
 \arguments{
 \item{envname}{String containing the name of the virtual environment to use.}
