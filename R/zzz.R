@@ -21,7 +21,7 @@
 .minstaller <- function(dest_path, testing=FALSE) {
     # Stripped from https://github.com/hafen/rminiconda
     # To be replaced if rminiconda gets into CRAN, or if reticulate offers its own solution.
-    version <- "4.7.10"
+    version <- "4.7.12"
     base_url <- "https://repo.anaconda.com/miniconda/"
     os <- .detect_os()
 

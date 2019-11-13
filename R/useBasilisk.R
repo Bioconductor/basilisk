@@ -10,7 +10,7 @@
 #'
 #' @details
 #' This uses \code{\link{use_python}} to register a consistent Python version that is isolated from the system installation.
-#' The \pkg{basilisk}-owned Python is installed using miniconda 4.7.10 (\url{https://docs.conda.io/en/latest/miniconda.html}),
+#' The \pkg{basilisk}-owned Python is installed using miniconda 4.7.12 (\url{https://docs.conda.io/en/latest/miniconda.html}),
 #' with additional packages being lazily installed to eventually reach a full Anaconda installation.
 #'
 #' Developers should generally not use this function for anything other than testing.
