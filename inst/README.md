@@ -7,13 +7,17 @@ Unfortunately, they don't seem to provide an easy way to actually get the list i
 dir.create("core_lists", showWarnings=FALSE)
 base.url <- "https://docs.anaconda.com/anaconda/packages"
 
-all.os <- c(linux="py3.7_linux-64", macos="py3.7_osx-64",
-    win32="py3.7_win-32", win64="py3.7_win-64")
+all.os <- c(
+    linux ="py3.7_linux-64", 
+    macosx="py3.7_osx-64",
+    win32 ="py3.7_win-32", 
+    win64 ="py3.7_win-64"
+)
 all.xpath <- c(
-    linux="packages-for-64-bit-linux-with-python-3-7",
-    macos="packages-for-macos-with-python-3-7",
-    win32="packages-for-32-bit-windows-with-python-3-7",
-    win64="packages-for-64-bit-windows-with-python-3-7"
+    linux ="packages-for-64-bit-linux-with-python-3-7",
+    macosx="packages-for-macos-with-python-3-7",
+    win32 ="packages-for-32-bit-windows-with-python-3-7",
+    win64 ="packages-for-64-bit-windows-with-python-3-7"
 )
 
 library(rvest)
