@@ -24,7 +24,7 @@ If \code{dry=TRUE}, the character vector is returned without loading the virtual
 Set up and use Python virtual environments for isolated execution of Python code with appropriate versions of all Python packages.
 }
 \details{
-It is unlikely that developers should never call \code{\link{useVirtualEnv}} directly.
+It is unlikely that developers should ever need to call \code{\link{useVirtualEnv}} directly.
 Rather, this interaction should be automatically handled by \code{\link{basiliskStart}}.
 
 If \code{pkgname} is specified, \code{useVirtualEnv} will search in the installation directory of \code{pkgname} for \code{basilisk/envname}

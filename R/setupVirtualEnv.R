@@ -20,7 +20,7 @@
 #' This will create the virtual environment and install the relevant Python packages upon R package installation.
 #' The \pkg{son.of.basilisk} example in the \code{inst} directory of \pkg{basilisk} can be used as an example.
 #'
-#' If all of the requested packages fall into the core list of packages (see \code{?\link{listCorePackages}}),
+#' If all of the requested packages fall into the \dQuote{core} list of packages (see \code{?\link{listCorePackages}}),
 #' a link is created to a common virtual environment in the \pkg{basilisk} installation directory.
 #' This enables multiple client packages to use the same virtual environment for greater efficiency with \code{\link{basiliskStart}}.
 #' 

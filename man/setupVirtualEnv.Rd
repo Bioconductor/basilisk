@@ -30,8 +30,12 @@ Developers of Bioconductor packages should call \code{setupVirtualEnv} with an a
 This will create the virtual environment and install the relevant Python packages upon R package installation.
 The \pkg{son.of.basilisk} example in the \code{inst} directory of \pkg{basilisk} can be used as an example.
 
-If \code{pkgname} is specified and the virtual environment is already present, \code{setupVirtualEnv} is a no-op.
-This ensures that the function only installs once at the first load during R package installation.
+If all of the requested packages fall into the \dQuote{core} list of packages (see \code{?\link{listCorePackages}}),
+a link is created to a common virtual environment in the \pkg{basilisk} installation directory.
+This enables multiple client packages to use the same virtual environment for greater efficiency with \code{\link{basiliskStart}}.
+
+If \code{pkgname} is specified and the virtual environment is already present with all requested packages, \code{setupVirtualEnv} is a no-op.
+This ensures that the function only installs the packages once at the first load during R package installation.
 }
 \section{Dealing with versioning}{
  
@@ -47,6 +51,20 @@ A full list of core packages with pinned versions is provided at \code{\link{lis
 
 The exception to the exception occurs when your requested packages are not compatible with the pinned versions of the core packages.
 In such cases, the compatible versions of the core packages must again be explicitly listed in \code{packages}.
+}
+
+\section{Handling permissions}{
+
+In the ideal case, the process that runs \code{setupVirtualEnv} also has permissions to modify the \pkg{basilisk} installation directory.
+In such cases, requested Python packages in the core list are lazily installed into the \pkg{basilisk} directory for global use.
+Otherwise, the process will install those core packages into the virtual environment, 
+which increases the size of the installation directory and sacrifices some efficiency due to the inability to use a common environment.
+
+Related to this is the behavior of \code{setupVirtualEnv} if it detects that the requested virtual environment is present but lacks the requested packages.
+If the process has permissions to modify the virtual environment, it will attempt to do so to meet the request.
+Otherwise, an error is raised about the invalidity of the virtual environment.
+In the context of a client package, this outcome can arise if \pkg{basilisk} is reinstalled, the client package is not,
+and the user does not have permissions to modify the latter; the solution is to simply reinstall the client.
 }
 
 \examples{
