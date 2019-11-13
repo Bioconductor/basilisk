@@ -1,97 +1,29 @@
-# Regenerating the core lists
+# Generating the core lists
 
-Running `generate_core_list.R` will update the core list so that it uses the latest version of all packages (given a date to pin those packages).
-This generates a `replacement_core` file that, if satisfactory, should be used to overwrite `core_list`.
-However, it requires some care to resolve conflicting dependencies (especially for **tensorflow**!), which we check using `pipdeptree` as shown below.
+The list of core packages in `core_list` is based on the package lists at https://docs.anaconda.com/anaconda/packages/pkg-docs/.
+Unfortunately, they don't seem to provide an easy way to actually get the list in this table, so I've just scraped it off the HTML.
 
-```r
-library(basilisk)
-dir.create("delete_me")
+```{r}
+dir.create("core_lists", showWarnings=FALSE)
+base.url <- "https://docs.anaconda.com/anaconda/packages"
 
-# Code ripped more or less out of tests/testthat/test-install.R.
-client.dir <- "delete_me/basilisk"
-dir.create(client.dir)
-Sys.setenv(WORKON_HOME=client.dir)
+all.os <- c(linux="py3.7_linux-64", macos="py3.7_osx-64",
+    win32="py3.7_win-32", win64="py3.7_win-64")
+all.xpath <- c(
+    linux="packages-for-64-bit-linux-with-python-3-7",
+    macos="packages-for-macos-with-python-3-7",
+    win32="packages-for-32-bit-windows-with-python-3-7",
+    win64="packages-for-64-bit-windows-with-python-3-7"
+)
 
-# Setting up a fresh miniconda install for testing.
-basilisk.dir <- "delete_me/miniconda"
-basilisk:::.minstaller(basilisk.dir)
+library(rvest)
+for (os in names(all.os)) {
+    HTML <- read_html(file.path(base.url, all.os[os]))
+    curxpath <- sprintf('//*[@id="%s"]/table', all.xpath[os])
+    curnode <- html_nodes(HTML, xpath=curxpath)
+    tab <- html_table(curnode)[[1]]
 
-test.py <- basilisk:::.get_py_cmd(basilisk.dir)
-Sys.setenv(BASILISK_TEST_PYTHON=test.py)
-
-Sys.setenv(BASILISK_TEST_COMMON=normalizePath(client.dir)) 
-reticulate::virtualenv_create(basilisk:::.common_env, python=test.py)
-
-# Checking what we have before install.
-previous <- basilisk:::.basilisk_freeze(test.py)
-
-# Installing ALL of the core packages to see if they place nice with each other.
-fullset <- readLines("core_list") 
-setupVirtualEnv('tester', c(fullset, "pipdeptree==0.13.2"))
-
-env.py <- basilisk:::.get_py_cmd(file.path(client.dir, "tester"))
-system2(env.py, c('-m', 'pipdeptree'))
-
-# Checking what we have after install... there should be nothing here 
-# if all dependencies of core packages are listed in 'core_list'.
-updated <- basilisk:::.basilisk_freeze(test.py)
-setdiff(updated, c(previous, fullset))
-```
-
-Once we are happy with this, we can deparse the tree to record the dependencies.
-
-```r
-client.dir <- "delete_me/basilisk"
-env.py <- basilisk:::.get_py_cmd(file.path(client.dir, "tester"))
-out <- system2(env.py, c('-m', 'pipdeptree', '--json'), stdout=TRUE)
-
-library(jsonlite)
-deps <- fromJSON(txt=out, simplifyVector=FALSE)
-
-collated <- list()
-for (i in seq_along(deps)) {
-    current <- deps[[i]]
-    curdeps <- vapply(current$dependencies, function(y) y$package_name, "")
-    if (length(curdeps)) {
-        collated[[i]] <- cbind(current$package$package_name, curdeps)
-    }
+    tab <- tab[!grepl("^_", tab[,1]),]
+    write(paste0(tab[,1], "==", tab[,2]), file=file.path("core_lists", os))
 }
-
-collated <- do.call(rbind, collated)
-fullset <- readLines("core_list") 
-core.pkgs <- basilisk:::.full2pkg(fullset)
-
-# Some effort required to deal with the fact that dependencies are 
-# allowed to have variable names.
-collated0 <- tolower(collated)
-collated0[] <- sub("_", "-", collated0)
-core.pkgs0 <- tolower(core.pkgs)
-core.pkgs0 <- sub("_", "-", core.pkgs0)
-
-# Ignore packages that got installed with miniconda, assuming that
-# all other dependencies are listed in 'core_list' (see above).
-keep <- collated0[,1] %in% core.pkgs0 & collated0[,2] %in% core.pkgs0
-collated0 <- collated0[keep,]
-
-# Creating a graph to get all children.
-library(igraph)
-g <- make_graph(t(collated0))
-expanded <- list()
-for (curpkg in names(V(g))) {
-    children <- names(subcomponent(g, curpkg, mode="out"))
-    children <- setdiff(children, curpkg)
-    if (length(children)) {
-        expanded[[curpkg]] <- cbind(curpkg, children)
-    }
-}
-expanded <- do.call(rbind, expanded)
-
-# Restoring the package names.
-m <- match(expanded, core.pkgs0)
-stopifnot(all(!is.na(m)))
-final <- expanded
-final[] <- core.pkgs[m]
-write(t(final), sep="\t", "replacement_deps", ncolumns=2)
 ```
-
