@@ -62,6 +62,7 @@
 }
 
 #' @importFrom utils download.file
+#' @importFrom methods is
 .expedient_download <- function(url) {
     fname <- try({
         bfc <- BiocFileCache::BiocFileCache(ask=FALSE)
