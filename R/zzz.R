@@ -18,7 +18,6 @@
     setupVirtualEnv(.common_env, character(0), pkgname="basilisk")
 }
 
-#' @importFrom utils download.file
 .minstaller <- function(dest_path, testing=FALSE) {
     # Stripped from https://github.com/hafen/rminiconda
     # To be replaced if rminiconda gets into CRAN, or if reticulate offers its own solution.

@@ -52,8 +52,8 @@
 #' \code{\link{listCorePackages}}, for a list of core Python packages with pinned versions.
 #'
 #' @export
-#' @importFrom reticulate virtualenv_create virtualenv_install virtualenv_remove
-#' virtualenv_root
+#' @importFrom reticulate virtualenv_create virtualenv_install virtualenv_remove virtualenv_root
+#' @importFrom utils read.delim
 setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
     if (!is.null(pkgname)) {
         instdir <- system.file(package=pkgname)

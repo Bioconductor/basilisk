@@ -6,7 +6,8 @@ Authors@R: c(person("Aaron", "Lun", role=c("aut", "cre", "cph"),
         email="infinite.monkeys.with.keyboards@gmail.com"))
 Imports: 
     reticulate,
-    parallel
+    parallel,
+    utils
 Suggests:
     knitr,
     rmarkdown,
