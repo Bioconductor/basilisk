@@ -55,14 +55,11 @@
 #' @importFrom reticulate virtualenv_create virtualenv_install virtualenv_remove virtualenv_root
 #' @importFrom utils read.delim
 setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
+    # This clause solely exists to avoid weirdness due to devtools::document().
     if (!is.null(pkgname)) {
         instdir <- system.file(package=pkgname)
         if (basename(instdir)!=pkgname) {
-            # Avoid weirdness due to devtools::document().
-            return(NULL)
-        }
-        if (file.exists(file.path(instdir, .env_dir, envname))) {
-            return(NULL)
+            return(invisble(NULL))
         }
     }
 
@@ -106,7 +103,7 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
 
     # Use environment variable for testing purposes only;
     # this should not be exposed to the clients.
-    py.cmd <- Sys.getenv("BASILISK_TEST_PYTHON", useBasilisk())
+    py.cmd <- Sys.getenv("BASILISK_TEST_PYTHON", .get_basilisk_py())
 
     #############################
 
@@ -120,12 +117,17 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
     }
 
     target <- file.path(path.expand(virtualenv_root()), envname)
+    env.cmd <- .get_py_cmd(target)
+
+    # Effective no-op if virtualenv exists and has all the packages we requested.
     if (file.exists(target)) {
+        if (all(packages %in% .basilisk_freeze(env.cmd))) {
+            return(invisible(NULL))
+        }
         unlink(target, recursive=TRUE)
     }
 
     virtualenv_create(envname, python=py.cmd)
-    env.cmd <- .get_py_cmd(target)
 
     # Code only reaches this point if we're creating the common basilisk environment.
     if (length(packages)==0L) {
