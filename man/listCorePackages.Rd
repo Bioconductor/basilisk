@@ -17,9 +17,9 @@ Core Python packages are lazily installed into the \pkg{basilisk} Python instanc
 These are usually infrastructure packages that are required by many other Python packages,
 so maintaining a core installation avoids redundancy and reduces the installation footprint.
 
-Please contact the \pkg{basilisk} maintainers if you feel that a Python package should be added or an existing version bumped.
-This requires that (i) multiple Bioconductor packages depend on the proposed Python package and
-(ii) the proposed package does not have any version conflicts with other core packages.
+Identities and versions of the core packages are scraped from the Anaconda package lists for Python 3.7 (\url{https://docs.anaconda.com/anaconda/packages/pkg-docs/}).
+Note that there are subtle differences between the package lists for different operating systems;
+developers of clients of \pkg{basilisk} should avoid such OS-specific core packages.
 }
 \examples{
 listCorePackages()

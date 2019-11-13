@@ -11,16 +11,27 @@ A string containing the path to the \pkg{basilisk} Python executable, invisibly.
 }
 \description{
 Use \pkg{reticulate} to set up the Bioconductor-owned instance of Python provided by \pkg{basilisk}.
+This function is primarily intended for developer intended for use within other Bioconductor packages.
 }
 \details{
-This function is intended for use within other Bioconductor packages.
-It uses \code{\link{use_python}} to register a consistent Python version that is isolated from the system installation.
+This uses \code{\link{use_python}} to register a consistent Python version that is isolated from the system installation.
+The \pkg{basilisk}-owned Python is installed using miniconda 4.7.10 (\url{https://docs.conda.io/en/latest/miniconda.html}),
+with additional packages being lazily installed to eventually reach a full Anaconda installation.
+
+Developers should generally not use this function for anything other than testing.
+Clients of \pkg{basilisk} should interact with its Python instance via \code{\link{basiliskRun}} and related functions,
+while installation of additional packages should be performed via \code{\link{setupVirtualEnv}}.
 }
 \examples{
 useBasilisk()
 os <- reticulate::import("os")
 os$listdir()
 
+}
+\seealso{
+\code{\link{basiliskRun}}, to run Python code on the \pkg{basilisk}-managed Python instance.
+
+\code{\link{setupVirtualEnv}}, to install Python packages.
 }
 \author{
 Aaron Lun

@@ -3,7 +3,7 @@
 The list of core packages in `core_list` is based on the package lists at https://docs.anaconda.com/anaconda/packages/pkg-docs/.
 Unfortunately, they don't seem to provide an easy way to actually get the list in this table, so I've just scraped it off the HTML.
 
-```{r}
+```r
 dir.create("core_lists", showWarnings=FALSE)
 base.url <- "https://docs.anaconda.com/anaconda/packages"
 

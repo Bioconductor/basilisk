@@ -14,10 +14,13 @@
 #' with additional packages being lazily installed to eventually reach a full Anaconda installation.
 #'
 #' Developers should generally not use this function for anything other than testing.
-#' Clients of \pkg{basilisk} should interact with its Python instance via \code{\link{basiliskStart}} and related functions,
+#' Clients of \pkg{basilisk} should interact with its Python instance via \code{\link{basiliskRun}} and related functions,
 #' while installation of additional packages should be performed via \code{\link{setupVirtualEnv}}.
 #' 
 #' @seealso
+#' \code{\link{basiliskRun}}, to run Python code on the \pkg{basilisk}-managed Python instance.
+#'
+#' \code{\link{setupVirtualEnv}}, to install Python packages.
 #' @examples
 #' useBasilisk()
 #' os <- reticulate::import("os")
