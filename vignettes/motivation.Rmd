@@ -44,17 +44,20 @@ is provided as an example of how a developer might write an R/Bioconductor packa
 Key points are:
 
 - `StagedInstall: no` should be set in the `DESCRIPTION` to ensure that Python packages are installed with the correct hard-coded paths within the R package installation directory.
+
+- `Imports: basilisk` should be set along with appropriate directives in the `NAMESPACE`, e.g., `importFrom(basilisk,setupVirtualEnv)`.
+
 - An `.onLoad()` function should be present that calls `setupVirtualEnv()`, to allow the relevant Python packages to be installed during R package installation.
 This requires us to specify the version numbers of all desired packages and their dependencies (excepting core packages, see `listCorePackages()`).
 For example, if we wanted to install `r PyPiLink("scikit-learn")`, we would have:
 
     ```r
     .onLoad <- function(libname, pkgname) {
-        # Technically, we don't need to list need dependencies or version numbers 
-        # if we're requesting a package in the core list. However, version numbers
-        # and dependencies are required for anything else.
-        setupVirtualEnv("my_env", c("scikit-learn==0.21.1", "joblib==0.14.0"),
-            pkgname=pkgname)
+        # Technically, we don't need to list need dependencies or version
+        # numbers if we're requesting a package in the core list. However,
+        # version numbers and dependencies are required for anything else.
+        setupVirtualEnv("aaron_env", c("scikit-learn==0.21.1", 
+            "joblib==0.14.0"), pkgname=pkgname)
     }
     ```
 
@@ -62,25 +65,24 @@ For example, if we wanted to install `r PyPiLink("scikit-learn")`, we would have
     all subsequent calls to `setupVirtualEnv()` are no-ops.
 
 - Any R functions that use Python code should do so via `basiliskRun()`, which ensures that different Bioconductor packages play nice when their dependencies clash.
-For example, say our package creates a virtual environment named `"aarons_environment"` during its installation.
-To use methods from this environment, the functions in our package will contain a code chunk like this:
+Continuing on from the above example: to use methods from the `aaron_env` environment, the functions in our hypothetical _AaronPackage_ package will contain a code chunk like this:
 
     ```r
-    my_arbitrary_function <- function() { 
-        proc <- basiliskStart("aarons_environment")
+    my_example_function <- function(ARG_VALUE_1, ARG_VALUE_2) { 
+        proc <- basiliskStart("aaron_env", pkgname="AaronPackage")
         on.exit(basiliskStop(proc))
 
         some_useful_thing <- basiliskRun(proc, function(arg1, arg2) {
-            mod <- reticulate::import("some_python_package")
+            mod <- reticulate::import("scikit-learn")
             mod$some_calculation(arg1, arg2)
         }, arg1=ARG_VALUE_1, arg2=ARG_VALUE_2)
+
+        some_useful_thing
     }
     ```
 
     It is probably unwise to use `proc` across user-visible functions, i.e., the end-user should never have an opportunity to interact with `proc`.
 `r Biocpkg("basilisk")` is primarily intended for developers of R/Bioconductor packages, **not** for end-users.
-
-- If you generate documentation using `devtools::document()`, it is worthwhile adding `inst/basilisk` to your `.Rbuildignore` and `.gitignore`.
 
 Note that if `r Biocpkg("basilisk")` is reinstalled on any machine, it is imperative that all dependent packages are also re-installed.
 This is because the history of lazily installed Python packages is reset when `r Biocpkg("basilisk")` is reinstalled.
