@@ -21,24 +21,20 @@
 .minstaller <- function(dest_path, testing=FALSE) {
     # Stripped from https://github.com/hafen/rminiconda
     # To be replaced if rminiconda gets into CRAN, or if reticulate offers its own solution.
-    arch <- paste0("x86", ifelse(.Machine$sizeof.pointer == 8, "_64", ""))
     version <- "4.7.10"
     base_url <- "https://repo.anaconda.com/miniconda/"
+    os <- .detect_os()
 
-    if (.Platform$OS.type=="windows") {
+    if (os %in% c("win64", "win32")) {
+        arch <- if (os=="win64") "x86_64" else "x86"
         inst_file <- sprintf("Miniconda%s-latest-Windows-%s.exe", version, arch)
         tmploc <- .expedient_download(paste0(base_url, inst_file))
         inst_args <- sprintf(" /InstallationType=JustMe /RegisterPython=0 /S /D=%s", dest_path)
         system2(tmploc, inst_args)
 
     } else {
-        sysname <- if (Sys.info()[["sysname"]] == "Darwin") {
-            "MacOSX"
-        } else {
-            "Linux"
-        }
-
-        inst_file <- sprintf("Miniconda3-%s-%s-%s.sh", version, sysname, arch)
+        sysname <- if (os=="macosx") "MacOSX" else "Linux"
+        inst_file <- sprintf("Miniconda3-%s-%s-x86_64.sh", version, sysname)
 
         if (testing) {
             # FOR INTERNAL TESTING ONLY, avoid re-downloading and 

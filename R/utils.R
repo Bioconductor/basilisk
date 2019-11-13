@@ -18,3 +18,15 @@
 }
 
 .mc_dir <- "miniconda"
+
+.detect_os <- function() {
+    if (.Platform$OS.type=="windows") {
+        paste0("win", ifelse(.Machine$sizeof.pointer == 8, "64", "32"))
+    } else {
+        if (Sys.info()[["sysname"]] == "Darwin") {
+            "macosx"
+        } else {
+            "linux"
+        }
+    }
+}
