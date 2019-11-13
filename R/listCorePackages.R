@@ -20,7 +20,7 @@
 #' 
 #' @export
 listCorePackages <- function() {
-    pkgs <- readLines(system.file("core_list", package="basilisk"))
+    pkgs <- readLines(.get_core_list_file())
     names <- .full2pkg(pkgs)
 
     # For testing purposes, we remove a few packages.
@@ -35,4 +35,8 @@ listCorePackages <- function() {
 
 .full2pkg <- function(packages) {
     sub("[><=]+.*", "", packages)
+}
+
+.get_core_list_file <- function() {
+    system.file("core_lists", .detect_os(), package="basilisk", mustWork=TRUE)
 }

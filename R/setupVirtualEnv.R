@@ -158,17 +158,11 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
     clean.venv <- TRUE 
     if (any(overlaps <- core.names %in% added.names)) {
         to.install <- core.names[overlaps]
-
-        # Adding dependencies as well, to make sure those don't slip through the net
-        # if the latest version of a core dependency has different dependencies altogether
-        # compared to a pinned version of the dependency.
-        stuff <- read.delim(system.file("core_deps", package="basilisk"), header=FALSE)
-        to.install <- c(to.install, stuff[stuff[,1] %in% to.install,2])
-        to.install <- unique(to.install)
-        to.install <- core.full[core.names %in% to.install]
+        my.constraints <- .get_core_list_file()
+        to.install <- c("-c", my.constraints, to.install) # hack: sneaking in '-c constraints' as a package!
 
         if (file.access(system.file(package="basilisk"), 2)==0L) {
-            .basilisk_install(to.install, py.cmd=py.cmd)
+            system2(py.cmd, c("-m", "pip", "install", to.install))
             virtualenv_create(envname, python=py.cmd) 
         } else {
             virtualenv_create(envname, python=py.cmd) 
@@ -200,10 +194,6 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
     }
 
     invisible(NULL)
-}
-
-.basilisk_install <- function(packages, py.cmd=useBasilisk()) {
-    system2(py.cmd, c("-m", "pip", "install", packages))
 }
 
 .basilisk_freeze <- function(py.cmd) {
