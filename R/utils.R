@@ -6,11 +6,15 @@
     file.path(loc, suffix)
 }
 
+.env_dir <- "basilisk"
+
 .get_env_root <- function(pkgname) {
-    system.file("basilisk", package=pkgname, mustWork=TRUE)
+    system.file(.env_dir, package=pkgname, mustWork=TRUE)
 }
 
 .get_common_env <- function() {
     loc <- Sys.getenv("BASILISK_TEST_COMMON", .get_env_root("basilisk"))
     file.path(loc, .common_env)
 }
+
+.mc_dir <- "miniconda"

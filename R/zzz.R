@@ -6,7 +6,7 @@
         return(NULL)
     }
 
-    dest_path <- file.path(inst_path, "miniconda")
+    dest_path <- file.path(inst_path, .mc_dir)
     if (dir.exists(dest_path)) {
         # No-op if it is already installed.
         return(NULL)

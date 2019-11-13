@@ -61,7 +61,7 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
             # Avoid weirdness due to devtools::document().
             return(NULL)
         }
-        if (file.exists(file.path(instdir, "basilisk", envname))) {
+        if (file.exists(file.path(instdir, .env_dir, envname))) {
             return(NULL)
         }
     }
@@ -112,7 +112,7 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
 
     # Creating a virtual environment in an appropriate location.
     if (!is.null(pkgname)) {
-        vdir <- file.path(instdir, "basilisk")
+        vdir <- file.path(instdir, .env_dir)
         dir.create(vdir, recursive=TRUE, showWarnings=FALSE)
         old.work <- Sys.getenv("WORKON_HOME")
         Sys.setenv(WORKON_HOME=vdir)
