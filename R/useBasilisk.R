@@ -35,11 +35,11 @@ useBasilisk <- function() {
         on.exit(Sys.setenv(RETICULATE_PYTHON=old))
     }
 
-    py.cmd <- .get_basilisk_py()
+    py.cmd <- .get_py_cmd(.get_basilisk_dir())
     use_python(py.cmd, required=TRUE)
     py.cmd
 }
 
-.get_basilisk_py <- function() {
-    .get_py_cmd(system.file(.mc_dir, package="basilisk", mustWork=TRUE))
+.get_basilisk_dir <- function() {
+    system.file(.mc_dir, package="basilisk", mustWork=TRUE)
 }

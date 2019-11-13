@@ -119,7 +119,8 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
 
     # Use environment variable for testing purposes only;
     # this should not be exposed to the clients.
-    py.cmd <- Sys.getenv("BASILISK_TEST_PYTHON", .get_basilisk_py())
+    base.dir <- Sys.getenv("BASILISK_TEST_MINICONDA", .get_basilisk_dir())
+    py.cmd <- .get_py_cmd(base.dir)
 
     #############################
 
@@ -187,7 +188,7 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
         my.constraints <- .get_core_list_file()
         to.install <- c("-c", my.constraints, to.install) # hack: sneaking in '-c constraints' as a package!
 
-        if (file.access(system.file(package="basilisk"), 2)==0L) {
+        if (file.access(base.dir, 2)==0L) {
             system2(py.cmd, c("-m", "pip", "install", to.install))
             virtualenv_create(envname, python=py.cmd) 
         } else {
