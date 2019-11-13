@@ -23,7 +23,12 @@ test_that("setupVirtualEnv refuses to work without all specified versions", {
     expect_error(setupVirtualEnv("thingo", c(test.pandas, old.pandas)), "redundant listing")
 })
 
+uninstaller <- function() {
+    system2(test.py, c("-m", "pip", "uninstall", "-y", "numpy"))
+}
+
 test_that("setupVirtualEnv switches to a core installation when possible", {
+    uninstaller()
     incoming <- basilisk:::.basilisk_freeze(test.py)
     expect_false(any(grepl("numpy==", incoming)))
 
@@ -55,7 +60,7 @@ test_that("setupVirtualEnv overrides an incompatible core installation", {
 
 test_that("setupVirtualEnv allows core packages to have unspecified versions", {
     unlink(file.path(client.dir, "thingo"), recursive=TRUE)
-    system2(test.py, c("-m", "pip", "uninstall", "-y", "numpy"))
+    uninstaller()
 
     incoming <- basilisk:::.basilisk_freeze(test.py)
     expect_false(test.numpy %in% incoming)
@@ -66,7 +71,7 @@ test_that("setupVirtualEnv allows core packages to have unspecified versions", {
 })
 
 test_that("setupVirtualEnv skips virtual environment creation for pure core packages", {
-    system2(test.py, c("-m", "pip", "uninstall", "-y", "numpy"))
+    uninstaller()
 
     test.scipy <- all.core$full[all.core$name=="scipy"]
     incoming <- basilisk:::.basilisk_freeze(test.py)
