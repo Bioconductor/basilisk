@@ -13,7 +13,8 @@ Suggests:
     BiocStyle,
     testthat,
     devtools,
-    callr
+    callr,
+    BiocFileCache
 biocViews: Infrastructure
 Description: 
     Installs a self-contained Python instance that is managed by the R installation.

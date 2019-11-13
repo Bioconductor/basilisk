@@ -28,8 +28,7 @@
 
     if (.Platform$OS.type=="windows") {
         inst_file <- sprintf("Miniconda%s-latest-Windows-%s.exe", version, arch)
-        tmploc <- file.path(tempdir(), inst_file)
-        download.file(paste0(base_url, inst_file), tmploc)
+        tmploc <- .expedient_download(paste0(base_url, inst_file))
         inst_args <- sprintf(" /InstallationType=JustMe /RegisterPython=0 /S /D=%s", dest_path)
         system2(tmploc, inst_args)
 
@@ -41,25 +40,40 @@
         }
 
         inst_file <- sprintf("Miniconda3-%s-%s-%s.sh", version, sysname, arch)
-        tmploc <- file.path(tempdir(), inst_file)
 
         if (testing) {
             # FOR INTERNAL TESTING ONLY, avoid re-downloading and 
             # re-installing miniconda everytime we update the R package.
             dest_path2 <- file.path(path.expand("~/"), ".miniconda")
             if (!file.exists(dest_path2)) {
-                download.file(paste0(base_url, inst_file), tmploc)
+                tmploc <- .expedient_download(paste0(base_url, inst_file))
                 inst_args <- sprintf(" %s -b -p %s", tmploc, dest_path2)
                 system2("bash", inst_args)
             }
 
             file.symlink(dest_path2, dest_path)
         } else {
-            download.file(paste0(base_url, inst_file), tmploc)
+            tmploc <- .expedient_download(paste0(base_url, inst_file))
             inst_args <- sprintf(" %s -b -p %s", tmploc, dest_path)
             system2("bash", inst_args)
         }
     }
 
     NULL
+}
+
+#' @importFrom utils download.file
+.expedient_download <- function(url) {
+    fname <- try({
+        bfc <- BiocFileCache::BiocFileCache(ask=FALSE)
+        BiocFileCache::bfcrpath(bfc, url) 
+    })
+
+    if (is(fname, "try-error")) {
+        tmploc <- file.path(tempdir(), basename(url))
+        download.file(url, tmploc)
+        fname <- tmploc
+    }
+
+    fname
 }
