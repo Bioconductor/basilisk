@@ -15,6 +15,9 @@ test.py <- basilisk:::.get_py_cmd(basilisk.dir)
 Sys.setenv(BASILISK_TEST_COMMON=normalizePath(client.dir)) # normalization required for correct symlinks.
 reticulate::virtualenv_create(basilisk:::.common_env, python=test.py)
 
+#############################
+
+# Setting up some useful functions.
 uninstaller <- function(pkg="numpy") {
     system2(test.py, c("-m", "pip", "uninstall", "-y", pkg))
 }
@@ -22,6 +25,13 @@ uninstaller <- function(pkg="numpy") {
 cleanenv <- function(envname="thingo") {
     unlink(file.path(client.dir, envname), recursive=TRUE)
 }
+
+# Turning off these damn envvars, otherwise .basilisk_freeze doesn't behave.
+old.retpy <- Sys.getenv("RETICULATE_PYTHON")
+Sys.unsetenv("RETICULATE_PYTHON")
+
+old.pypath <- Sys.getenv("PYTHONPATH")
+Sys.unsetenv("PYTHONPATH")
 
 #############################
 
@@ -170,5 +180,13 @@ test_that("setupVirtualEnv handles lack of permissions correctly", {
 
 unlink(client.dir, recursive=TRUE)
 unlink(basilisk.dir, recursive=TRUE)
+
 Sys.unsetenv("BASILISK_TEST_MINICONDA")
 Sys.unsetenv("BASILISK_TEST_COMMON")
+
+if (old.retpy!="") {
+    Sys.setenv(RETICULATE_PYTHON=old.retpy)
+}
+if (old.pypath!="") {
+    Sys.setenv(PYTHONPATH=old.pypath)
+}
