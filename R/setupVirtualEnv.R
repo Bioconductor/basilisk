@@ -75,7 +75,7 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
     if (!is.null(pkgname)) {
         instdir <- system.file(package=pkgname)
         if (basename(instdir)!=pkgname) {
-            return(invisble(NULL))
+            return(invisible(NULL))
         }
     }
 
