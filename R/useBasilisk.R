@@ -41,5 +41,5 @@ useBasilisk <- function() {
 }
 
 .get_basilisk_dir <- function() {
-    system.file(.mc_dir, package="basilisk", mustWork=TRUE)
+    system.file(.core_dir, package="basilisk", mustWork=TRUE)
 }

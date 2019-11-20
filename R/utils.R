@@ -17,7 +17,7 @@
     file.path(loc, .common_env)
 }
 
-.mc_dir <- "miniconda"
+.core_dir <- "anaconda"
 
 .detect_os <- function() {
     if (.Platform$OS.type=="windows") {
