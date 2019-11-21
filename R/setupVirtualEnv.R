@@ -34,7 +34,7 @@
 #' which is again necessary to ensure that the same versions are deployed across systems.
 #'
 #' The only exception to the above rule is for \dQuote{core} packages that are installed into the \pkg{basilisk} Python instance.
-#' If your requested packages depend on these core packages, \code{setupVirtualEnv} will automatically install them without requiring them to be listed with explicit version numbers in \code{packages}.
+#' Such core packages do not need be listed with explicit version numbers in \code{packages} (or at all, for that matter).
 #' You can also request a core package without specifying the version, which will automatically be pinned for you.
 #' A full list of core packages with pinned versions is provided at \code{\link{listCorePackages}}.
 #'
@@ -67,6 +67,21 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
         }
     }
 
+    versioned <- grepl("==", packages)
+    if (!all(versioned)) {
+        unversioned <- packages[!versioned]
+        core.set <- listCorePackages()
+        core.match <- match(unversioned, core.set$package)
+
+        if (!any(is.na(core.match))) {
+            # Core packages only need their name specified, 
+            # and we will automatically use the core version.
+            packages[!versioned] <- core.set$full[core.match]
+        } else {
+            stop(sprintf("version must be explicitly specified for '%s'", unversioned[is.na(core.match)][1]))
+        }
+    }
+
     pkg.names <- .full2pkg(packages)
     if (dup <- anyDuplicated(pkg.names)) {
         stop(sprintf("redundant listing of '%s'", pkg.names[dup]))
@@ -90,7 +105,7 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
 
     # Use environment variable for testing purposes only;
     # this should not be exposed to the clients.
-    base.dir <- Sys.getenv("BASILISK_TEST_MINICONDA", .get_basilisk_dir())
+    base.dir <- Sys.getenv("BASILISK_TEST_CORE", .get_basilisk_dir())
     py.cmd <- .get_py_cmd(base.dir)
 
     #############################
@@ -112,7 +127,6 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
         return(NULL)
     }
 
-    unlink(target, recursive=TRUE)
     virtualenv_create(envname, python=py.cmd)
 
     # Code only reaches this point if we're creating the common basilisk environment.
