@@ -3,11 +3,10 @@
 
 unlink("whee", recursive=TRUE)
 Sys.setenv(WORKON_HOME="whee")
-Sys.setenv(BASILISK_TEST_CORE=TRUE) # for all tests, we pretend that pandas is NOT a core package.
 
-test.pandas <- "pandas==0.25.3"
-test.pandas.deps <- c("python-dateutil==2.8.1", "pytz==2019.3")
-setupVirtualEnv('my_package_A', c(test.pandas, test.pandas.deps))
+core.set <- listCorePackages()
+test.pandas <- core.set$full[core.set$package=="pandas"]
+setupVirtualEnv('my_package_A', test.pandas)
 
 old.pandas <- "pandas==0.24.1"
 old.pandas.deps <- c("python-dateutil==2.7.1", "pytz==2017.2")
