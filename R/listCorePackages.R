@@ -3,11 +3,9 @@
 #' List the set of core Python packages (and their version numbers) that are provided by \pkg{basilisk}.
 #'
 #' @details
-#' Core Python packages are lazily installed into the \pkg{basilisk} Python instance.
-#' These are usually infrastructure packages that are required by many other Python packages,
+#' Core Python packages are usually infrastructure packages of some sort that are required by many other Python packages,
 #' so maintaining a core installation avoids redundancy and reduces the installation footprint.
-#'
-#' Identities and versions of the core packages are scraped from the Anaconda package lists for Python 3.7 (\url{https://docs.anaconda.com/anaconda/packages/pkg-docs/}).
+#' The composition of the core list is determined by the Anaconda 2019.10 package list for Python 3.7 (\url{https://docs.anaconda.com/anaconda/packages/pkg-docs/}).
 #' Note that there are subtle differences between the package lists for different operating systems;
 #' developers of clients of \pkg{basilisk} should avoid such OS-specific core packages.
 #'
@@ -20,23 +18,10 @@
 #' 
 #' @export
 listCorePackages <- function() {
-    pkgs <- readLines(.get_core_list_file())
-    names <- .full2pkg(pkgs)
-
-    # For testing purposes, we remove a few packages.
-    if (Sys.getenv("BASILISK_TEST_CORE", FALSE)) {
-        discard <- names %in% c("pandas", "python-dateutil", "pytz")
-        pkgs <- pkgs[!discard]
-        names <- names[!discard]
-    }
-
-    data.frame(full=pkgs, name=names, stringsAsFactors=FALSE)
+    out <- .basilisk_freeze(.get_py_cmd(.get_basilisk_dir()))
+    data.frame(full=out, package=.full2pkg(out), stringsAsFactors=FALSE)
 }
 
 .full2pkg <- function(packages) {
     sub("[><=]+.*", "", packages)
-}
-
-.get_core_list_file <- function() {
-    system.file("core_lists", .detect_os(), package="basilisk", mustWork=TRUE)
 }

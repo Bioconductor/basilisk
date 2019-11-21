@@ -39,7 +39,7 @@
         if (testing) {
             # FOR INTERNAL TESTING ONLY, avoid re-downloading and 
             # re-installing miniconda everytime we update the R package.
-            dest_path2 <- file.path(path.expand("~/"), ".miniconda")
+            dest_path2 <- file.path(path.expand("~/"), ".anaconda")
             if (!file.exists(dest_path2)) {
                 tmploc <- .expedient_download(file.path(base_url, inst_file))
                 inst_args <- sprintf(" %s -b -p %s", tmploc, dest_path2)
