@@ -45,26 +45,12 @@ Explicit versions are also mandatory for all dependencies of requested packages,
 which is again necessary to ensure that the same versions are deployed across systems.
 
 The only exception to the above rule is for \dQuote{core} packages that are installed into the \pkg{basilisk} Python instance.
-If your requested packages depend on these core packages, \code{setupVirtualEnv} will automatically install them without requiring them to be listed with explicit version numbers in \code{packages}.
+Such core packages do not need be listed with explicit version numbers in \code{packages} (or at all, for that matter).
 You can also request a core package without specifying the version, which will automatically be pinned for you.
 A full list of core packages with pinned versions is provided at \code{\link{listCorePackages}}.
 
 The exception to the exception occurs when your requested packages are not compatible with the pinned versions of the core packages.
 In such cases, the compatible versions of the core packages must again be explicitly listed in \code{packages}.
-}
-
-\section{Handling permissions}{
-
-In the ideal case, the process that runs \code{setupVirtualEnv} also has permissions to modify the \pkg{basilisk} installation directory.
-In such cases, requested Python packages in the core list are lazily installed into the \pkg{basilisk} directory for global use.
-Otherwise, the process will install those core packages into the virtual environment, 
-which increases the size of the installation directory and sacrifices some efficiency due to the inability to use a common environment.
-
-Related to this is the behavior of \code{setupVirtualEnv} if it detects that the requested virtual environment is present but lacks the requested packages.
-If the process has permissions to modify the virtual environment, it will attempt to do so to meet the request.
-Otherwise, an error is raised about the invalidity of the virtual environment.
-In the context of a client package, this outcome can arise if \pkg{basilisk} is reinstalled, the client package is not,
-and the user does not have permissions to modify the latter; the solution is to simply reinstall the client.
 }
 
 \examples{

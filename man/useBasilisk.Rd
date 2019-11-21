@@ -15,9 +15,6 @@ This function is primarily intended for developer intended for use within other 
 }
 \details{
 This uses \code{\link{use_python}} to register a consistent Python version that is isolated from the system installation.
-The \pkg{basilisk}-owned Python is installed using miniconda 4.7.12 (\url{https://docs.conda.io/en/latest/miniconda.html}),
-with additional packages being lazily installed to eventually reach a full Anaconda installation.
-
 Developers should generally not use this function for anything other than testing.
 Clients of \pkg{basilisk} should interact with its Python instance via \code{\link{basiliskRun}} and related functions,
 while installation of additional packages should be performed via \code{\link{setupVirtualEnv}}.
