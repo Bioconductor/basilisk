@@ -41,18 +41,6 @@
 #' The exception to the exception occurs when your requested packages are not compatible with the pinned versions of the core packages.
 #' In such cases, the compatible versions of the core packages must again be explicitly listed in \code{packages}.
 #'
-#' @section Handling permissions:
-#' In the ideal case, the process that runs \code{setupVirtualEnv} also has permissions to modify the \pkg{basilisk} installation directory.
-#' In such cases, requested Python packages in the core list are lazily installed into the \pkg{basilisk} directory for global use.
-#' Otherwise, the process will install those core packages into the virtual environment, 
-#' which increases the size of the installation directory and sacrifices some efficiency due to the inability to use a common environment.
-#'
-#' Related to this is the behavior of \code{setupVirtualEnv} if it detects that the requested virtual environment is present but lacks the requested packages.
-#' If the process has permissions to modify the virtual environment, it will attempt to do so to meet the request.
-#' Otherwise, an error is raised about the invalidity of the virtual environment.
-#' In the context of a client package, this outcome can arise if \pkg{basilisk} is reinstalled, the client package is not,
-#' and the user does not have permissions to modify the latter; the solution is to simply reinstall the client.
-#'
 #' @examples
 #' setupVirtualEnv('my_package_A', c('pandas==0.25.3',
 #'     "python-dateutil==2.8.1", "pytz==2019.3"))
@@ -76,23 +64,6 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
         instdir <- system.file(package=pkgname)
         if (basename(instdir)!=pkgname) {
             return(invisible(NULL))
-        }
-    }
-
-    core.data <- listCorePackages()
-    core.full <- core.data$full
-    core.names <- core.data$name
-
-    versioned <- grepl("==", packages)
-    if (!all(versioned)) {
-        unversioned <- packages[!versioned]
-        core.match <- match(unversioned, core.names)
-        if (!any(is.na(core.match))) {
-            # Core packages only need their name specified, 
-            # and we will automatically use the core version.
-            packages[!versioned] <- core.full[core.match]
-        } else {
-            stop(sprintf("version must be explicitly specified for '%s'", unversioned[is.na(core.match)][1]))
         }
     }
 
@@ -138,73 +109,16 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
 
     # Effective no-op if virtualenv exists and has all the packages we requested.
     if (file.exists(target)) {
-        if (all(packages %in% .basilisk_freeze(env.cmd))) {
-            return(invisible(NULL))
-        } else if (file.access(target, 2L)!=0L) {
-            msg <- "invalid Python environment"
-            if (!is.null(pkgname)) {
-                msg <- paste0(msg, sprintf(", try reinstalling '%s'", pkgname))
-            } else {
-                msg <- paste0(msg, ", try changing 'WORKON_HOME'")
-            }
-            stop(msg)
-        }
-        unlink(target, recursive=TRUE)
+        return(NULL)
     }
 
+    unlink(target, recursive=TRUE)
     virtualenv_create(envname, python=py.cmd)
 
     # Code only reaches this point if we're creating the common basilisk environment.
     if (length(packages)==0L) {
         return(invisible(NULL))
     }
-
-    #############################
-    # ROUND 1: Seeing what the incoming packages need. We rely on pip to tell us the
-    # identity of the dependencies for the requested version of each package. It also 
-    # smoothly handles 'extras' and 'python_version', which would require manual parsing 
-    # if we did a GET to PyPi to determine the dependencies. (And the GET itself would
-    # require a dependency on httr, which is undesirable for faster loads.) We will 
-    # delete this installation, but the downloads are cached, so little time is wasted.
-
-    previous <- .basilisk_freeze(env.cmd)
-    virtualenv_install(envname, packages, ignore_installed=FALSE)
-    updated <- .basilisk_freeze(env.cmd)
-
-    # Identifying the implicitly added packages. 
-    implicit.added <- setdiff(updated, previous)
-
-    virtualenv_remove(envname, confirm=FALSE) # Removing Round 1 to start from a fresh installation.
-
-    #############################
-    # Figuring out if any of the newly downloaded packages are core packages.
-    # If so, we install them to the base installation if we have access;
-    # otherwise, we add it to our virtual environment.
-
-    added.names <- .full2pkg(implicit.added)
-    clean.venv <- TRUE 
-    if (any(overlaps <- core.names %in% added.names)) {
-        to.install <- core.names[overlaps]
-        my.constraints <- .get_core_list_file()
-        to.install <- c("-c", my.constraints, to.install) # hack: sneaking in '-c constraints' as a package!
-
-        if (file.access(base.dir, 2)==0L) {
-            system2(py.cmd, c("-m", "pip", "install", to.install))
-            virtualenv_create(envname, python=py.cmd) 
-        } else {
-            virtualenv_create(envname, python=py.cmd) 
-            virtualenv_install(envname, to.install, ignore_installed=FALSE)
-            clean.venv <- FALSE
-        }
-    } else {
-        virtualenv_create(envname, python=py.cmd) 
-    }
-
-    #############################
-    # ROUND 2: Trying again after lazy installation of the core packages,
-    # to see if the dependencies are now satisfied. We rely on pip again
-    # to tell us (empirically) whether the dependencies are satisfied or 
-    # if an upgrade is necessary.
 
     previous <- .basilisk_freeze(env.cmd)
     virtualenv_install(envname, packages, ignore_installed=FALSE)
@@ -213,7 +127,7 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
     if (any(!updated %in% c(previous, packages))) {
         added <- setdiff(updated, c(previous, packages))
         stop(sprintf("need to list dependency on '%s'", added[1]))
-    } else if (identical(previous, updated) && clean.venv) {
+    } else if (identical(previous, updated)) {
         # If everything is perfectly satisfied by the core installation, we
         # remove the venv and make a symlink. 
         virtualenv_remove(envname, confirm=FALSE) 
