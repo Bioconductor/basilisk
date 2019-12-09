@@ -106,8 +106,17 @@
 #' @export
 #' @importFrom parallel makePSOCKcluster clusterCall makeForkCluster
 #' @importFrom reticulate py_config py_available
-basiliskStart <- function(envname, pkgname=NULL, fork=getBasiliskFork(), global=getBasiliskGlobal()) {
-    if (global && 
+basiliskStart <- function(envname, pkgname=NULL, 
+    fork=getBasiliskFork(), shared=getBasiliskShared(), persist=getBasiliskPersist())
+{
+    if (persist) {
+        available <- .get_persist(envname, pkgname)
+        if (!is.null(available)) {
+            return(available)
+        }
+    }
+
+    if (shared && 
         {
             # Seeing if we can just load it successfully.
             old.pypath <- Sys.getenv("PYTHONPATH")
@@ -117,7 +126,6 @@ basiliskStart <- function(envname, pkgname=NULL, fork=getBasiliskFork(), global=
     {
         proc <- new.env()
         proc$.basilisk.pypath <- old.pypath
-        proc
     } else {
         if (fork && .Platform$OS.type!="windows" && 
             (!py_available() ||
@@ -129,8 +137,28 @@ basiliskStart <- function(envname, pkgname=NULL, fork=getBasiliskFork(), global=
             proc <- makePSOCKcluster(1)
         }
         clusterCall(proc, useVirtualEnv, envname=envname, pkgname=pkgname)
-        proc 
+
+        if (persist) {
+            .set_persist(envname, pkgname, proc)
+            proc <- list(envname=envname, pkgname=pkgname, fork=fork)
+        }
     }
+
+    proc
+}
+
+.create_persist_key <- function(envname, pkgname) paste0(envname, "_", pkgname)
+
+.get_persist <- function(envname, pkgname) {
+    key <- .create_persist_key(envname, pkgname)
+    getOption("basilisk.persist.values", list())[[key]]
+}
+
+.set_persist <- function(envname, pkgname, proc) {
+    key <- .create_persist_key(envname, pkgname)
+    available <- getOption("basilisk.persist.values", list())
+    available[[key]] <- proc
+    options(basilisk.persist.values=available)
 }
 
 #' @export
@@ -140,7 +168,7 @@ basiliskStop <- function(proc) {
     if (is.environment(proc)) {
         # Restore the old PYTHONPATH.
         Sys.setenv(PYTHONPATH=proc$.basilisk.pypath)
-    } else {
+    } else if (is(proc, "cluster")) {
         stopCluster(proc)
     }
 }
@@ -148,11 +176,14 @@ basiliskStop <- function(proc) {
 #' @export
 #' @rdname basiliskStart
 #' @importFrom parallel clusterCall
-basiliskRun <- function(proc=NULL, fun, ..., envname, pkgname=NULL, fork=getBasiliskFork(), global=getBasiliskGlobal()) {
+basiliskRun <- function(proc=NULL, fun, ..., envname, pkgname=NULL, 
+    fork=getBasiliskFork(), shared=getBasiliskShared(), persist=getBasiliskPersist())
+{
     if (is.null(proc)) {
-        proc <- basiliskStart(envname, pkgname=pkgname, fork=fork, global=global)
+        proc <- basiliskStart(envname, pkgname=pkgname, fork=fork, shared=shared, persist=persist)
         on.exit(basiliskStop(proc))
     }
+
     if (is.environment(proc)) {
         # Ensure any 'assign' calls add to 'proc'.
         proc$.basilisk.args <- list(...)
@@ -160,8 +191,21 @@ basiliskRun <- function(proc=NULL, fun, ..., envname, pkgname=NULL, fork=getBasi
         output <- evalq(do.call(.basilisk.fun, .basilisk.args), envir=proc, enclos=proc)
         rm(".basilisk.args", envir=proc)
         rm(".basilisk.fun", envir=proc)
-        output
+    } else if (is(proc, "cluster")) {
+        output <- clusterCall(proc, fun=fun, ...)[[1]]
     } else {
-        clusterCall(proc, fun=fun, ...)[[1]]
+        proc2 <- .get_persist(envname=proc$envname, pkgname=proc$pkgname)
+
+        # Safety measure in case the process failed or something;
+        # we force it to create a new persistent process.
+        test <- try(clusterCall(proc2, fun=identity, x=1), silent=TRUE)
+        if (is(test, "try-error")) {
+            .set_persist(proc$envname, proc$pkgname, NULL)
+            proc2 <- basiliskStart(proc$envname, pkgname=proc$pkgname, fork=proc$fork, shared=FALSE, persist=TRUE)
+        }
+
+        output <- clusterCall(proc2, fun=fun, ...)[[1]]
     }
+
+    output
 }
