@@ -23,6 +23,6 @@ Description:
     This aims to provide a consistent Python version that can be used reliably by Bioconductor packages.
     Module versions are also controlled to guarantee consistent behavior on different user systems.
 License: GPL-3
-RoxygenNote: 7.0.0
+RoxygenNote: 7.0.2
 StagedInstall: false
 VignetteBuilder: knitr
