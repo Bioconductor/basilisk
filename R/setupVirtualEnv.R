@@ -42,6 +42,15 @@
 #' In such cases, the compatible versions of the core packages must again be explicitly listed in \code{packages}.
 #'
 #' @examples
+#' ##################################################
+#' # Creating virtualenvs in a temporary directory to 
+#' # avoid polluting the user's WORKON_HOME.
+#' tmploc <- file.path(tempdir(), "basilisk")
+#' dir.create(tmploc)
+#' old <- Sys.getenv("WORKON_HOME")
+#' Sys.setenv(WORKON_HOME=tmploc)
+#' ##################################################
+#' 
 #' setupVirtualEnv('my_package_A', c('pandas==0.25.3',
 #'     "python-dateutil==2.8.1", "pytz==2019.3"))
 #' useVirtualEnv("my_package_A")
@@ -51,7 +60,11 @@
 #' # No need to list versions of core packages, 
 #' # or to list them at all if they are dependencies.
 #' setupVirtualEnv('my_package_A_alt', 'pandas')
-#' 
+#'
+#' ##################################################
+#' # Restoring the old WORKON_HOME.
+#' Sys.setenv(WORKON_HOME=old)
+#' ##################################################
 #' @seealso
 #' \code{\link{listCorePackages}}, for a list of core Python packages with pinned versions.
 #'

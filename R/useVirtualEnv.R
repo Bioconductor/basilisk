@@ -25,9 +25,22 @@
 #' @author Aaron Lun
 #' 
 #' @examples
+#' ##################################################
+#' # Creating virtualenvs in a temporary directory to 
+#' # avoid polluting the user's WORKON_HOME.
+#' tmploc <- file.path(tempdir(), "basilisk")
+#' dir.create(tmploc)
+#' old <- Sys.getenv("WORKON_HOME")
+#' Sys.setenv(WORKON_HOME=tmploc)
+#' ##################################################
+#'
 #' setupVirtualEnv('my_package_A_alt', 'pandas')
 #' useVirtualEnv("my_package_A_alt")
 #' 
+#' ##################################################
+#' # Restoring the old WORKON_HOME.
+#' Sys.setenv(WORKON_HOME=old)
+#' ##################################################
 #' @seealso
 #' \code{\link{basiliskStart}}, for how these virtual environments should be used.
 #'

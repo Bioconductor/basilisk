@@ -112,6 +112,15 @@ This mostly refers to objects that contain custom pointers to memory, e.g., file
 }
 
 \examples{
+##################################################
+# Creating virtualenvs in a temporary directory to 
+# avoid polluting the user's WORKON_HOME.
+tmploc <- file.path(tempdir(), "basilisk")
+dir.create(tmploc)
+old <- Sys.getenv("WORKON_HOME")
+Sys.setenv(WORKON_HOME=tmploc)
+##################################################
+
 # Loading one virtual environment into our R session:
 setupVirtualEnv('my_package_A', c('pandas==0.25.3',
     "python-dateutil==2.8.1", "pytz==2019.3"))
@@ -143,6 +152,11 @@ basiliskStop(cl)
 # Close persistent processes to avoid errors during CHECK.
 basiliskStop(cl, persist=FALSE)
 }
+
+##################################################
+# Restoring the old WORKON_HOME.
+Sys.setenv(WORKON_HOME=old)
+##################################################
 }
 \seealso{
 \code{\link{setupVirtualEnv}}, to set up the virtual environments.
