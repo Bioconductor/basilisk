@@ -89,9 +89,12 @@ This is less efficient as it needs to create a new process but it avoids forcing
 \item Otherwise, \code{basiliskStart} will create a parallel socket process containing a separate R session.
 In the new process, \code{basiliskStart} will load the specified virtual environment for Python operations.
 This is the least efficient as it needs to transfer data over sockets but is guaranteed to work.
+\item If \code{persist=TRUE}, a forked or socket process created in this manner is kept active even after \code{\link{basiliskStop}}.
+It can then be re-used in subsequent calls to \code{\link{basiliskStart}},
+thus avoiding the overhead of setting up a new process and loading the relevant packages.
 }
-Developers can control these choices directly by explicitly specifying \code{global} or \code{fork},
-while users can control them indirectly with \code{\link{setBasiliskFork}} and \code{\link{setBasiliskGlobal}}.
+Developers can control these choices directly by explicitly specifying \code{shared}, \code{fork} and \code{persist},
+while users can control them indirectly with \code{\link{setBasiliskFork}} and related functions.
 }
 
 \section{Constraints on user-defined functions}{
@@ -103,8 +106,8 @@ This has a number of consequences for the type of code that can be written insid
 \item Any other variables used inside \code{fun} should be explicitly passed as an argument.
 Developers should not rely on closures to capture variables in the calling environment of \code{basiliskRun}.
 \item Relevant global variables should be reset inside \code{fun}.
-\item Developers should not attempt to pass complex objects to memory in or out of \code{fun}.
-This mostly refers to objects that contain custom pointers to memory, e.g., file handles.
+\item Developers should \emph{not} attempt to pass complex objects to memory in or out of \code{fun}.
+This mostly refers to objects that contain custom pointers to memory, e.g., file handles, pointers to \pkg{reticulate} objects.
 }
 }
 
