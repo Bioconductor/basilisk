@@ -96,7 +96,7 @@
 #' })
 #' basiliskStop(cl)
 #'
-#' # Persistence is possible.
+#' # Persistence of variables is possible within a Start/Stop pair.
 #' cl <- basiliskStart('my_package_B')
 #' basiliskRun(proc=cl, function() { 
 #'     assign(x="snake.in.my.shoes", 1, envir=parent.frame())
@@ -106,6 +106,10 @@
 #' })
 #' basiliskStop(cl)
 #' 
+#' \dontshow{
+#' # Close persistent processes to avoid errors during CHECK.
+#' basiliskStop(cl, persist=FALSE)
+#' }
 #' @export
 #' @importFrom parallel makePSOCKcluster clusterCall makeForkCluster
 #' @importFrom reticulate py_config py_available

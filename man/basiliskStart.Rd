@@ -14,7 +14,7 @@ basiliskStart(
   persist = getBasiliskPersist()
 )
 
-basiliskStop(proc)
+basiliskStop(proc, persist = getBasiliskPersist())
 
 basiliskRun(
   proc = NULL,
@@ -129,7 +129,7 @@ basiliskRun(proc=cl, function() {
 })
 basiliskStop(cl)
 
-# Persistence is possible.
+# Persistence of variables is possible within a Start/Stop pair.
 cl <- basiliskStart('my_package_B')
 basiliskRun(proc=cl, function() { 
     assign(x="snake.in.my.shoes", 1, envir=parent.frame())
@@ -139,6 +139,10 @@ basiliskRun(proc=cl, function() {
 })
 basiliskStop(cl)
 
+\dontshow{
+# Close persistent processes to avoid errors during CHECK.
+basiliskStop(cl, persist=FALSE)
+}
 }
 \seealso{
 \code{\link{setupVirtualEnv}}, to set up the virtual environments.
