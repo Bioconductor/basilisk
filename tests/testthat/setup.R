@@ -13,9 +13,10 @@ old.pandas.deps <- c("python-dateutil==2.7.1", "pytz==2017.2")
 setupVirtualEnv('my_package_B', c(old.pandas, old.pandas.deps))
 
 #################################################################
-# Defining a helper function to check for correct persistence.
+# Defining a helper function to check for correct persistence 
+# (of variables, not of the process, hence the persist=FALSE).
 
-persistence_check <- function(version, envir, ...) {
+persistence_check <- function(version, envir, persist=FALSE, ...) {
     library(basilisk)
     library(testthat)
     Sys.setenv(WORKON_HOME="whee")
@@ -55,14 +56,14 @@ persistence_check <- function(version, envir, ...) {
 #################################################################
 # Defining helper functions to check new process creation.
 
-process_check <- function(version, envir, ...) {
+process_check <- function(version, envir, ..., persist=FALSE) {
     # Check code copied from related functions. Do NOT put into a separate function,
     # as otherwise r() will not find it in its new namespace.
     library(basilisk)
     library(testthat)
     Sys.setenv(WORKON_HOME="whee")
 
-    proc <- basiliskStart(envir, global=FALSE, ...)
+    proc <- basiliskStart(envir, shared=FALSE, ..., persist=persist)
     test.version <- basiliskRun(proc, fun=function() {
         reticulate::import("pandas")$`__version__`
     })
@@ -76,14 +77,14 @@ process_check <- function(version, envir, ...) {
     TRUE
 }
 
-preloaded_check <- function(version, envir, ...) {
+preloaded_check <- function(version, envir, ..., persist=FALSE) {
     # Checking what happens when Python is already loaded.
     library(basilisk)
     library(testthat)
     useBasilisk()
     Sys.setenv(WORKON_HOME="whee")
 
-    proc <- basiliskStart(envir, ...)
+    proc <- basiliskStart(envir, ..., persist=persist)
     test.version <- basiliskRun(proc, fun=function() {
         reticulate::import("pandas")$`__version__`
     })
