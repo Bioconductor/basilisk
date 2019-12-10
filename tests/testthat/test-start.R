@@ -116,6 +116,13 @@ test_that("basilisk works with persistent processes", {
         reproc <- basiliskStart(envname, shared=FALSE)
         expect_error(parallel::clusterCall(basilisk:::.get_persist(envname, pkgname), Sys.getpid), NA)
 
+        # Running basiliskStop doesn't have any effect unless persist=FALSE.
+        basiliskStop(reproc)
+        expect_error(parallel::clusterCall(basilisk:::.get_persist(envname, pkgname), Sys.getpid), NA)
+
+        basiliskStop(reproc, persist=FALSE)
+        expect_error(parallel::clusterCall(basilisk:::.get_persist(envname, pkgname), Sys.getpid))
+
         TRUE
     }, args=list(version=new.version))
     expect_true(out)

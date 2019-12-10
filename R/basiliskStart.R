@@ -178,11 +178,11 @@ basiliskStart <- function(envname, pkgname=NULL,
 #' @export
 #' @rdname basiliskStart
 #' @importFrom parallel stopCluster
-basiliskStop <- function(proc) {
+basiliskStop <- function(proc, persist=getBasiliskPersist()) {
     if (is.environment(proc)) {
         # Restore the old PYTHONPATH.
         Sys.setenv(PYTHONPATH=proc$.basilisk.pypath)
-    } else {
+    } else if (!persist) {
         stopCluster(proc)
     }
 }
@@ -195,7 +195,7 @@ basiliskRun <- function(proc=NULL, fun, ..., envname, pkgname=NULL,
 {
     if (is.null(proc)) {
         proc <- basiliskStart(envname, pkgname=pkgname, fork=fork, shared=shared, persist=persist)
-        on.exit(basiliskStop(proc))
+        on.exit(basiliskStop(proc, persist=persist))
     }
 
     if (is.environment(proc)) {
