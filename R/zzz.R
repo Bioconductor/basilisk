@@ -28,7 +28,7 @@
     if (os %in% c("win64", "win32")) {
         arch <- if (os=="win64") "x86_64" else "x86"
         inst_file <- sprintf("Anaconda3-%s-Windows-%s.exe", version, arch)
-        tmploc <- .expedient_download(paste0(base_url, inst_file))
+        tmploc <- .expedient_download(file.path(base_url, inst_file))
         inst_args <- sprintf(" /InstallationType=JustMe /RegisterPython=0 /S /D=%s", normalizePath(dest_path, mustWork=FALSE))
         system2(tmploc, inst_args)
 
