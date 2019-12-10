@@ -111,7 +111,18 @@ basiliskStart <- function(envname, pkgname=NULL,
 {
     if (persist) {
         available <- .get_persist(envname, pkgname)
+
+        # If it's NULL, we either haven't run basiliskStart() yet, or we're
+        # allowed to use a shared Python library, in which case we proceed to
+        # the rest of the function.
         if (!is.null(available)) {
+            # Protection against process invalidation; if so, we force it to
+            # create a new persistent process.
+            test <- try(clusterCall(available, fun=identity, x=1), silent=TRUE)
+            if (is(test, "try-error")) {
+                .set_persist(envname, pkgname, NULL)
+                available <- basiliskStart(envname, pkgname=pkgname, fork=fork, shared=FALSE, persist=TRUE)
+            }
             return(available)
         }
     }
@@ -138,9 +149,9 @@ basiliskStart <- function(envname, pkgname=NULL,
         }
         clusterCall(proc, useVirtualEnv, envname=envname, pkgname=pkgname)
 
+        # Persisting the object for the next call to basiliskStart().
         if (persist) {
             .set_persist(envname, pkgname, proc)
-            proc <- list(envname=envname, pkgname=pkgname, fork=fork)
         }
     }
 
@@ -168,7 +179,7 @@ basiliskStop <- function(proc) {
     if (is.environment(proc)) {
         # Restore the old PYTHONPATH.
         Sys.setenv(PYTHONPATH=proc$.basilisk.pypath)
-    } else if (is(proc, "cluster")) {
+    } else {
         stopCluster(proc)
     }
 }
@@ -191,21 +202,9 @@ basiliskRun <- function(proc=NULL, fun, ..., envname, pkgname=NULL,
         output <- evalq(do.call(.basilisk.fun, .basilisk.args), envir=proc, enclos=proc)
         rm(".basilisk.args", envir=proc)
         rm(".basilisk.fun", envir=proc)
-    } else if (is(proc, "cluster")) {
-        output <- clusterCall(proc, fun=fun, ...)[[1]]
     } else {
-        proc2 <- .get_persist(envname=proc$envname, pkgname=proc$pkgname)
-
-        # Safety measure in case the process failed or something;
-        # we force it to create a new persistent process.
-        test <- try(clusterCall(proc2, fun=identity, x=1), silent=TRUE)
-        if (is(test, "try-error")) {
-            .set_persist(proc$envname, proc$pkgname, NULL)
-            proc2 <- basiliskStart(proc$envname, pkgname=proc$pkgname, fork=proc$fork, shared=FALSE, persist=TRUE)
-        }
-
-        output <- clusterCall(proc2, fun=fun, ...)[[1]]
-    }
+        output <- clusterCall(proc, fun=fun, ...)[[1]]
+    } 
 
     output
 }
