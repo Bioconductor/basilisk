@@ -24,10 +24,10 @@
 #' In such cases, users or developers may wish to turn off forking with \code{setBasiliskFork(FALSE)},
 #' e.g., in functions where many R-based memory allocations are performed inside \code{\link{basiliskRun}}.
 #'
-#' \code{\link{basiliskStart}} will persist that object across function calls by default.
-#' This 
+#' \code{\link{basiliskStart}} will persist any process object across function calls by default.
+#' This avoids the overhead of starting a process, loading in all Python and R packages, etc. at every call.
+#' Users can turn off this behavior by setting \code{setBasiliskPersist(FALSE)}, which is occasionally desirable for debugging purposes.
 #' 
-
 #' If many \pkg{basilisk}-dependent packages are to be used together on Unix systems, setting \code{setBasiliskShared(FALSE)} may be beneficial.
 #' This allows each package to fork to create a new process as no Python has been loaded in the parent R process (see \code{?\link{basiliskStart}}).
 #' In contrast, if any package loads Python sharedly, the others are forced to use parallel socket processes.
