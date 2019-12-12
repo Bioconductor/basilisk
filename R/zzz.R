@@ -12,6 +12,13 @@
         return(NULL)
     }
 
+    # NOTE: temporary hack to skip failure in temporary installation during R
+    # CMD build, so the vignettes can be built and we can proceed to the actual
+    # installation.     
+    if (nrow(utils::vignette(package="basilisk")$results)==0L) {
+        return(NULL)
+    }
+
     .minstaller(dest_path, testing=FALSE)
 
     # Create a common virtual environment.
