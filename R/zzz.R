@@ -12,13 +12,6 @@
         return(NULL)
     }
 
-    # NOTE: temporary hack to skip failure in temporary installation during R
-    # CMD build, so the vignettes can be built and we can proceed to the actual
-    # installation.     
-    if (nrow(utils::vignette(package="basilisk")$results)==0L) {
-        return(NULL)
-    }
-
     .minstaller(dest_path, testing=FALSE)
 
     # Create a common virtual environment.
@@ -56,7 +49,13 @@
             file.symlink(dest_path2, dest_path)
         } else {
             tmploc <- .expedient_download(file.path(base_url, inst_file))
-            inst_args <- sprintf(" %s -b -p %s", tmploc, dest_path)
+
+            if (os=="macosx") {
+                # NOTE: another hack to check why Anaconda doesn't want to install on a mac.
+                inst_args <- sprintf(" %s -b", tmploc)
+            } else {
+                inst_args <- sprintf(" %s -b -p %s", tmploc, dest_path)
+            }
             system2("bash", inst_args)
         }
     }
