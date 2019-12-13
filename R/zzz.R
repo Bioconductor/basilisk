@@ -31,8 +31,12 @@
         tmploc <- .expedient_download(file.path(base_url, inst_file))
 
         # Apparently installer requires backslashes.
-        inst_args <- sprintf(" /InstallationType=JustMe /RegisterPython=0 /S /D=%s", gsub("/", "\\\\", dest_path)) 
+        inst_args <- sprintf(" /InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /S /D=%s", gsub("/", "\\\\", dest_path)) 
         system2(tmploc, inst_args)
+
+        if (!file.exists(dest_path)) {
+            stop(paste(tmploc, inst_args))
+        }
 
     } else {
         sysname <- if (os=="macosx") "MacOSX" else "Linux"
