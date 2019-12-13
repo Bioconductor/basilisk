@@ -34,10 +34,7 @@
         inst_args <- sprintf(" /InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /S /D=%s", gsub("/", "\\\\", dest_path)) 
         system2(tmploc, inst_args)
 
-        if (!file.exists(dest_path)) {
-            stop(paste(tmploc, inst_args))
-        }
-
+        stop(paste(list.files(dest_path), collapse="\n"))
     } else {
         sysname <- if (os=="macosx") "MacOSX" else "Linux"
         inst_file <- sprintf("Anaconda3-%s-%s-x86_64.sh", version, sysname)
