@@ -49,14 +49,13 @@
             file.symlink(dest_path2, dest_path)
         } else {
             tmploc <- .expedient_download(file.path(base_url, inst_file))
+            inst_args <- sprintf(" %s -b -p %s", tmploc, dest_path)
 
             if (os=="macosx") {
-                # NOTE: another hack to check why Anaconda doesn't want to install on a mac.
-                inst_args <- sprintf(" %s -b", tmploc)
+                system(paste("unset DYLD_FALLBACK_LIBRARY_PATH; bash", inst_args))
             } else {
-                inst_args <- sprintf(" %s -b -p %s", tmploc, dest_path)
+                system2("bash", inst_args)
             }
-            system2("bash", inst_args)
         }
     }
 
