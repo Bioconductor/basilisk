@@ -2,7 +2,7 @@
 
 .get_py_cmd <- function(loc) {
     # Ripped out of reticulate::use_virtualenv.
-    suffix <- if (.Platform$OS.type=="windows") "Scripts/python.exe" else "bin/python"
+    suffix <- if (.Platform$OS.type=="windows") "python.exe" else "bin/python"
     file.path(loc, suffix)
 }
 
