@@ -31,23 +31,14 @@
         ### TWILIGHT ZONE START ###
 
         # Apparently Anaconda files get quarantined by some security check on Windows,
-        # so we need to instead install miniconda and populate the installation directory.
-        base_url <- "https://repo.anaconda.com/miniconda"
-        inst_file <- sprintf("Miniconda3-4.7.12.1-Windows-%s.exe", arch)
+        # so we try installing an older version.
+        inst_file <- sprintf("Anaconda3-2019.03-Windows-%s.exe", arch)
         tmploc <- .expedient_download(file.path(base_url, inst_file))
 
         # Apparently installer requires backslashes.
         backpath <- gsub("/", "\\\\", dest_path)
         inst_args <- sprintf("/InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /S /D=%s", backpath)
         system2(tmploc, inst_args)
-
-        # Populating with packages.
-        condaloc <- file.path(dest_path, "Scripts/conda.exe")
-        system2(condaloc, "install -y anaconda=2019.10")
-
-        if (!file.exists(file.path(dest_path, "bin/pip"))) {
-            stop(paste(list.files(dest_path), sep="\n"))
-        }
 
         ### TWILIGHT ZONE END ###
 
