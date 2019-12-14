@@ -32,6 +32,7 @@
 
         # Apparently Anaconda files get quarantined by some security check on Windows,
         # so we need to instead install miniconda and populate the installation directory.
+        base_url <- "https://repo.anaconda.com/miniconda"
         inst_file <- sprintf("Miniconda3-4.7.12.1-Windows-%s.exe", arch)
         tmploc <- .expedient_download(file.path(base_url, inst_file))
 
