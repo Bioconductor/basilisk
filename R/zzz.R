@@ -45,6 +45,10 @@
         condaloc <- file.path(dest_path, "Scripts/conda.exe")
         system2(condaloc, "install -y anaconda=2019.10")
 
+        if (!file.exists(file.path(dest_path, "bin/pip"))) {
+            stop(paste(list.files(dest_path), sep="\n"))
+        }
+
         ### TWILIGHT ZONE END ###
 
     } else {
