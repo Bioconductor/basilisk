@@ -19,23 +19,33 @@
 }
 
 .minstaller <- function(dest_path, testing=FALSE) {
-    # Stripped from https://github.com/hafen/rminiconda
-    # To be replaced if rminiconda gets into CRAN, or if reticulate offers its own solution.
+    # Stripped from https://github.com/hafen/rminiconda a long time ago...
+    # To be replaced if reticulate offers its own solution.
     version <- "2019.10"
     base_url <- "https://repo.anaconda.com/archive"
     os <- .detect_os()
 
     if (os %in% c("win64", "win32")) {
         arch <- if (os=="win64") "x86_64" else "x86"
-        inst_file <- sprintf("Anaconda3-%s-Windows-%s.exe", version, arch)
+
+        ### TWILIGHT ZONE START ###
+
+        # Apparently Anaconda files get quarantined by some security check on Windows,
+        # so we need to instead install miniconda and populate the installation directory.
+        inst_file <- sprintf("Miniconda3-4.7.12.1-Windows-%s.exe", arch)
         tmploc <- .expedient_download(file.path(base_url, inst_file))
 
         # Apparently installer requires backslashes.
-        inst_args <- sprintf(" /InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /S /D=%s", gsub("/", "\\\\", dest_path)) 
+        backpath <- gsub("/", "\\\\", dest_path)
+        inst_args <- sprintf("/InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /S /D=%s", backpath)
         system2(tmploc, inst_args)
 
-        all.files <- list.files(dest_path, recursive=TRUE, pattern=".exe$")
-        stop(paste(all.files, collapse="\n"))
+        # Populating with packages.
+        condaloc <- file.path(dest_path, "Scripts/conda.exe")
+        system2(condaloc, "install -y anaconda=2019.10")
+
+        ### TWILIGHT ZONE END ###
+
     } else {
         sysname <- if (os=="macosx") "MacOSX" else "Linux"
         inst_file <- sprintf("Anaconda3-%s-%s-x86_64.sh", version, sysname)
@@ -56,8 +66,9 @@
             inst_args <- sprintf(" %s -b -p %s", tmploc, dest_path)
 
             if (os=="macosx") {
-                # The prebuilt R binary for Mac seems to set this, which causes
-                # default paths for zlib to be ignored and breaks installation.
+                # The prebuilt R binary for Mac seems to set this variable,
+                # which causes default paths for zlib to be ignored and breaks
+                # installation. So, we unset it before attempting installation.
                 system(paste("unset DYLD_FALLBACK_LIBRARY_PATH; bash", inst_args))
             } else {
                 system2("bash", inst_args)
