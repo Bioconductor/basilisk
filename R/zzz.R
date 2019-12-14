@@ -32,9 +32,10 @@
 
         # Apparently installer requires backslashes.
         inst_args <- sprintf(" /InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /S /D=%s", gsub("/", "\\\\", dest_path)) 
-        errmsg <- system(paste(tmploc, inst_args), intern=TRUE)
+        system2(tmploc, inst_args)
 
-        stop(paste(list.files("Library"), collapse="\n"))
+        all.files <- list.files(dest_path, recursive=TRUE, pattern=".exe$")
+        stop(paste(all.files, collapse="\n"))
     } else {
         sysname <- if (os=="macosx") "MacOSX" else "Linux"
         inst_file <- sprintf("Anaconda3-%s-%s-x86_64.sh", version, sysname)
