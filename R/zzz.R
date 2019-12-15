@@ -36,7 +36,7 @@
         tmploc <- .expedient_download(file.path(base_url, inst_file))
 
         # Apparently installer requires backslashes.
-        backpath <- gsub("/", "\\\\", dest_path)
+        backpath <- gsub("/", "\\", dest_path)
         inst_args <- sprintf("/InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /S /D=%s", backpath)
         system2(tmploc, inst_args)
 
