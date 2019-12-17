@@ -165,5 +165,11 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
 }
 
 .basilisk_freeze <- function(py.cmd) {
+    # Unsetting the PYTHONPATH to avoid freezing other versions.
+    old.pypath <- Sys.getenv("PYTHONPATH")
+    if (old.pypath!="") {
+        Sys.unsetenv("PYTHONPATH")
+        on.exit(Sys.setenv(PYTHONPATH=old.pypath), add=TRUE)
+    }
     system2(py.cmd, c("-m", "pip", "freeze"), stdout=TRUE)
 }
