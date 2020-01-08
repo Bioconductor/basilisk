@@ -32,8 +32,9 @@
 
         # Apparently Anaconda files get quarantined by some security check on Windows,
         # so we try installing an older version.
-        inst_file <- sprintf("Anaconda3-2019.03-Windows-%s.exe", arch)
-        tmploc <- .expedient_download(file.path(base_url, inst_file))
+#        inst_file <- sprintf("Anaconda3-2019.03-Windows-%s.exe", arch)
+        alt_url <- sprintf("https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-%s.exe", arch)
+        tmploc <- .expedient_download(alt_url) # file.path(base_url, inst_file))
         Sys.chmod(tmploc, mode = "0755")
 
         # Using the same code as reticulate:::miniconda_installer_run.
