@@ -34,11 +34,16 @@
         # so we try installing an older version.
         inst_file <- sprintf("Anaconda3-2019.03-Windows-%s.exe", arch)
         tmploc <- .expedient_download(file.path(base_url, inst_file))
+        Sys.chmod(tmploc, mode = "0755")
 
-        # Apparently installer requires backslashes.
-        backpath <- gsub("/", "\\", dest_path)
-        inst_args <- sprintf("/InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /S /D=%s", backpath)
-        system2(tmploc, inst_args)
+        # Using the same code as reticulate:::miniconda_installer_run.
+        dir.create(dest_path, recursive = TRUE, showWarnings = FALSE)
+        inst_args <- sprintf("/InstallationType=JustMe /RegisterPython=0 /S /D=%s", utils::shortPathName(dest_path))
+        status <- system2(tmploc, inst_args)
+
+        if (status != 0) {
+            stop(sprintf("anaconda installation failed with status code '%s'", status))
+        }
 
         ### TWILIGHT ZONE END ###
 
