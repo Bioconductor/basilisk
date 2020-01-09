@@ -17,7 +17,7 @@ This function is primarily intended for developer intended for use within other 
 This uses \code{\link{use_python}} to register a consistent Python version that is isolated from the system installation.
 Developers should generally not use this function for anything other than testing.
 Clients of \pkg{basilisk} should interact with its Python instance via \code{\link{basiliskRun}} and related functions,
-while installation of additional packages should be performed via \code{\link{setupVirtualEnv}}.
+while installation of additional packages should be performed via \code{\link{setupBasiliskEnv}}.
 }
 \examples{
 useBasilisk()
@@ -28,7 +28,7 @@ os$listdir()
 \seealso{
 \code{\link{basiliskRun}}, to run Python code on the \pkg{basilisk}-managed Python instance.
 
-\code{\link{setupVirtualEnv}}, to install Python packages.
+\code{\link{setupBasiliskEnv}}, to install Python packages.
 }
 \author{
 Aaron Lun

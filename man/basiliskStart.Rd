@@ -30,7 +30,7 @@ basiliskRun(
 \arguments{
 \item{envname}{String containing the name of the virtual environment to use.}
 
-\item{pkgname}{String specifying the name of the R package that owns the virtual environment.}
+\item{pkgname}{String specifying the name of the R package that owns the environment.}
 
 \item{fork}{Logical scalar indicating whether forking should be performed on non-Windows systems, see \code{\link{getBasiliskFork}}.
 If \code{FALSE}, a new worker process is created using communication over sockets.}
@@ -122,14 +122,14 @@ Sys.setenv(WORKON_HOME=tmploc)
 ##################################################
 
 # Loading one virtual environment into our R session:
-setupVirtualEnv('my_package_A', c('pandas==0.25.3',
+setupBasiliskEnv('my_package_A', c('pandas==0.25.3',
     "python-dateutil==2.8.1", "pytz==2019.3"))
-useVirtualEnv("my_package_A")
+useBasiliskEnv("my_package_A")
 X <- reticulate::import("pandas")
 X$`__version__` 
 
 # Co-exists with our other virtual environment in a separate process:
-setupVirtualEnv('my_package_B', c('pandas==0.24.1',
+setupBasiliskEnv('my_package_B', c('pandas==0.24.1',
     "python-dateutil==2.7.1", "pytz==2017.2"))
 
 cl <- basiliskStart('my_package_B')
@@ -159,7 +159,7 @@ Sys.setenv(WORKON_HOME=old)
 ##################################################
 }
 \seealso{
-\code{\link{setupVirtualEnv}}, to set up the virtual environments.
+\code{\link{setupBasiliskEnv}}, to set up the virtual environments.
 
 \code{\link{getBasiliskFork}} and \code{\link{getBasiliskShared}}, to control various global options.
 }
