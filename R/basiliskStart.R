@@ -152,18 +152,15 @@ basiliskStart <- function(envname, pkgname=NULL,
         {
             # Seeing if we can just load it successfully.
             old.pypath <- Sys.getenv("PYTHONPATH")
-            requested <- useBasiliskEnv(envname, pkgname=pkgname, required=FALSE)
-            identical(requested, py_config()$virtualenv)
-        }) 
-    {
+            useBasiliskEnv(envname, pkgname=pkgname, required=FALSE)
+        }
+    ) {
         proc <- new.env()
         proc$.basilisk.pypath <- old.pypath
     } else {
-        if (fork && .Platform$OS.type!="windows" && 
-            (!py_available() ||
-                identical(useBasiliskEnv(envname, pkgname=pkgname, dry=TRUE), py_config()$virtualenv)
-            ))
-        { 
+        if (fork && !.is_windows() && 
+            (!py_available() || useBasiliskEnv(envname, pkgname=pkgname, dry=TRUE))
+        ) { 
             proc <- makeForkCluster(1)
         } else {
             proc <- makePSOCKcluster(1)

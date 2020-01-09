@@ -13,9 +13,6 @@
     }
 
     .minstaller(dest_path, testing=FALSE)
-
-    # Create a common virtual environment.
-    setupBasiliskEnv(.common_env, character(0), pkgname="basilisk")
 }
 
 .minstaller <- function(dest_path, testing=FALSE) {

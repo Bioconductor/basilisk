@@ -128,11 +128,6 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, use.conda=FALSE) {
 
 #' @importFrom reticulate virtualenv_create virtualenv_install virtualenv_remove virtualenv_root
 .setup_virtualenv <- function(envname, packages, pkgname) {
-    # Use environment variable for testing purposes only;
-    # this should not be exposed to the clients.
-    base.dir <- Sys.getenv("BASILISK_TEST_CORE", .get_basilisk_dir())
-    py.cmd <- .get_py_cmd(base.dir)
-
     # Creating a virtual environment in an appropriate location.
     if (!is.null(pkgname)) {
         vdir <- file.path(system.file(package=pkgname), .env_dir)
@@ -144,28 +139,21 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, use.conda=FALSE) {
 
     target <- file.path(path.expand(virtualenv_root()), envname)
 
-    # Effective no-op if virtualenv already exists.
+    # Effective no-op if the environment already exists, or if everything is
+    # perfectly satisfied by the core installation.
     if (file.exists(target)) {
         return(NULL)
     }
 
-    # If everything is perfectly satisfied by the core installation, we just
-    # make a symlink to the common virtual environment.
-    available <- .basilisk_freeze(py.cmd)
-    if (all(packages %in% available)) {
-        file.symlink(.get_common_env(), target)
+    base.dir <- Sys.getenv("BASILISK_TEST_CORE", .get_basilisk_dir()) # environment variable for testing only.
+    py.cmd <- .get_py_cmd(base.dir)
+    previous <- .basilisk_freeze(py.cmd)
+    if (all(packages %in% previous)) {
         return(NULL)
     }
  
     virtualenv_create(envname, python=py.cmd)
-
-    # Code only reaches this point if we're creating the common basilisk environment.
-    if (length(packages)==0L) {
-        return(NULL)
-    }
-
     env.cmd <- .get_py_cmd(target)
-    previous <- .basilisk_freeze(env.cmd)
     virtualenv_install(envname, packages, ignore_installed=FALSE)
     updated <- .basilisk_freeze(env.cmd)
 
@@ -187,14 +175,16 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, use.conda=FALSE) {
         envdir <- file.path(getwd(), envname)
     }
 
-    base.dir <- Sys.getenv("BASILISK_TEST_CORE", .get_basilisk_dir())
-    py.cmd <- .get_py_cmd(base.dir)
+    # Effective no-op if the environment already exists, or if everything is
+    # perfectly satisfied by the core installation.
+    if (file.exists(envdir)) {
+        return(NULL)
+    }
 
-    # If everything is perfectly satisfied by the core installation, we just
-    # make a symlink to that conda installation. 
+    base.dir <- Sys.getenv("BASILISK_TEST_CORE", .get_basilisk_dir()) # environment variable for testing only.
+    py.cmd <- .get_py_cmd(base.dir)
     previous <- .basilisk_freeze(py.cmd)
     if (all(packages %in% previous)) {
-        file.symlink(base.dir, target)
         return(NULL)
     }
 

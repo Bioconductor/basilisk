@@ -46,7 +46,7 @@
 #' \code{\link{basiliskStart}}, for how these virtual environments should be used.
 #'
 #' @export
-#' @importFrom reticulate use_virtualenv virtualenv_root
+#' @importFrom reticulate use_virtualenv virtualenv_root py_config
 useBasiliskEnv <- function(envname, pkgname=NULL, dry=FALSE, required=TRUE) {
     old.retpy <- Sys.getenv("RETICULATE_PYTHON")
     Sys.unsetenv("RETICULATE_PYTHON")
@@ -54,22 +54,32 @@ useBasiliskEnv <- function(envname, pkgname=NULL, dry=FALSE, required=TRUE) {
         on.exit(Sys.setenv(RETICULATE_PYTHON=old.retpy))
     }
 
+    mode <- "virtualenv"
     if (!is.null(pkgname)) {
         vdir <- .get_env_root(pkgname)
-        use.conda <- file.exists(file.path(vdir, envname, .retrieve_conda()))
+        if (!file.exists(file.path(vdir, envname))) {
+            mode <- "common"
+        } else if (file.exists(file.path(vdir, envname, .retrieve_conda()))) {
+            mode <- "conda"
+        }
     } else {
-        use.conda <- file.exists(envname, .retrieve_conda())
-        if (use.conda) {
+        if (file.exists(file.path(envname, .retrieve_conda()))) {
             vdir <- getwd()
+            mode <- "conda"
         } else {
             vdir <- virtualenv_root()
+            if (!file.exists(file.path(vdir, envname))) {
+                mode <- "common"
+            }
         }
     }
 
-    # Resolve soft-links to encourage use of the soft-linked common environment.
-    # Thus, it is very important that normalizePath() is run *after* file.path()!
-    vdir <- file.path(vdir, envname)
-    vdir <- normalizePath(vdir)
+    if (mode!="common") {
+        vdir <- file.path(vdir, envname)
+        vdir <- normalizePath(vdir, mustWork=TRUE)
+    } else {
+        vdir <- .get_basilisk_dir()
+    }
 
     if (!dry) {
         # Don't even try to be nice and add an on.exit() clause to protect the
@@ -79,11 +89,19 @@ useBasiliskEnv <- function(envname, pkgname=NULL, dry=FALSE, required=TRUE) {
         # the PYTHONPATH, we can get the wrong package loaded. 
         Sys.unsetenv("PYTHONPATH")
 
-        if (use.conda) {
+        if (mode=="conda") {
             use_condaenv(vdir, required=required)
-        } else {
+        } else if (mode=="virtualenv") {
             use_virtualenv(vdir, required=required)
+        } else {
+            use_python(.get_py_cmd(vdir), required=required)
         }
     }
-    vdir
+
+    # Checking whether we're the same as the existing python instance.
+    if (mode=="virtualenv") {
+        identical(vdir, py_config()$virtualenv)
+    } else {
+        identical(.get_py_cmd(vdir), py_config()$python)
+    }
 }
