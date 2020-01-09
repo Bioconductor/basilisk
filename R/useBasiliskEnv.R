@@ -1,24 +1,25 @@
-#' Set up and use virtual environments
+#' Use \pkg{basilisk} environments
 #'
-#' Set up and use Python virtual environments for isolated execution of Python code with appropriate versions of all Python packages.
+#' Use \pkg{basilisk} environments for isolated execution of Python code with appropriate versions of all Python packages.
 #' 
-#' @inheritParams setupVirtualEnv
-#' @param dry Logical scalar indicating whether only the directory should be returned without loading the virtual environment.
-#' @param required Logical scalar indicating whether an error should be raised if the requested virtual environment cannot be found.
+#' @inheritParams setupBasiliskEnv
+#' @param dry Logical scalar indicating whether only the directory should be returned without loading the environment.
+#' @param required Logical scalar indicating whether an error should be raised if the requested environment cannot be found.
 #' 
 #' @return 
-#' The function will load the specified virtual environment into the R session.
-#' It returns a string specifying the path to the virtual environment.
-#' If \code{dry=TRUE}, the character vector is returned without loading the virtual environment.
+#' The function will load the specified \pkg{basilisk} environment into the R session.
+#' It returns a string specifying the path to the environment.
+#' If \code{dry=TRUE}, the character vector is returned without loading the environment.
 #'
 #' @details
-#' It is unlikely that developers should ever need to call \code{\link{useVirtualEnv}} directly.
+#' It is unlikely that developers should ever need to call \code{\link{useBasiliskEnv}} directly.
 #' Rather, this interaction should be automatically handled by \code{\link{basiliskStart}}.
 #'
-#' If \code{pkgname} is specified, \code{useVirtualEnv} will search in the installation directory of \code{pkgname} for \code{basilisk/envname}
-#' Otherwise, it will look in the default location for virtual environments (see \code{?\link{virtualenv_root}}).
+#' If \code{pkgname} is specified, \code{useBasiliskEnv} will search in the installation directory of \code{pkgname} for \code{basilisk/envname}
+#' Otherwise, it will look in the default location for virtual environments (see \code{?\link{virtualenv_root}})
+#' or the current working directory for conda environments.
 #' 
-#' A side-effect of \code{useVirtualEnv} with \code{dry=FALSE} is that the \code{"PYTHONPATH"} environment variable is unset for the duration of the R session
+#' A side-effect of \code{useBasiliskEnv} with \code{dry=FALSE} is that the \code{"PYTHONPATH"} environment variable is unset for the duration of the R session
 #' (or \pkg{basilisk} process, depending on the back-end chosen by \code{\link{basiliskStart}}).
 #' This is a deliberate choice to avoid compromising the version guarantees if \code{\link{import}} is allowed to search other locations beyond the virtual environment.
 #'
@@ -34,8 +35,8 @@
 #' Sys.setenv(WORKON_HOME=tmploc)
 #' ##################################################
 #'
-#' setupVirtualEnv('my_package_A_alt', 'pandas')
-#' useVirtualEnv("my_package_A_alt")
+#' setupBasiliskEnv('my_package_A_alt', 'pandas')
+#' useBasiliskEnv("my_package_A_alt")
 #' 
 #' ##################################################
 #' # Restoring the old WORKON_HOME.
@@ -46,7 +47,7 @@
 #'
 #' @export
 #' @importFrom reticulate use_virtualenv virtualenv_root
-useVirtualEnv <- function(envname, pkgname=NULL, dry=FALSE, required=TRUE) {
+useBasiliskEnv <- function(envname, pkgname=NULL, dry=FALSE, required=TRUE) {
     old.retpy <- Sys.getenv("RETICULATE_PYTHON")
     Sys.unsetenv("RETICULATE_PYTHON")
     if (old.retpy!="") {
@@ -55,8 +56,14 @@ useVirtualEnv <- function(envname, pkgname=NULL, dry=FALSE, required=TRUE) {
 
     if (!is.null(pkgname)) {
         vdir <- .get_env_root(pkgname)
+        use.conda <- file.exists(file.path(vdir, envname, .retrieve_conda()))
     } else {
-        vdir <- virtualenv_root()
+        use.conda <- file.exists(envname, .retrieve_conda())
+        if (use.conda) {
+            vdir <- getwd()
+        } else {
+            vdir <- virtualenv_root()
+        }
     }
 
     # Resolve soft-links to encourage use of the soft-linked common environment.
@@ -71,7 +78,12 @@ useVirtualEnv <- function(envname, pkgname=NULL, dry=FALSE, required=TRUE) {
         # and Python looks somewhere else other than our virtual environment via
         # the PYTHONPATH, we can get the wrong package loaded. 
         Sys.unsetenv("PYTHONPATH")
-        use_virtualenv(vdir, required=required)
+
+        if (use.conda) {
+            use_condaenv(vdir, required=required)
+        } else {
+            use_virtualenv(vdir, required=required)
+        }
     }
     vdir
 }
