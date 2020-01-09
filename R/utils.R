@@ -20,7 +20,7 @@
 .core_dir <- "anaconda"
 
 .detect_os <- function() {
-    if (.Platform$OS.type=="windows") {
+    if (.is_windows()) {
         paste0("win", ifelse(.Machine$sizeof.pointer == 8, "64", "32"))
     } else {
         if (Sys.info()[["sysname"]] == "Darwin") {
@@ -28,5 +28,17 @@
         } else {
             "linux"
         }
+    }
+}
+
+.is_windows <- function() {
+    .Platform$OS.type=="windows" 
+}
+
+.retrieve_conda <- function() {
+    if (.is_windows()) {
+        "Scripts/conda.exe"
+    } else {
+        "bin/conda"
     }
 }
