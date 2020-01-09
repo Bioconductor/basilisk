@@ -1,30 +1,32 @@
-#' Set up and use virtual environments
+#' Set up a \pkg{basilisk} environments
 #'
-#' Set up and use Python virtual environments for isolated execution of Python code with appropriate versions of all Python packages.
+#' Set up a Python virtual or conda environment (depending on the operating system)
+#' for isolated execution of Python code with appropriate versions of all Python packages.
 #' 
-#' @param envname String containing the name of the virtual environment to create (for \code{setupVirtualEnv}) or use (other functions).
-#' @param packages Character vector containing the names of Python packages to install into the virtual environment.
+#' @param envname String containing the name of the environment to create.
+#' @param packages Character vector containing the names of Python packages to install into the environment.
 #' It is required to include version numbers in each string.
-#' @param pkgname String specifying the name of the R package that owns the virtual environment.
+#' @param pkgname String specifying the name of the R package that owns the environment.
 #' 
 #' @return 
-#' A virtual environment is created in the installation directory of \code{pkgname} if specified, 
+#' A virtual or conda environment is created in the installation directory of \code{pkgname} if specified, 
 #' or at the default location for virtual environments otherwise (see \code{?\link{virtualenv_root}}).
 #' The function returns a \code{NULL} value, invisibly.
 #'
 #' @details
-#' Use of virtual environments is the recommended approach for Bioconductor packages to interact with the \pkg{basilisk} Python instance.
+#' Use of \pkg{basilisk} environments is the recommended approach for Bioconductor packages to interact with the \pkg{basilisk} Python instance.
 #' This avoids version conflicts within an R session when different Bioconductor packages (or even different functions within a single package) require incompatible versions of Python packages.
+#' We call these \pkg{basilisk} environments as we will automatically switch between virtual and conda environments depending on the operating system.
 #'
-#' Developers of Bioconductor packages should call \code{setupVirtualEnv} with an appropriate \code{pkgname} in an \code{.onLoad} function.
-#' This will create the virtual environment and install the relevant Python packages upon R package installation.
+#' Developers of Bioconductor packages should call \code{setupBasiliskEnv} with an appropriate \code{pkgname} in an \code{.onLoad} function.
+#' This will create the \pkg{basilisk} environment and install the relevant Python packages upon R package installation.
 #' The \pkg{son.of.basilisk} example in the \code{inst} directory of \pkg{basilisk} can be used as an example.
 #'
 #' If all of the requested packages fall into the \dQuote{core} list of packages (see \code{?\link{listCorePackages}}),
-#' a link is created to a common virtual environment in the \pkg{basilisk} installation directory.
-#' This enables multiple client packages to use the same virtual environment for greater efficiency with \code{\link{basiliskStart}}.
+#' a link is created to a common environment in the \pkg{basilisk} installation directory.
+#' This enables multiple client packages to use the same environment for greater efficiency with \code{\link{basiliskStart}}.
 #' 
-#' If \code{pkgname} is specified and the virtual environment is already present with all requested packages, \code{setupVirtualEnv} is a no-op.
+#' If \code{pkgname} is specified and the \pkg{basilisk} environment is already present with all requested packages, \code{setupBasiliskEnv} is a no-op.
 #' This ensures that the function only installs the packages once at the first load during R package installation.
 #'
 #' @section Dealing with versioning: 
@@ -51,15 +53,15 @@
 #' Sys.setenv(WORKON_HOME=tmploc)
 #' ##################################################
 #' 
-#' setupVirtualEnv('my_package_A', c('pandas==0.25.3',
+#' setupBasiliskEnv('my_package_A', c('pandas==0.25.3',
 #'     "python-dateutil==2.8.1", "pytz==2019.3"))
-#' useVirtualEnv("my_package_A")
+#' useBasiliskEnv("my_package_A")
 #' X <- reticulate::import("pandas")
 #' X$`__version__`
 #'
 #' # No need to list versions of core packages, 
 #' # or to list them at all if they are dependencies.
-#' setupVirtualEnv('my_package_A_alt', 'pandas')
+#' setupBasiliskEnv('my_package_A_alt', 'pandas')
 #'
 #' ##################################################
 #' # Restoring the old WORKON_HOME.
@@ -69,15 +71,11 @@
 #' \code{\link{listCorePackages}}, for a list of core Python packages with pinned versions.
 #'
 #' @export
-#' @importFrom reticulate virtualenv_create virtualenv_install virtualenv_remove virtualenv_root
 #' @importFrom utils read.delim
-setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
+setupBasiliskEnv <- function(envname, packages, pkgname=NULL, use.conda=FALSE) {
     # This clause solely exists to avoid weirdness due to devtools::document().
-    if (!is.null(pkgname)) {
-        instdir <- system.file(package=pkgname)
-        if (basename(instdir)!=pkgname) {
-            return(invisible(NULL))
-        }
+    if (!is.null(pkgname) && basename(system.file(package=pkgname))!=pkgname) {
+        return(invisible(NULL))
     }
 
     versioned <- grepl("==", packages)
@@ -116,16 +114,23 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
         on.exit(Sys.setenv(PYTHONPATH=old.pypath), add=TRUE)
     }
 
+    if (.is_windows() || use.conda) {
+        .setup_condaenv(envname, packages, pkgname)
+    } else {
+        .setup_virtualenv(envname, packages, pkgname)
+    }
+}
+
+#' @importFrom reticulate virtualenv_create virtualenv_install virtualenv_remove virtualenv_root
+.setup_virtualenv <- function(envname, packages, pkgname) {
     # Use environment variable for testing purposes only;
     # this should not be exposed to the clients.
     base.dir <- Sys.getenv("BASILISK_TEST_CORE", .get_basilisk_dir())
     py.cmd <- .get_py_cmd(base.dir)
 
-    #############################
-
     # Creating a virtual environment in an appropriate location.
     if (!is.null(pkgname)) {
-        vdir <- file.path(instdir, .env_dir)
+        vdir <- file.path(system.file(package=pkgname), .env_dir)
         dir.create(vdir, recursive=TRUE, showWarnings=FALSE)
         old.work <- Sys.getenv("WORKON_HOME")
         Sys.setenv(WORKON_HOME=vdir)
@@ -133,20 +138,28 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
     }
 
     target <- file.path(path.expand(virtualenv_root()), envname)
-    env.cmd <- .get_py_cmd(target)
 
-    # Effective no-op if virtualenv exists and has all the packages we requested.
+    # Effective no-op if virtualenv already exists.
     if (file.exists(target)) {
         return(NULL)
     }
 
+    # If everything is perfectly satisfied by the core installation, we just
+    # make a symlink to the common virtual environment.
+    available <- .basilisk_freeze(py.cmd)
+    if (all(packages %in% available)) {
+        file.symlink(.get_common_env(), target)
+        return(NULL)
+    }
+ 
     virtualenv_create(envname, python=py.cmd)
 
     # Code only reaches this point if we're creating the common basilisk environment.
     if (length(packages)==0L) {
-        return(invisible(NULL))
+        return(NULL)
     }
 
+    env.cmd <- .get_py_cmd(target)
     previous <- .basilisk_freeze(env.cmd)
     virtualenv_install(envname, packages, ignore_installed=FALSE)
     updated <- .basilisk_freeze(env.cmd)
@@ -154,14 +167,68 @@ setupVirtualEnv <- function(envname, packages, pkgname=NULL) {
     if (any(!updated %in% c(previous, packages))) {
         added <- setdiff(updated, c(previous, packages))
         stop(sprintf("need to list dependency on '%s'", added[1]))
-    } else if (identical(previous, updated)) {
-        # If everything is perfectly satisfied by the core installation, we
-        # remove the venv and make a symlink. 
-        virtualenv_remove(envname, confirm=FALSE) 
-        file.symlink(.get_common_env(), target)
+    } 
+
+    NULL
+}
+
+#' @importFrom reticulate conda_create 
+.setup_condaenv <- function(envname, packages, pkgname) {
+    if (!is.null(pkgname)) { 
+        vdir <- file.path(system.file(package=pkgname), .env_dir)
+        dir.create(vdir, recursive=TRUE, showWarnings=FALSE)
+        envdir <- file.path(vdir, envname)
+    } else {
+        envdir <- file.path(getwd(), envname)
     }
 
-    invisible(NULL)
+    base.dir <- Sys.getenv("BASILISK_TEST_CORE", .get_basilisk_dir())
+    py.cmd <- .get_py_cmd(base.dir)
+
+    # If everything is perfectly satisfied by the core installation, we just
+    # make a symlink to that conda installation. 
+    previous <- .basilisk_freeze(py.cmd)
+    if (all(packages %in% previous)) {
+        file.symlink(base.dir, target)
+        return(NULL)
+    }
+
+    suffix <- if (.is_windows()) {
+        "Scripts/conda.exe"
+    } else {
+        "bin/conda"
+    }
+
+    # This is where it gets a bit crazy. We will do two installations; one to
+    # check what unlisted dependencies of the listed packages get pulled down,
+    # and another to actually enforce the versions of those dependencies.
+    conda_create(envname=envdir,
+        conda=file.path(.get_basilisk_dir(), suffix),
+        packages=sub("==", "=", packages)
+    )
+
+    env.cmd <- .get_py_cmd(envdir)
+    updated <- .basilisk_freeze(env.cmd)
+
+    if (any(!updated %in% c(previous, packages))) {
+        added <- setdiff(updated, c(previous, packages))
+        stripped <- .full2pkg(added)
+        available <- .full2pkg(previous)
+
+        replace <- match(stripped, available)
+        if (any(lost <- is.na(replace))) {
+            stop(sprintf("need to list dependency on '%s'", added[lost][1]))
+        }
+
+        reattempt <- c(packages, previous[replace])
+        unlink(envdir, recursive=TRUE)
+        conda_create(envname=envdir,
+            conda=file.path(.get_basilisk_dir(), suffix),
+            packages=sub("==", "=", packages)
+        )
+    }
+
+    NULL
 }
 
 .basilisk_freeze <- function(py.cmd) {
