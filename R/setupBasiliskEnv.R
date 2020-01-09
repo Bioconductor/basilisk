@@ -7,17 +7,18 @@
 #' @param packages Character vector containing the names of Python packages to install into the environment.
 #' It is required to include version numbers in each string.
 #' @param pkgname String specifying the name of the R package that owns the environment.
+#' @param use.conda Logical scalar indicating whether a conda environment should be created.
 #' 
 #' @return 
-#' A virtual or conda environment is created in the installation directory of \code{pkgname} if specified, 
-#' or at the default location for virtual environments otherwise (see \code{?\link{virtualenv_root}}).
-#' The function returns a \code{NULL} value, invisibly.
+#' A virtual or conda environment is created in the installation directory of \code{pkgname} if specified.
+#' Otherwise, it creates the environment at the default location for virtual environments (see \code{?\link{virtualenv_root}})
+#' or in the current working directory for conda environments.
+#' The function itself returns a \code{NULL} value, invisibly.
 #'
 #' @details
 #' Use of \pkg{basilisk} environments is the recommended approach for Bioconductor packages to interact with the \pkg{basilisk} Python instance.
 #' This avoids version conflicts within an R session when different Bioconductor packages (or even different functions within a single package) require incompatible versions of Python packages.
-#' We call these \pkg{basilisk} environments as we will automatically switch between virtual and conda environments depending on the operating system.
-#'
+#' 
 #' Developers of Bioconductor packages should call \code{setupBasiliskEnv} with an appropriate \code{pkgname} in an \code{.onLoad} function.
 #' This will create the \pkg{basilisk} environment and install the relevant Python packages upon R package installation.
 #' The \pkg{son.of.basilisk} example in the \code{inst} directory of \pkg{basilisk} can be used as an example.
@@ -28,6 +29,10 @@
 #' 
 #' If \code{pkgname} is specified and the \pkg{basilisk} environment is already present with all requested packages, \code{setupBasiliskEnv} is a no-op.
 #' This ensures that the function only installs the packages once at the first load during R package installation.
+#'
+#' We call these \pkg{basilisk} environments as the function will automatically switch between virtual and conda environments depending on the operating system.
+#' MacOSX and Linux default to virtual environments to enable re-use of dependencies from the core installation, while Windows can only use conda environments.
+#' Developers can force the former to use conda environments with \code{use.conda=TRUE}.
 #'
 #' @section Dealing with versioning: 
 #' Pinned version numbers must be present for all requested packages in \code{packages}.
@@ -193,19 +198,12 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, use.conda=FALSE) {
         return(NULL)
     }
 
-    suffix <- if (.is_windows()) {
-        "Scripts/conda.exe"
-    } else {
-        "bin/conda"
-    }
+    conda.cmd <- file.path(.get_basilisk_dir(), .retrieve_conda())
 
     # This is where it gets a bit crazy. We will do two installations; one to
     # check what unlisted dependencies of the listed packages get pulled down,
     # and another to actually enforce the versions of those dependencies.
-    conda_create(envname=envdir,
-        conda=file.path(.get_basilisk_dir(), suffix),
-        packages=sub("==", "=", packages)
-    )
+    conda_create(envname=envdir, conda=conda.cmd, packages=sub("==", "=", packages))
 
     env.cmd <- .get_py_cmd(envdir)
     updated <- .basilisk_freeze(env.cmd)
@@ -219,13 +217,10 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, use.conda=FALSE) {
         if (any(lost <- is.na(replace))) {
             stop(sprintf("need to list dependency on '%s'", added[lost][1]))
         }
-
         reattempt <- c(packages, previous[replace])
+
         unlink(envdir, recursive=TRUE)
-        conda_create(envname=envdir,
-            conda=file.path(.get_basilisk_dir(), suffix),
-            packages=sub("==", "=", packages)
-        )
+        conda_create(envname=envdir, conda=conda.cmd, packages=sub("==", "=", reattempt))
     }
 
     NULL
