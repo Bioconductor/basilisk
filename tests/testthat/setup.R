@@ -6,11 +6,11 @@ Sys.setenv(WORKON_HOME="whee")
 
 core.set <- listCorePackages()
 test.pandas <- core.set$full[core.set$package=="pandas"]
-setupVirtualEnv('my_package_A', test.pandas)
+setupBasiliskEnv('my_package_A', test.pandas)
 
 old.pandas <- "pandas==0.24.1"
 old.pandas.deps <- c("python-dateutil==2.7.1", "pytz==2017.2")
-setupVirtualEnv('my_package_B', c(old.pandas, old.pandas.deps))
+setupBasiliskEnv('my_package_B', c(old.pandas, old.pandas.deps))
 
 #################################################################
 # Defining a helper function to check for correct persistence 

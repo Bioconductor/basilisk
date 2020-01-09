@@ -1,4 +1,4 @@
-# This checks that the version-controlling behavior of setupVirtualEnv is correct.
+# This checks that the version-controlling behavior of setupBasiliskEnv is correct.
 # library(testthat); library(basilisk); source("setup.R"); source("test-install.R"); 
 
 client.dir <- "install-test-client"
@@ -29,29 +29,29 @@ Sys.unsetenv("PYTHONPATH")
 target <- file.path(client.dir, "thingo")
 env.py <- basilisk:::.get_py_cmd(target)
 
-test_that("setupVirtualEnv refuses to work without all specified versions", {
+test_that("setupBasiliskEnv refuses to work without all specified versions", {
     unlink(target, recursive=TRUE)
-    expect_error(setupVirtualEnv("thingo", "pillow"), "version must be explicitly specified")
+    expect_error(setupBasiliskEnv("thingo", "pillow"), "version must be explicitly specified")
 
     unlink(target, recursive=TRUE)
-    expect_error(setupVirtualEnv("thingo", c(test.pandas, old.pandas)), "redundant listing")
+    expect_error(setupBasiliskEnv("thingo", c(test.pandas, old.pandas)), "redundant listing")
 })
 
-test_that("setupVirtualEnv uses the core installation when possible", {
+test_that("setupBasiliskEnv uses the core installation when possible", {
     unlink(target, recursive=TRUE)
     
     incoming <- basilisk:::.basilisk_freeze(test.py)
     expect_true(test.pandas %in% incoming)
-    expect_error(setupVirtualEnv("thingo", test.pandas), NA)
+    expect_error(setupBasiliskEnv("thingo", test.pandas), NA)
     expect_true(Sys.readlink(file.path(client.dir, "thingo"))!="") # i.e., is a link.
 
     incoming <- basilisk:::.basilisk_freeze(env.py)
     expect_true(test.pandas %in% incoming)
 })
 
-test_that("setupVirtualEnv overrides an incompatible core installation", {
+test_that("setupBasiliskEnv overrides an incompatible core installation", {
     unlink(target, recursive=TRUE)
-    expect_error(setupVirtualEnv("thingo", c(old.pandas, old.pandas.deps)), NA)
+    expect_error(setupBasiliskEnv("thingo", c(old.pandas, old.pandas.deps)), NA)
 
     incoming <- basilisk:::.basilisk_freeze(test.py)
     expect_true(test.pandas %in% incoming)
@@ -62,9 +62,9 @@ test_that("setupVirtualEnv overrides an incompatible core installation", {
     expect_true(all(old.pandas.deps %in% incoming))
 })
 
-test_that("setupVirtualEnv allows core packages to have unspecified versions", {
+test_that("setupBasiliskEnv allows core packages to have unspecified versions", {
     unlink(target, recursive=TRUE)
-    expect_error(setupVirtualEnv("thingo", "numpy"), NA)
+    expect_error(setupBasiliskEnv("thingo", "numpy"), NA)
 
     test.numpy <- core.set$full[core.set$package=="numpy"]
     incoming <- basilisk:::.basilisk_freeze(test.py)
