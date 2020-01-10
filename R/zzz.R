@@ -16,47 +16,45 @@
 }
 
 .minstaller <- function(dest_path, testing=FALSE) {
-    # Stripped from https://github.com/hafen/rminiconda a long time ago...
-    # To be replaced if reticulate offers its own solution.
-    version <- "2019.10"
-    base_url <- "https://repo.anaconda.com/archive"
     os <- .detect_os()
+    version <- "2019.10"
 
     if (os %in% c("win64", "win32")) {
+        # Anaconda installers seem to be broken on Windows,
+        # so we instead install miniconda and populate it with all anaconda packages.
+        miniversion <- "4.7.12.1"
         arch <- if (os=="win64") "x86_64" else "x86"
-
-        ### TWILIGHT ZONE START ###
-
-        # Apparently Anaconda files get quarantined by some security check on Windows,
-        # so we try installing an older version.
-#        inst_file <- sprintf("Anaconda3-2019.03-Windows-%s.exe", arch)
-        alt_url <- sprintf("https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-%s.exe", arch)
-        tmploc <- .expedient_download(alt_url) # file.path(base_url, inst_file))
-        Sys.chmod(tmploc, mode = "0755")
+        inst_file <- sprintf("Miniconda3-%s-Windows-%s.exe", miniversion, arch)
+        tmploc <- .expedient_download(alt_url)
 
         # Using the same code as reticulate:::miniconda_installer_run.
         dir.create(dest_path, recursive = TRUE, showWarnings = FALSE)
         inst_args <- sprintf("/InstallationType=JustMe /RegisterPython=0 /S /D=%s", utils::shortPathName(dest_path))
+        Sys.chmod(tmploc, mode = "0755")
         status <- system2(tmploc, inst_args)
 
-        if (status != 0) {
-            stop(sprintf("anaconda installation failed with status code '%s'", status))
+        if (status==0L) {
+            conda_cmd <- file.path(dest_path, .retrieve_conda())
+            status <- system2(conda_cmd, c("install", "--yes", 
+                "--freeze-installed", paste0("anaconda=", version)))
         }
 
-        ### TWILIGHT ZONE END ###
-
     } else {
+        # Stripped from https://github.com/hafen/rminiconda a long time ago...
+        base_url <- "https://repo.anaconda.com/archive"
         sysname <- if (os=="macosx") "MacOSX" else "Linux"
         inst_file <- sprintf("Anaconda3-%s-%s-x86_64.sh", version, sysname)
 
         if (testing) {
-            # FOR INTERNAL TESTING ONLY, avoid re-downloading and 
-            # re-installing miniconda everytime we update the R package.
+            # FOR INTERNAL TESTING ONLY, avoid re-installing anaconda every 
+            # time we recompile the R package.
             dest_path2 <- file.path(path.expand("~/"), ".anaconda")
             if (!file.exists(dest_path2)) {
                 tmploc <- .expedient_download(file.path(base_url, inst_file))
                 inst_args <- sprintf(" %s -b -p %s", tmploc, dest_path2)
-                system2("bash", inst_args)
+                status <- system2("bash", inst_args)
+            } else {
+                status <- 0L
             }
             file.symlink(dest_path2, dest_path)
 
@@ -68,11 +66,15 @@
                 # The prebuilt R binary for Mac seems to set this variable,
                 # which causes default paths for zlib to be ignored and breaks
                 # installation. So, we unset it before attempting installation.
-                system(paste("unset DYLD_FALLBACK_LIBRARY_PATH; bash", inst_args))
+                status <- system(paste("unset DYLD_FALLBACK_LIBRARY_PATH; bash", inst_args))
             } else {
-                system2("bash", inst_args)
+                status <- system2("bash", inst_args)
             }
         }
+    }
+
+    if (status != 0) {
+        stop(sprintf("conda installation failed with status code '%s'", status))
     }
 
     NULL
