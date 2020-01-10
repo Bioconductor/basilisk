@@ -4,7 +4,7 @@
 \alias{setupBasiliskEnv}
 \title{Set up a \pkg{basilisk} environments}
 \usage{
-setupBasiliskEnv(envname, packages, pkgname = NULL, use.conda = FALSE)
+setupBasiliskEnv(envname, packages, pkgname = NULL, conda = FALSE)
 }
 \arguments{
 \item{envname}{String containing the name of the environment to create.}
@@ -14,13 +14,13 @@ It is required to include version numbers in each string.}
 
 \item{pkgname}{String specifying the name of the R package that owns the environment.}
 
-\item{use.conda}{Logical scalar indicating whether a conda environment should be created.}
+\item{conda}{Logical scalar indicating whether a conda environment should be created.}
 }
 \value{
 A virtual or conda environment is created in the installation directory of \code{pkgname} if specified.
-Otherwise, it creates the environment at the default location for virtual environments (see \code{?\link{virtualenv_root}})
-or in the current working directory for conda environments.
-The function itself returns a \code{NULL} value, invisibly.
+Otherwise, it creates the environment in the directory specified by the environment variable \code{BASILISK_NONPKG_DIR}, 
+defaulting to the current working directory. 
+The function itself returns a \code{NULL} value invisibly.
 }
 \description{
 Set up a Python virtual or conda environment (depending on the operating system)
@@ -42,8 +42,8 @@ If \code{pkgname} is specified and the \pkg{basilisk} environment is already pre
 This ensures that the function only installs the packages once at the first load during R package installation.
 
 We call these \pkg{basilisk} environments as the function will automatically switch between virtual and conda environments depending on the operating system.
-MacOSX and Linux default to virtual environments to enable re-use of dependencies from the core installation, while Windows can only use conda environments.
-Developers can force the former to use conda environments with \code{use.conda=TRUE}.
+MacOSX and Linux default to virtual environments to enable re-use of dependencies from the core installation, while Windows can only conda environments.
+Developers can force the former to conda environments with \code{conda=TRUE}.
 }
 \section{Dealing with versioning}{
  

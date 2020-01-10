@@ -28,8 +28,8 @@ It is unlikely that developers should ever need to call \code{\link{useBasiliskE
 Rather, this interaction should be automatically handled by \code{\link{basiliskStart}}.
 
 If \code{pkgname} is specified, \code{useBasiliskEnv} will search in the installation directory of \code{pkgname} for \code{basilisk/envname}
-Otherwise, it will look in the default location for virtual environments (see \code{?\link{virtualenv_root}})
-or the current working directory for conda environments.
+Otherwise, it will look in the directory specified by the environment variable \code{BASILISK_NONPKG_DIR},
+defaulting to the current working directory.
 
 A side-effect of \code{useBasiliskEnv} with \code{dry=FALSE} is that the \code{"PYTHONPATH"} environment variable is unset for the duration of the R session
 (or \pkg{basilisk} process, depending on the back-end chosen by \code{\link{basiliskStart}}).
