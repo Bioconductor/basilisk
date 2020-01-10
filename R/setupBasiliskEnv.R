@@ -142,8 +142,7 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
         return(NULL)
     }
 
-    base.dir <- Sys.getenv("BASILISK_TEST_CORE", .get_basilisk_dir()) # environment variable for testing only.
-    py.cmd <- .get_py_cmd(base.dir)
+    py.cmd <- .get_py_cmd(.get_basilisk_dir())
     previous <- .basilisk_freeze(py.cmd)
     if (all(packages %in% previous)) {
         return(NULL)
@@ -174,8 +173,7 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
         return(NULL)
     }
 
-    base.dir <- Sys.getenv("BASILISK_TEST_CORE", .get_basilisk_dir()) # environment variable for testing only.
-    py.cmd <- .get_py_cmd(base.dir)
+    py.cmd <- .get_py_cmd(.get_basilisk_dir())
     previous <- .basilisk_freeze(py.cmd)
     if (all(packages %in% previous)) {
         return(NULL)

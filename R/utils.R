@@ -12,11 +12,6 @@
     system.file(.env_dir, package=pkgname, mustWork=TRUE)
 }
 
-.get_common_env <- function() {
-    loc <- Sys.getenv("BASILISK_TEST_COMMON", .get_env_root("basilisk"))
-    file.path(loc, .common_env)
-}
-
 .core_dir <- "anaconda"
 
 .detect_os <- function() {
@@ -43,7 +38,7 @@
     }
 }
 
-.choose_env_dir <- function(pkgname, mustWork=TRUE) {
+.choose_env_dir <- function(pkgname, mustWork=FALSE) {
     if (!is.null(pkgname)) {
         vdir <- file.path(system.file(package=pkgname), .env_dir)
     } else {
