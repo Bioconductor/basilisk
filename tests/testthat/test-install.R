@@ -3,17 +3,11 @@
 
 client.dir <- "install-test-client"
 dir.create(client.dir)
-Sys.setenv(WORKON_HOME=client.dir)
-
-# Installing a fresh version of Python.
-basilisk.dir <- "install-test-basilisk" 
-basilisk:::.minstaller(basilisk.dir)
-
-Sys.setenv(BASILISK_TEST_CORE=basilisk.dir)
-test.py <- basilisk:::.get_py_cmd(basilisk.dir)
 
 old.nonpkg <- Sys.getenv("BASILISK_NONPKG_DIR")
 Sys.setenv(BASILISK_NONPKG_DIR=client.dir)
+
+base.py <- basilisk:::.get_py_cmd(basilisk:::.get_basilisk_dir())
 
 #############################
 
@@ -40,7 +34,7 @@ test_that("setupBasiliskEnv refuses to work without all specified versions", {
 test_that("setupBasiliskEnv uses the core installation when possible", {
     unlink(target, recursive=TRUE)
     
-    incoming <- basilisk:::.basilisk_freeze(test.py)
+    incoming <- basilisk:::.basilisk_freeze(base.py)
     expect_true(test.pandas %in% incoming)
     expect_error(setupBasiliskEnv("thingo", test.pandas), NA)
     expect_false(file.exists(target))
@@ -50,7 +44,7 @@ test_that("setupBasiliskEnv overrides an incompatible core installation", {
     unlink(target, recursive=TRUE)
     expect_error(setupBasiliskEnv("thingo", c(old.pandas, old.pandas.deps)), NA)
 
-    incoming <- basilisk:::.basilisk_freeze(test.py)
+    incoming <- basilisk:::.basilisk_freeze(base.py)
     expect_true(test.pandas %in% incoming)
     expect_true(!any(old.pandas.deps %in% incoming))
 
@@ -64,9 +58,6 @@ test_that("setupBasiliskEnv allows core packages to have unspecified versions", 
     expect_error(setupBasiliskEnv("thingo", c("numpy", old.pandas)), NA) # adding old pandas to force it to make a venv.
 
     test.numpy <- core.set$full[core.set$package=="numpy"]
-    incoming <- basilisk:::.basilisk_freeze(test.py)
-    expect_true(test.numpy %in% incoming)
-
     incoming <- basilisk:::.basilisk_freeze(env.py)
     expect_true(test.numpy %in% incoming)
 })
@@ -80,7 +71,7 @@ test_that("setupBasiliskEnv uses the core installation when possible (for conda)
     skip_on_os("windows") # conda is the default anyway.
     unlink(target, recursive=TRUE)
 
-    incoming <- basilisk:::.basilisk_freeze(test.py)
+    incoming <- basilisk:::.basilisk_freeze(base.py)
     expect_true(test.pandas %in% incoming)
     expect_error(setupBasiliskEnv("thingo", test.pandas, conda=TRUE), NA)
     expect_false(file.exists(target))
@@ -91,7 +82,7 @@ test_that("setupBasiliskEnv overrides an incompatible core installation (for con
     unlink(target, recursive=TRUE)
     expect_error(setupBasiliskEnv("thingo", c(old.pandas, old.pandas.deps), conda=TRUE), NA)
 
-    incoming <- basilisk:::.basilisk_freeze(test.py)
+    incoming <- basilisk:::.basilisk_freeze(base.py)
     expect_true(test.pandas %in% incoming)
     expect_true(!any(old.pandas.deps %in% incoming))
 
@@ -103,12 +94,9 @@ test_that("setupBasiliskEnv overrides an incompatible core installation (for con
 test_that("setupBasiliskEnv allows core packages to have unspecified versions (for conda)", {
     skip_on_os("windows") # conda is the default anyway.
     unlink(target, recursive=TRUE)
-    expect_error(setupBasiliskEnv("thingo", "numpy", conda=TRUE), NA)
+    expect_error(setupBasiliskEnv("thingo", c("numpy", old.pandas), conda=TRUE), NA) # forcing it to install rather than gloss over.
 
     test.numpy <- core.set$full[core.set$package=="numpy"]
-    incoming <- basilisk:::.basilisk_freeze(test.py)
-    expect_true(test.numpy %in% incoming)
-
     incoming <- basilisk:::.basilisk_freeze(env.py)
     expect_true(test.numpy %in% incoming)
 })
@@ -116,10 +104,7 @@ test_that("setupBasiliskEnv allows core packages to have unspecified versions (f
 #############################
 
 unlink(client.dir, recursive=TRUE)
-unlink(basilisk.dir, recursive=TRUE)
-
-Sys.unsetenv("BASILISK_TEST_CORE")
-Sys.unsetenv("BASILISK_TEST_COMMON")
+Sys.setenv(BASILISK_NONPKG_DIR=old.nonpkg)
 
 if (old.retpy!="") {
     Sys.setenv(RETICULATE_PYTHON=old.retpy)
@@ -127,5 +112,3 @@ if (old.retpy!="") {
 if (old.pypath!="") {
     Sys.setenv(PYTHONPATH=old.pypath)
 }
-
-Sys.setenv(BASILISK_NONPKG_DIR=old.nonpkg)

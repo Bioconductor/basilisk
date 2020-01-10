@@ -6,10 +6,10 @@ Sys.setenv(BASILISK_NONPKG_DIR="whee")
 
 core.set <- listCorePackages()
 test.pandas <- core.set$full[core.set$package=="pandas"]
-setupBasiliskEnv('my_package_A', test.pandas)
+setupBasiliskEnv('my_package_A', test.pandas) # This doesn't do anything, as it just uses the common installation.
 
 old.pandas <- "pandas==0.24.1"
-old.pandas.deps <- c("python-dateutil==2.7.1", "pytz==2017.2")
+old.pandas.deps <- c("python-dateutil==2.7.1", "pytz==2018.7")
 setupBasiliskEnv('my_package_B', c(old.pandas, old.pandas.deps))
 
 #################################################################
