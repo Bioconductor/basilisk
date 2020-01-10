@@ -185,7 +185,7 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
     # check what unlisted dependencies of the listed packages get pulled down,
     # and another to actually enforce the versions of those dependencies.
     conda.cmd <- file.path(.get_basilisk_dir(), .retrieve_conda())
-    conda_create(envname=envdir, conda=conda.cmd)
+    conda_create(envname=envdir, packages="python=3.7.4", conda=conda.cmd)
     conda_install(envname=envdir, conda=conda.cmd, packages=packages)
 
     env.cmd <- .get_py_cmd(envdir)
