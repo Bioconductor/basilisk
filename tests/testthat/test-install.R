@@ -12,8 +12,8 @@ basilisk:::.minstaller(basilisk.dir)
 Sys.setenv(BASILISK_TEST_CORE=basilisk.dir)
 test.py <- basilisk:::.get_py_cmd(basilisk.dir)
 
-Sys.setenv(BASILISK_TEST_COMMON=normalizePath(client.dir)) # normalization required for correct symlinks.
-reticulate::virtualenv_create(basilisk:::.common_env, python=test.py)
+old.nonpkg <- Sys.getenv("BASILISK_NONPKG_DIR")
+Sys.setenv(BASILISK_NONPKG_DIR=client.dir)
 
 #############################
 
@@ -43,10 +43,7 @@ test_that("setupBasiliskEnv uses the core installation when possible", {
     incoming <- basilisk:::.basilisk_freeze(test.py)
     expect_true(test.pandas %in% incoming)
     expect_error(setupBasiliskEnv("thingo", test.pandas), NA)
-    expect_true(Sys.readlink(file.path(client.dir, "thingo"))!="") # i.e., is a link.
-
-    incoming <- basilisk:::.basilisk_freeze(env.py)
-    expect_true(test.pandas %in% incoming)
+    expect_false(file.exists(target))
 })
 
 test_that("setupBasiliskEnv overrides an incompatible core installation", {
@@ -64,7 +61,49 @@ test_that("setupBasiliskEnv overrides an incompatible core installation", {
 
 test_that("setupBasiliskEnv allows core packages to have unspecified versions", {
     unlink(target, recursive=TRUE)
-    expect_error(setupBasiliskEnv("thingo", "numpy"), NA)
+    expect_error(setupBasiliskEnv("thingo", c("numpy", old.pandas)), NA) # adding old pandas to force it to make a venv.
+
+    test.numpy <- core.set$full[core.set$package=="numpy"]
+    incoming <- basilisk:::.basilisk_freeze(test.py)
+    expect_true(test.numpy %in% incoming)
+
+    incoming <- basilisk:::.basilisk_freeze(env.py)
+    expect_true(test.numpy %in% incoming)
+})
+
+#############################
+
+target <- file.path(client.dir, "thingo")
+env.py <- basilisk:::.get_py_cmd(target)
+
+test_that("setupBasiliskEnv uses the core installation when possible (for conda)", {
+    skip_on_os("windows") # conda is the default anyway.
+    unlink(target, recursive=TRUE)
+
+    incoming <- basilisk:::.basilisk_freeze(test.py)
+    expect_true(test.pandas %in% incoming)
+    expect_error(setupBasiliskEnv("thingo", test.pandas, conda=TRUE), NA)
+    expect_false(file.exists(target))
+})
+
+test_that("setupBasiliskEnv overrides an incompatible core installation (for conda)", {
+    skip_on_os("windows") # conda is the default anyway.
+    unlink(target, recursive=TRUE)
+    expect_error(setupBasiliskEnv("thingo", c(old.pandas, old.pandas.deps), conda=TRUE), NA)
+
+    incoming <- basilisk:::.basilisk_freeze(test.py)
+    expect_true(test.pandas %in% incoming)
+    expect_true(!any(old.pandas.deps %in% incoming))
+
+    incoming <- basilisk:::.basilisk_freeze(env.py)
+    expect_true(old.pandas %in% incoming)
+    expect_true(all(old.pandas.deps %in% incoming))
+})
+
+test_that("setupBasiliskEnv allows core packages to have unspecified versions (for conda)", {
+    skip_on_os("windows") # conda is the default anyway.
+    unlink(target, recursive=TRUE)
+    expect_error(setupBasiliskEnv("thingo", "numpy", conda=TRUE), NA)
 
     test.numpy <- core.set$full[core.set$package=="numpy"]
     incoming <- basilisk:::.basilisk_freeze(test.py)
@@ -88,3 +127,5 @@ if (old.retpy!="") {
 if (old.pypath!="") {
     Sys.setenv(PYTHONPATH=old.pypath)
 }
+
+Sys.setenv(BASILISK_NONPKG_DIR=old.nonpkg)

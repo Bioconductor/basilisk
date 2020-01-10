@@ -2,7 +2,7 @@
 # Setting up the virtual environments.
 
 unlink("whee", recursive=TRUE)
-Sys.setenv(WORKON_HOME="whee")
+Sys.setenv(BASILISK_NONPKG_DIR="whee")
 
 core.set <- listCorePackages()
 test.pandas <- core.set$full[core.set$package=="pandas"]
