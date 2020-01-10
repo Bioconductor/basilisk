@@ -42,3 +42,15 @@
         "bin/conda"
     }
 }
+
+.choose_env_dir <- function(pkgname, mustWork=TRUE) {
+    if (!is.null(pkgname)) {
+        vdir <- file.path(system.file(package=pkgname), .env_dir)
+    } else {
+        vdir <- Sys.getenv("BASILISK_NONPKG_DIR", unset=getwd())
+    }
+    if (mustWork && !file.exists(vdir)) {
+        stop("basilisk environment directory does not exist")
+    }
+    vdir
+}

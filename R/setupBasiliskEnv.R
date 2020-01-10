@@ -7,13 +7,13 @@
 #' @param packages Character vector containing the names of Python packages to install into the environment.
 #' It is required to include version numbers in each string.
 #' @param pkgname String specifying the name of the R package that owns the environment.
-#' @param use.conda Logical scalar indicating whether a conda environment should be created.
+#' @param conda Logical scalar indicating whether a conda environment should be created.
 #' 
 #' @return 
 #' A virtual or conda environment is created in the installation directory of \code{pkgname} if specified.
-#' Otherwise, it creates the environment at the default location for virtual environments (see \code{?\link{virtualenv_root}})
-#' or in the current working directory for conda environments.
-#' The function itself returns a \code{NULL} value, invisibly.
+#' Otherwise, it creates the environment in the directory specified by the environment variable \code{BASILISK_NONPKG_DIR}, 
+#' defaulting to the current working directory. 
+#' The function itself returns a \code{NULL} value invisibly.
 #'
 #' @details
 #' Use of \pkg{basilisk} environments is the recommended approach for Bioconductor packages to interact with the \pkg{basilisk} Python instance.
@@ -31,8 +31,8 @@
 #' This ensures that the function only installs the packages once at the first load during R package installation.
 #'
 #' We call these \pkg{basilisk} environments as the function will automatically switch between virtual and conda environments depending on the operating system.
-#' MacOSX and Linux default to virtual environments to enable re-use of dependencies from the core installation, while Windows can only use conda environments.
-#' Developers can force the former to use conda environments with \code{use.conda=TRUE}.
+#' MacOSX and Linux default to virtual environments to enable re-use of dependencies from the core installation, while Windows can only conda environments.
+#' Developers can force the former to conda environments with \code{conda=TRUE}.
 #'
 #' @section Dealing with versioning: 
 #' Pinned version numbers must be present for all requested packages in \code{packages}.
@@ -77,7 +77,7 @@
 #'
 #' @export
 #' @importFrom utils read.delim
-setupBasiliskEnv <- function(envname, packages, pkgname=NULL, use.conda=FALSE) {
+setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
     # This clause solely exists to avoid weirdness due to devtools::document().
     if (!is.null(pkgname) && basename(system.file(package=pkgname))!=pkgname) {
         return(invisible(NULL))
@@ -119,7 +119,7 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, use.conda=FALSE) {
         on.exit(Sys.setenv(PYTHONPATH=old.pypath), add=TRUE)
     }
 
-    if (.is_windows() || use.conda) {
+    if (.is_windows() || conda) {
         .setup_condaenv(envname, packages, pkgname)
     } else {
         .setup_virtualenv(envname, packages, pkgname)
@@ -129,18 +129,15 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, use.conda=FALSE) {
 #' @importFrom reticulate virtualenv_create virtualenv_install virtualenv_remove virtualenv_root
 .setup_virtualenv <- function(envname, packages, pkgname) {
     # Creating a virtual environment in an appropriate location.
-    if (!is.null(pkgname)) {
-        vdir <- file.path(system.file(package=pkgname), .env_dir)
-        dir.create(vdir, recursive=TRUE, showWarnings=FALSE)
-        old.work <- Sys.getenv("WORKON_HOME")
-        Sys.setenv(WORKON_HOME=vdir)
-        on.exit(Sys.setenv(WORKON_HOME=old.work), add=TRUE)
-    }
-
-    target <- file.path(path.expand(virtualenv_root()), envname)
+    vdir <- .choose_env_dir(pkgname)
+    dir.create(vdir, recursive=TRUE, showWarnings=FALSE)
+    old.work <- Sys.getenv("WORKON_HOME")
+    Sys.setenv(WORKON_HOME=vdir)
+    on.exit(Sys.setenv(WORKON_HOME=old.work), add=TRUE)
 
     # Effective no-op if the environment already exists, or if everything is
     # perfectly satisfied by the core installation.
+    target <- file.path(path.expand(vdir), envname)
     if (file.exists(target)) {
         return(NULL)
     }
@@ -165,15 +162,11 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, use.conda=FALSE) {
     NULL
 }
 
-#' @importFrom reticulate conda_create 
+#' @importFrom reticulate conda_create conda_install
 .setup_condaenv <- function(envname, packages, pkgname) {
-    if (!is.null(pkgname)) { 
-        vdir <- file.path(system.file(package=pkgname), .env_dir)
-        dir.create(vdir, recursive=TRUE, showWarnings=FALSE)
-        envdir <- file.path(vdir, envname)
-    } else {
-        envdir <- file.path(getwd(), envname)
-    }
+    vdir <- .choose_env_dir(pkgname)
+    dir.create(vdir, recursive=TRUE, showWarnings=FALSE)
+    envdir <- file.path(vdir, envname)
 
     # Effective no-op if the environment already exists, or if everything is
     # perfectly satisfied by the core installation.
@@ -188,12 +181,12 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, use.conda=FALSE) {
         return(NULL)
     }
 
-    conda.cmd <- file.path(.get_basilisk_dir(), .retrieve_conda())
-
     # This is where it gets a bit crazy. We will do two installations; one to
     # check what unlisted dependencies of the listed packages get pulled down,
     # and another to actually enforce the versions of those dependencies.
-    conda_create(envname=envdir, conda=conda.cmd, packages=sub("==", "=", packages))
+    conda.cmd <- file.path(.get_basilisk_dir(), .retrieve_conda())
+    conda_create(envname=envdir, conda=conda.cmd)
+    conda_install(envname=envdir, conda=conda.cmd, packages=packages)
 
     env.cmd <- .get_py_cmd(envdir)
     updated <- .basilisk_freeze(env.cmd)
@@ -210,7 +203,8 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, use.conda=FALSE) {
         reattempt <- c(packages, previous[replace])
 
         unlink(envdir, recursive=TRUE)
-        conda_create(envname=envdir, conda=conda.cmd, packages=sub("==", "=", reattempt))
+        conda_create(envname=envdir, conda=conda.cmd)
+        conda_install(envname=envdir, conda=conda.cmd, packages=packages)
     }
 
     NULL
