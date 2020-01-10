@@ -161,7 +161,7 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
     NULL
 }
 
-#' @importFrom reticulate conda_create 
+#' @importFrom reticulate conda_create conda_install
 .setup_condaenv <- function(envname, packages, pkgname) {
     vdir <- .choose_env_dir(pkgname)
     dir.create(vdir, recursive=TRUE, showWarnings=FALSE)
@@ -187,10 +187,7 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
 
     DEPLOY <- function(PKG) {
         conda_create(envname=envdir, packages=paste0("python=", version), conda=conda.cmd)
-        # Do NOT use the forge, it wastes time trying to resolve non-existent version conflicts.
-        if (system2(conda.cmd, c("install", "--yes", "--prefix", envdir, PKG))) {
-            system2(.get_py_cmd(envdir), c("-m", "pip", "install", PKG))
-        }
+        conda_install(envname=envdir, packages=PKG, python_version=version, conda=conda.cmd)
     }
 
     DEPLOY(packages)
