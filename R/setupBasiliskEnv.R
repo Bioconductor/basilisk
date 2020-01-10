@@ -161,7 +161,7 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
     NULL
 }
 
-#' @importFrom reticulate conda_create conda_install
+#' @importFrom reticulate conda_create 
 .setup_condaenv <- function(envname, packages, pkgname) {
     vdir <- .choose_env_dir(pkgname)
     dir.create(vdir, recursive=TRUE, showWarnings=FALSE)
@@ -183,9 +183,17 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
     # check what unlisted dependencies of the listed packages get pulled down,
     # and another to actually enforce the versions of those dependencies.
     conda.cmd <- file.path(.get_basilisk_dir(), .retrieve_conda())
-    conda_create(envname=envdir, packages="python=3.7.4", conda=conda.cmd)
-    conda_install(envname=envdir, conda=conda.cmd, packages=packages)
+    version <- sub("^Python ", "", system2(py.cmd, "--version", stdout=TRUE))
 
+    DEPLOY <- function(PKG) {
+        conda_create(envname=envdir, packages=paste0("python=", version), conda=conda.cmd)
+        # Do NOT use the forge, it wastes time trying to resolve non-existent version conflicts.
+        if (system2(conda.cmd, c("install", "--yes", "--prefix", envdir, PKG))) {
+            system2(.get_py_cmd(envdir), c("-m", "pip", "install", PKG))
+        }
+    }
+
+    DEPLOY(packages)
     env.cmd <- .get_py_cmd(envdir)
     updated <- .basilisk_freeze(env.cmd)
 
@@ -195,14 +203,17 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
         available <- .full2pkg(previous)
 
         replace <- match(stripped, available)
-        if (any(lost <- is.na(replace))) {
+        reattempt <- c(packages, previous[replace[!is.na(replace)]])
+        unlink(envdir, recursive=TRUE)
+        DEPLOY(reattempt)
+
+        updated <- .basilisk_freeze(env.cmd)
+        added <- setdiff(updated, c(previous, packages))
+        stripped <- .full2pkg(added)
+        available <- .full2pkg(previous)
+        if (any(lost <- !stripped %in% available)) {
             stop(sprintf("need to list dependency on '%s'", added[lost][1]))
         }
-        reattempt <- c(packages, previous[replace])
-
-        unlink(envdir, recursive=TRUE)
-        conda_create(envname=envdir, conda=conda.cmd)
-        conda_install(envname=envdir, conda=conda.cmd, packages=packages)
     }
 
     NULL
