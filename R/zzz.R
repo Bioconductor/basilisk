@@ -22,10 +22,12 @@
     if (os %in% c("win64", "win32")) {
         # Anaconda installers seem to be broken on Windows,
         # so we instead install miniconda and populate it with all anaconda packages.
-        miniversion <- "4.7.12.1"
         arch <- if (os=="win64") "x86_64" else "x86"
-        inst_file <- sprintf("Miniconda3-%s-Windows-%s.exe", miniversion, arch)
-        alt_url <- file.path("https://repo.anaconda.com/miniconda", inst_file)
+#        miniversion <- "4.7.12.1"
+#        inst_file <- sprintf("Miniconda3-%s-Windows-%s.exe", miniversion, arch)
+#        alt_url <- file.path("https://repo.anaconda.com/miniconda", inst_file)
+        inst_file <- sprintf("Anaconda3-%s-Windows-%s.exe", version, arch)
+        alt_url <- file.path("https://repo.anaconda.com/archive", inst_file)
         tmploc <- .expedient_download(alt_url)
 
         # Using the same code as reticulate:::miniconda_installer_run.
@@ -34,15 +36,15 @@
         Sys.chmod(tmploc, mode = "0755")
         status <- system2(tmploc, inst_args)
 
-        if (status==0L) {
-            conda_cmd <- file.path(dest_path, .retrieve_conda())
-
-            # Avoid SSL errors on tokay2, according to https://github.com/conda/conda/issues/6007
-            system2(conda_cmd, c("config", "--set", "ssl_verify", "no"))
-
-            status <- system2(conda_cmd, c("install", "--yes", 
-                "--freeze-installed", paste0("anaconda=", version)))
-        }
+#        if (status==0L) {
+#            conda_cmd <- file.path(dest_path, .retrieve_conda())
+#
+#            # Avoid SSL errors on tokay2, according to https://github.com/conda/conda/issues/6007
+#            system2(conda_cmd, c("config", "--set", "ssl_verify", "no", "--system"))
+#
+#            status <- system2(conda_cmd, c("install", "--yes", 
+#                "--freeze-installed", paste0("anaconda=", version)))
+#        }
 
     } else {
         # Stripped from https://github.com/hafen/rminiconda a long time ago...
