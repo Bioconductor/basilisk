@@ -35,10 +35,11 @@
         status <- system2(tmploc, inst_args)
 
         if (status==0L) {
-            # Avoid SSL errors on tokay2, according to https://github.com/conda/conda/issues/6007
-            system2(conda.cmd, c("config", "--set", "ssl_verify", "no"))
-
             conda_cmd <- file.path(dest_path, .retrieve_conda())
+
+            # Avoid SSL errors on tokay2, according to https://github.com/conda/conda/issues/6007
+            system2(conda_cmd, c("config", "--set", "ssl_verify", "no"))
+
             status <- system2(conda_cmd, c("install", "--yes", 
                 "--freeze-installed", paste0("anaconda=", version)))
         }
