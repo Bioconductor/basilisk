@@ -1,15 +1,9 @@
 # This checks that the version-controlling behavior of setupBasiliskEnv is correct.
 # library(testthat); library(basilisk); source("setup.R"); source("test-install.R"); 
 
-client.dir <- "install-test-client"
-dir.create(client.dir)
-
-old.nonpkg <- Sys.getenv("BASILISK_NONPKG_DIR")
-Sys.setenv(BASILISK_NONPKG_DIR=client.dir)
+#############################
 
 base.py <- basilisk:::.get_py_cmd(basilisk:::.get_basilisk_dir())
-
-#############################
 
 # Turning off these damn envvars, otherwise .basilisk_freeze doesn't behave.
 old.retpy <- Sys.getenv("RETICULATE_PYTHON")
@@ -102,9 +96,6 @@ test_that("setupBasiliskEnv allows core packages to have unspecified versions (f
 })
 
 #############################
-
-unlink(client.dir, recursive=TRUE)
-Sys.setenv(BASILISK_NONPKG_DIR=old.nonpkg)
 
 if (old.retpy!="") {
     Sys.setenv(RETICULATE_PYTHON=old.retpy)
