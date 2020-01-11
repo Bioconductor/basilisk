@@ -23,7 +23,7 @@ setupBasiliskEnv('occupier', c(old.pandas, old.pandas.deps)) # for use in preloa
 persistence_check <- function(version, envir, persist=FALSE, ...) {
     library(basilisk)
     library(testthat)
-    Sys.setenv(BASILISK_NONPKG_DIR="whee")
+    Sys.setenv(BASILISK_NONPKG_DIR="install-test-client")
 
     cl <- basiliskStart(envir, ...)
 
@@ -64,7 +64,7 @@ process_check <- function(version, envir, ..., persist=FALSE) {
     # as otherwise r() will not find it in its new namespace.
     library(basilisk)
     library(testthat)
-    Sys.setenv(BASILISK_NONPKG_DIR="whee")
+    Sys.setenv(BASILISK_NONPKG_DIR="install-test-client")
 
     proc <- basiliskStart(envir, shared=FALSE, ..., persist=persist)
     test.version <- basiliskRun(proc, fun=function() {
@@ -85,7 +85,7 @@ preloaded_check <- function(version, envir, ..., persist=FALSE) {
     library(basilisk)
     library(testthat)
     useBasiliskEnv("occupier")
-    Sys.setenv(BASILISK_NONPKG_DIR="whee")
+    Sys.setenv(BASILISK_NONPKG_DIR="install-test-client")
 
     proc <- basiliskStart(envir, ..., persist=persist)
     test.version <- basiliskRun(proc, fun=function() {
@@ -106,7 +106,7 @@ test_that("basilisk directly loads Python when possible", {
     FUN <- function(version, envir, persist=FALSE) {
         library(basilisk)
         library(testthat)
-        Sys.setenv(WORKON_HOME="whee")
+        Sys.setenv(WORKON_HOME="install-test-client")
 
         proc <- basiliskStart(envir, persist=persist)
         expect_true(is.environment(proc))
@@ -192,7 +192,7 @@ test_that("basilisk works with persistent processes", {
     out <- r(function(version) {
         library(basilisk)
         library(testthat)
-        Sys.setenv(WORKON_HOME="whee")
+        Sys.setenv(WORKON_HOME="install-test-client")
 
         envname <- "my_package_A"
         pkgname <- NULL

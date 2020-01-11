@@ -25,6 +25,7 @@
         miniversion <- "4.7.12.1"
         arch <- if (os=="win64") "x86_64" else "x86"
         inst_file <- sprintf("Miniconda3-%s-Windows-%s.exe", miniversion, arch)
+        alt_url <- file.path("https://repo.anaconda.com/miniconda", inst_file)
         tmploc <- .expedient_download(alt_url)
 
         # Using the same code as reticulate:::miniconda_installer_run.
