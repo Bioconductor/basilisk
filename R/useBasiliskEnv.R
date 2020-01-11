@@ -46,7 +46,7 @@
 #' \code{\link{basiliskStart}}, for how these virtual environments should be used.
 #'
 #' @export
-#' @importFrom reticulate use_virtualenv virtualenv_root py_config
+#' @importFrom reticulate use_virtualenv py_config use_condaenv
 useBasiliskEnv <- function(envname, pkgname=NULL, dry=FALSE, required=TRUE) {
     old.retpy <- Sys.getenv("RETICULATE_PYTHON")
     Sys.unsetenv("RETICULATE_PYTHON")
@@ -54,13 +54,13 @@ useBasiliskEnv <- function(envname, pkgname=NULL, dry=FALSE, required=TRUE) {
         on.exit(Sys.setenv(RETICULATE_PYTHON=old.retpy))
     }
 
-    vdir <- .choose_env_dir(pkgname)
+    vdir <- .choose_env_dir(pkgname, mustWork=TRUE)
     envdir <- file.path(vdir, envname)
 
     mode <- "virtualenv"
     if (!file.exists(envdir)) {
         mode <- "common"
-    } else if (file.exists(file.path(envdir, .retrieve_conda()))) {
+    } else if (any(grepl("conda", list.files(envdir)))) {
         mode <- "conda"
     }
 
