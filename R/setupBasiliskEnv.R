@@ -79,7 +79,7 @@
 #' @importFrom utils read.delim
 setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
     # This clause solely exists to avoid weirdness due to devtools::document().
-    if (!is.null(pkgname) && basename(system.file(package=pkgname))!=pkgname) {
+    if (!is.null(pkgname) && .is_roxygen_running(pkgname)) {
         return(invisible(NULL))
     }
 

@@ -1,12 +1,11 @@
 .onLoad <- function(libname, pkgname) {
-    inst_path <- .get_basilisk_dir(mustWork=FALSE)
-    if (basename(inst_path)!=pkgname) {
+    if (.is_roxygen_running(pkgname)) {
         # Hack to avoid installing into 'inst'
         # when devtools::document() is run.
         return(NULL)
     }
 
-    dest_path <- file.path(inst_path, .core_dir)
+    dest_path <- file.path(.get_basilisk_dir(mustWork=FALSE, conda.dir=FALSE), .core_dir)
     if (dir.exists(dest_path)) {
         # No-op if it is already installed.
         return(NULL)

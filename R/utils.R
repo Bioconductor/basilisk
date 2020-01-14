@@ -6,16 +6,30 @@
 
 .core_dir <- "anaconda"
 
-.get_basilisk_dir <- function(mustWork=TRUE) {
+.get_basilisk_dir <- function(mustWork=TRUE, conda.dir=TRUE) {
     if (.is_windows()) {
         # Because, y'know, of course windows has to be different in a painful
         # way. In this case, it is something to do with the paths being too
         # long if we ask for system.file(), so we'll just dump it in a user
         # directory instead. Windows users will then have to sit through the
         # installation process... too bad for them, I guess.
-        file.path(rappdirs::user_data_dir(appname="basilisk"), "basilisk")
+        xpath <- rappdirs::user_data_dir(appname="basilisk")
+
+        if (conda.dir) {
+            out <- file.path(xpath, .core_dir)
+            if (mustWork && !file.exists(out)) {
+                stop("'", out, "' does not exist")
+            }
+            out
+        } else {
+            xpath 
+        }
     } else {
-        system.file(.core_dir, package="basilisk", mustWork=mustWork)
+        if (conda.dir) {
+            system.file(.core_dir, package="basilisk", mustWork=mustWork)
+        } else {
+            system.file(package="basilisk")
+        }
     }
 }
 
@@ -59,4 +73,8 @@
         stop("basilisk environment directory does not exist")
     }
     vdir
+}
+
+.is_roxygen_running <- function(pkgname) {
+    basename(system.file(package=pkgname))!=pkgname
 }
