@@ -97,7 +97,7 @@
 #'
 #' # Co-exists with our other virtual environment in a separate process:
 #' setupBasiliskEnv('my_package_B', c('pandas==0.24.1',
-#'     "python-dateutil==2.7.1", "pytz==2017.2"))
+#'     "python-dateutil==2.7.1", "pytz==2018.7"))
 #' 
 #' cl <- basiliskStart('my_package_B')
 #' basiliskRun(proc=cl, function() { 
