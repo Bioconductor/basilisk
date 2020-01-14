@@ -1,5 +1,5 @@
 Package: basilisk
-Version: 0.99.29
+Version: 0.99.30
 Date: 2020-01-14
 Title: Freezing Python Versions Inside Bioconductor Packages
 Authors@R: c(person("Aaron", "Lun", role=c("aut", "cre", "cph"),

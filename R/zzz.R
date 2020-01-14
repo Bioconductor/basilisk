@@ -5,7 +5,7 @@
         return(NULL)
     }
 
-    dest_path <- file.path(.get_basilisk_dir(mustWork=FALSE, conda.dir=FALSE), .core_dir)
+    dest_path <- .get_basilisk_dir(mustWork=FALSE)
     if (dir.exists(dest_path)) {
         # No-op if it is already installed.
         return(NULL)
@@ -17,37 +17,21 @@
 .minstaller <- function(dest_path, testing=FALSE) {
     os <- .detect_os()
     version <- "2019.10"
+    base_url <- "https://repo.anaconda.com/archive"
 
     if (os %in% c("win64", "win32")) {
-        # Anaconda installers seem to be broken on Windows,
-        # so we instead install miniconda and populate it with all anaconda packages.
         arch <- if (os=="win64") "x86_64" else "x86"
-#        miniversion <- "4.7.12.1"
-#        inst_file <- sprintf("Miniconda3-%s-Windows-%s.exe", miniversion, arch)
-#        alt_url <- file.path("https://repo.anaconda.com/miniconda", inst_file)
         inst_file <- sprintf("Anaconda3-%s-Windows-%s.exe", version, arch)
-        alt_url <- file.path("https://repo.anaconda.com/archive", inst_file)
+        tmploc <- .expedient_download(file.path(base_url, inst_file))
 
-        tmploc <- .expedient_download(alt_url)
         # Using the same code as reticulate:::miniconda_installer_run.
         dir.create(dest_path, recursive = TRUE, showWarnings = FALSE)
         inst_args <- sprintf("/InstallationType=JustMe /RegisterPython=0 /S /D=%s", utils::shortPathName(dest_path))
         Sys.chmod(tmploc, mode = "0755")
         status <- system2(tmploc, inst_args)
 
-#        if (status==0L) {
-#            conda_cmd <- file.path(dest_path, .retrieve_conda())
-#
-#            # Avoid SSL errors on tokay2, according to https://github.com/conda/conda/issues/6007
-#            system2(conda_cmd, c("config", "--set", "ssl_verify", "no", "--system"))
-#
-#            status <- system2(conda_cmd, c("install", "--yes", 
-#                "--freeze-installed", paste0("anaconda=", version)))
-#        }
-
     } else {
         # Stripped from https://github.com/hafen/rminiconda a long time ago...
-        base_url <- "https://repo.anaconda.com/archive"
         sysname <- if (os=="macosx") "MacOSX" else "Linux"
         inst_file <- sprintf("Anaconda3-%s-%s-x86_64.sh", version, sysname)
 

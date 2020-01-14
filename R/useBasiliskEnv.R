@@ -67,7 +67,7 @@ useBasiliskEnv <- function(envname, pkgname=NULL, dry=FALSE, required=TRUE) {
     if (mode!="common") {
         envdir <- normalizePath(envdir, mustWork=TRUE)
     } else {
-        envdir <- .get_basilisk_dir()
+        envdir <- normalizePath(.get_basilisk_dir())
     }
 
     if (!dry) {

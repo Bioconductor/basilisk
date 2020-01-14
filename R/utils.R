@@ -1,36 +1,29 @@
 .get_py_cmd <- function(loc) {
     # Ripped out of reticulate::use_virtualenv.
-    suffix <- if (.Platform$OS.type=="windows") "python.exe" else "bin/python"
+    suffix <- if (.is_windows()) "python.exe" else "bin/python"
     file.path(loc, suffix)
 }
 
 .core_dir <- "anaconda"
 
-.get_basilisk_dir <- function(mustWork=TRUE, conda.dir=TRUE) {
+.get_basilisk_dir <- function(mustWork=TRUE) {
     if (.is_windows()) {
         # Because, y'know, of course windows has to be different in a painful
         # way. In this case, it is something to do with the paths being too
         # long if we ask for system.file(), so we'll just dump it in a user
         # directory instead. Windows users will then have to sit through the
         # installation process... too bad for them, I guess.
-        xpath <- rappdirs::user_data_dir(appname="basilisk")
-
-        if (conda.dir) {
-            out <- file.path(xpath, .core_dir)
-            if (mustWork && !file.exists(out)) {
-                stop("'", out, "' does not exist")
-            }
-            out
-        } else {
-            xpath 
-        }
+        inst_path <- rappdirs::user_data_dir(appname="basilisk")
     } else {
-        if (conda.dir) {
-            system.file(.core_dir, package="basilisk", mustWork=mustWork)
-        } else {
-            system.file(package="basilisk")
-        }
+        inst_path <- system.file(package="basilisk")
     }
+
+    inst_path <- file.path(inst_path, .core_dir)
+    if (mustWork && !file.exists(inst_path)) {
+        stop("basilisk installation directory does not exist")
+    }
+
+    inst_path
 }
 
 .detect_os <- function() {
