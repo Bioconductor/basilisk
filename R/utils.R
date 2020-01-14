@@ -6,8 +6,17 @@
 
 .core_dir <- "anaconda"
 
-.get_basilisk_dir <- function() {
-    system.file(.core_dir, package="basilisk", mustWork=TRUE)
+.get_basilisk_dir <- function(mustWork=TRUE) {
+    if (.is_windows()) {
+        # Because, y'know, of course windows has to be different in a painful
+        # way. In this case, it is something to do with the paths being too
+        # long if we ask for system.file(), so we'll just dump it in a user
+        # directory instead. Windows users will then have to sit through the
+        # installation process... too bad for them, I guess.
+        file.path(rappdirs::user_data_dir(appname="basilisk"), "basilisk")
+    } else {
+        system.file(.core_dir, package="basilisk", mustWork=mustWork)
+    }
 }
 
 .detect_os <- function() {
@@ -38,7 +47,11 @@
 
 .choose_env_dir <- function(pkgname, mustWork=FALSE) {
     if (!is.null(pkgname)) {
-        vdir <- file.path(system.file(package=pkgname), .env_dir)
+        if (.is_windows()) {
+            vdir <- file.path(rappdirs::user_data_dir(appname="basilisk"), pkgname, .env_dir)
+        } else {
+            vdir <- file.path(system.file(package=pkgname), .env_dir)
+        }
     } else {
         vdir <- Sys.getenv("BASILISK_NONPKG_DIR", unset=getwd())
     }

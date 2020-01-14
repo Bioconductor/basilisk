@@ -1,5 +1,5 @@
 .onLoad <- function(libname, pkgname) {
-    inst_path <- system.file(package=pkgname)
+    inst_path <- .get_basilisk_dir(mustWork=FALSE)
     if (basename(inst_path)!=pkgname) {
         # Hack to avoid installing into 'inst'
         # when devtools::document() is run.
@@ -28,8 +28,8 @@
 #        alt_url <- file.path("https://repo.anaconda.com/miniconda", inst_file)
         inst_file <- sprintf("Anaconda3-%s-Windows-%s.exe", version, arch)
         alt_url <- file.path("https://repo.anaconda.com/archive", inst_file)
-        tmploc <- .expedient_download(alt_url)
 
+        tmploc <- .expedient_download(alt_url)
         # Using the same code as reticulate:::miniconda_installer_run.
         dir.create(dest_path, recursive = TRUE, showWarnings = FALSE)
         inst_args <- sprintf("/InstallationType=JustMe /RegisterPython=0 /S /D=%s", utils::shortPathName(dest_path))
