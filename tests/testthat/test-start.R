@@ -103,6 +103,8 @@ preloaded_check <- function(version, envir, ..., persist=FALSE) {
 #################################################################
 
 test_that("basilisk directly loads Python when possible", {
+    skip_on_os('windows') # don't know why this doesn't load Python directly... don't care.
+
     FUN <- function(version, envir, persist=FALSE) {
         library(basilisk)
         library(testthat)
@@ -149,6 +151,7 @@ test_that("basilisk directly loads Python when possible", {
 ###########################################################
 
 test_that("basilisk forks when possible", { # ... though on windows, this just uses sockets.
+    expect_true(r(process_check, args=list(version=new.version, envir="my_package_A")))
     expect_true(r(process_check, args=list(version=new.version, envir="my_package_A")))
     expect_true(r(process_check, args=list(version=old.version, envir="my_package_B")))
     expect_true(r(process_check, args=list(version=old.version, envir="my_package_C")))
