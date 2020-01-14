@@ -1,18 +1,14 @@
-.common_env <- "common"
-
 .get_py_cmd <- function(loc) {
     # Ripped out of reticulate::use_virtualenv.
     suffix <- if (.Platform$OS.type=="windows") "python.exe" else "bin/python"
     file.path(loc, suffix)
 }
 
-.env_dir <- "basilisk"
-
-.get_env_root <- function(pkgname) {
-    system.file(.env_dir, package=pkgname, mustWork=TRUE)
-}
-
 .core_dir <- "anaconda"
+
+.get_basilisk_dir <- function() {
+    system.file(.core_dir, package="basilisk", mustWork=TRUE)
+}
 
 .detect_os <- function() {
     if (.is_windows()) {
@@ -37,6 +33,8 @@
         "bin/conda"
     }
 }
+
+.env_dir <- "basilisk"
 
 .choose_env_dir <- function(pkgname, mustWork=FALSE) {
     if (!is.null(pkgname)) {

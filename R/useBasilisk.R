@@ -1,7 +1,7 @@
 #' Use \pkg{basilisk}'s Python instance
 #'
 #' Use \pkg{reticulate} to set up the Bioconductor-owned instance of Python provided by \pkg{basilisk}.
-#' This function is primarily intended for developer intended for use within other Bioconductor packages.
+#' This function is primarily intended for developer use within other Bioconductor packages.
 #'
 #' @return
 #' A string containing the path to the \pkg{basilisk} Python executable, invisibly.
@@ -35,8 +35,4 @@ useBasilisk <- function() {
     py.cmd <- .get_py_cmd(.get_basilisk_dir())
     use_python(py.cmd, required=TRUE)
     py.cmd
-}
-
-.get_basilisk_dir <- function() {
-    system.file(.core_dir, package="basilisk", mustWork=TRUE)
 }
