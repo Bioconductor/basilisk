@@ -14,6 +14,7 @@
         # directory instead. Windows users will then have to sit through the
         # installation process... too bad for them, I guess.
         inst_path <- rappdirs::user_data_dir(appname="basilisk")
+        inst_path <- file.path(inst_path, paste0("basilisk-", packageVersion("basilisk")))
     } else {
         inst_path <- system.file(package="basilisk")
     }
@@ -55,7 +56,8 @@
 .choose_env_dir <- function(pkgname, mustWork=FALSE) {
     if (!is.null(pkgname)) {
         if (.is_windows()) {
-            vdir <- file.path(rappdirs::user_data_dir(appname="basilisk"), pkgname, .env_dir)
+            vdir <- file.path(rappdirs::user_data_dir(appname="basilisk"), 
+                paste0(pkgname, "-", packageVersion(pkgname)), .env_dir)
         } else {
             vdir <- file.path(system.file(package=pkgname), .env_dir)
         }
