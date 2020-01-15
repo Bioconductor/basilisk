@@ -1,3 +1,4 @@
 ^\.gitignore$
+^\.BBSoptions$
 ^tests/testthat/install-.*$
 ^tests/testthat/whee$

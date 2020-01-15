@@ -6,6 +6,7 @@
 
 .core_dir <- "anaconda"
 
+#' @importFrom utils packageVersion
 .get_basilisk_dir <- function(mustWork=TRUE) {
     if (.is_windows()) {
         # Because, y'know, of course windows has to be different in a painful
@@ -53,6 +54,7 @@
 
 .env_dir <- "basilisk"
 
+#' @importFrom utils packageVersion
 .choose_env_dir <- function(pkgname, mustWork=FALSE) {
     if (!is.null(pkgname)) {
         if (.is_windows()) {
