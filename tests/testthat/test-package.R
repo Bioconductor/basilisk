@@ -3,6 +3,11 @@
 
 test_that("internal test package installs correctly", {
     expect_error(devtools::install_local(system.file("example", package="basilisk"), force=TRUE), NA)
+
+    xpath <- system.file(package="son.of.basilisk")
+    expect_true(file.exists(file.path(xpath, "basilisk", "env1")))
+    expect_false(file.exists(file.path(xpath, "basilisk", "env2")))
+
     output <- son.of.basilisk::test()
 
     expect_type(output$pandas, "character")

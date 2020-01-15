@@ -1,9 +1,11 @@
 .onLoad <- function(libname, pkgname) {
+    # Numbers are deliberately chosen here to not be the same
+    # as the core installation, so it forces some installation.
     basilisk::setupBasiliskEnv("env1", 
-        c("pandas==0.25.1", "python-dateutil==2.8.1", "pytz==2019.3"),
+        c("pandas==0.24.1", "python-dateutil==2.7.1", "pytz==2018.7"),
         pkgname=pkgname)
 
     basilisk::setupBasiliskEnv("env2", 
-        c("scikit-learn==0.21.0", "joblib==0.14.0"), 
+        c("scikit-learn", "joblib"), 
         pkgname=pkgname)
 }
