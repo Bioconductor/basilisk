@@ -9,4 +9,3 @@ old.pandas.deps <- c("python-dateutil==2.7.1", "pytz==2018.7")
 client.dir <- "install-test-client"
 unlink(client.dir, recursive=TRUE)
 dir.create(client.dir)
-Sys.setenv(BASILISK_NONPKG_DIR=client.dir)

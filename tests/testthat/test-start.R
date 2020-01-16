@@ -10,11 +10,15 @@ library(callr)
 new.version <- sub(".*==", "", test.pandas)
 old.version <- sub(".*==", "", old.pandas)
 
-setupBasiliskEnv('my_package_A', test.pandas) # This doesn't do anything, as it just uses the common installation.
-setupBasiliskEnv('my_package_B', c(old.pandas, old.pandas.deps))
-setupBasiliskEnv('my_package_C', c(old.pandas, old.pandas.deps), conda=TRUE)
+tA <- file.path(client.dir, 'my_package_A')
+tB <- file.path(client.dir, 'my_package_B')
+tC <- file.path(client.dir, 'my_package_C')
 
-setupBasiliskEnv('occupier', c(old.pandas, old.pandas.deps)) # for use in preloaded_check.
+setupBasiliskEnv(tA, test.pandas) # This doesn't do anything, as it just uses the common installation.
+setupBasiliskEnv(tB, c(old.pandas, old.pandas.deps))
+setupBasiliskEnv(tC, c(old.pandas, old.pandas.deps), conda=TRUE)
+
+setupBasiliskEnv(file.path(client.dir, 'occupier'), c(old.pandas, old.pandas.deps)) # for use in preloaded_check.
 
 #################################################################
 # Defining a helper function to check for correct persistence
@@ -23,7 +27,6 @@ setupBasiliskEnv('occupier', c(old.pandas, old.pandas.deps)) # for use in preloa
 persistence_check <- function(version, envir, persist=FALSE, ...) {
     library(basilisk)
     library(testthat)
-    Sys.setenv(BASILISK_NONPKG_DIR="install-test-client")
 
     cl <- basiliskStart(envir, ...)
 
@@ -64,7 +67,6 @@ process_check <- function(version, envir, ..., persist=FALSE) {
     # as otherwise r() will not find it in its new namespace.
     library(basilisk)
     library(testthat)
-    Sys.setenv(BASILISK_NONPKG_DIR="install-test-client")
 
     proc <- basiliskStart(envir, shared=FALSE, ..., persist=persist)
     test.version <- basiliskRun(proc, fun=function() {
@@ -84,8 +86,7 @@ preloaded_check <- function(version, envir, ..., persist=FALSE) {
     # Checking what happens when Python is already loaded.
     library(basilisk)
     library(testthat)
-    useBasiliskEnv("occupier")
-    Sys.setenv(BASILISK_NONPKG_DIR="install-test-client")
+    useBasiliskEnv("install-test-client/occupier")
 
     proc <- basiliskStart(envir, ..., persist=persist)
     test.version <- basiliskRun(proc, fun=function() {
@@ -133,71 +134,69 @@ test_that("basilisk directly loads Python when possible", {
         TRUE
     }
 
-    expect_true(r(FUN, args=list(version=new.version, envir="my_package_A")))
-    expect_true(r(FUN, args=list(version=old.version, envir="my_package_B")))
-    expect_true(r(FUN, args=list(version=old.version, envir="my_package_C")))
+    expect_true(r(FUN, args=list(version=new.version, envir=tA)))
+    expect_true(r(FUN, args=list(version=old.version, envir=tB)))
+    expect_true(r(FUN, args=list(version=old.version, envir=tC)))
 
     # Unaffected by persist=TRUE.
-    expect_true(r(FUN, args=list(version=new.version, envir="my_package_A", persist=TRUE)))
-    expect_true(r(FUN, args=list(version=old.version, envir="my_package_B", persist=TRUE)))
-    expect_true(r(FUN, args=list(version=old.version, envir="my_package_C", persist=TRUE)))
+    expect_true(r(FUN, args=list(version=new.version, envir=tA, persist=TRUE)))
+    expect_true(r(FUN, args=list(version=old.version, envir=tB, persist=TRUE)))
+    expect_true(r(FUN, args=list(version=old.version, envir=tC, persist=TRUE)))
 
     # Respects persistence of variables.
-    expect_true(r(persistence_check, args=list(version=new.version, envir="my_package_A")))
-    expect_true(r(persistence_check, args=list(version=old.version, envir="my_package_B")))
-    expect_true(r(persistence_check, args=list(version=old.version, envir="my_package_C")))
+    expect_true(r(persistence_check, args=list(version=new.version, envir=tA)))
+    expect_true(r(persistence_check, args=list(version=old.version, envir=tB)))
+    expect_true(r(persistence_check, args=list(version=old.version, envir=tC)))
 })
 
 ###########################################################
 
 test_that("basilisk forks when possible", { # ... though on windows, this just uses sockets.
-    expect_true(r(process_check, args=list(version=new.version, envir="my_package_A")))
-    expect_true(r(process_check, args=list(version=new.version, envir="my_package_A")))
-    expect_true(r(process_check, args=list(version=old.version, envir="my_package_B")))
-    expect_true(r(process_check, args=list(version=old.version, envir="my_package_C")))
+    expect_true(r(process_check, args=list(version=new.version, envir=tA)))
+    expect_true(r(process_check, args=list(version=new.version, envir=tA)))
+    expect_true(r(process_check, args=list(version=old.version, envir=tB)))
+    expect_true(r(process_check, args=list(version=old.version, envir=tC)))
 
     # Forcing basilisk to use sockets by loading another virtual environment in advance.
-    expect_true(r(preloaded_check, args=list(version=new.version, envir="my_package_A")))
-    expect_true(r(preloaded_check, args=list(version=old.version, envir="my_package_B")))
-    expect_true(r(preloaded_check, args=list(version=old.version, envir="my_package_C")))
+    expect_true(r(preloaded_check, args=list(version=new.version, envir=tA)))
+    expect_true(r(preloaded_check, args=list(version=old.version, envir=tB)))
+    expect_true(r(preloaded_check, args=list(version=old.version, envir=tC)))
 
     # Respects persistence of variables.
-    expect_true(r(persistence_check, args=list(version=new.version, envir="my_package_A", shared=FALSE)))
-    expect_true(r(persistence_check, args=list(version=old.version, envir="my_package_B", shared=FALSE)))
-    expect_true(r(persistence_check, args=list(version=old.version, envir="my_package_C", shared=FALSE)))
+    expect_true(r(persistence_check, args=list(version=new.version, envir=tA, shared=FALSE)))
+    expect_true(r(persistence_check, args=list(version=old.version, envir=tB, shared=FALSE)))
+    expect_true(r(persistence_check, args=list(version=old.version, envir=tC, shared=FALSE)))
 })
 
 ###########################################################
 
 test_that("basilisk uses sockets as a fallback", {
-    expect_true(r(process_check, args=list(version=new.version, envir="my_package_A", fork=FALSE)))
-    expect_true(r(process_check, args=list(version=old.version, envir="my_package_B", fork=FALSE)))
-    expect_true(r(process_check, args=list(version=old.version, envir="my_package_C", fork=FALSE)))
+    expect_true(r(process_check, args=list(version=new.version, envir=tA, fork=FALSE)))
+    expect_true(r(process_check, args=list(version=old.version, envir=tB, fork=FALSE)))
+    expect_true(r(process_check, args=list(version=old.version, envir=tC, fork=FALSE)))
 
     # Forcing basilisk to use sockets by loading another virtual environment in advance.
-    expect_true(r(preloaded_check, args=list(version=new.version, envir="my_package_A", fork=FALSE)))
-    expect_true(r(preloaded_check, args=list(version=old.version, envir="my_package_B", fork=FALSE)))
-    expect_true(r(preloaded_check, args=list(version=old.version, envir="my_package_C", fork=FALSE)))
+    expect_true(r(preloaded_check, args=list(version=new.version, envir=tA, fork=FALSE)))
+    expect_true(r(preloaded_check, args=list(version=old.version, envir=tB, fork=FALSE)))
+    expect_true(r(preloaded_check, args=list(version=old.version, envir=tC, fork=FALSE)))
 
     # Respects persistence of variables.
-    expect_true(r(persistence_check, args=list(version=new.version, envir="my_package_A", shared=FALSE, fork=FALSE)))
-    expect_true(r(persistence_check, args=list(version=old.version, envir="my_package_B", shared=FALSE, fork=FALSE)))
-    expect_true(r(persistence_check, args=list(version=old.version, envir="my_package_C", shared=FALSE, fork=FALSE)))
+    expect_true(r(persistence_check, args=list(version=new.version, envir=tA, shared=FALSE, fork=FALSE)))
+    expect_true(r(persistence_check, args=list(version=old.version, envir=tB, shared=FALSE, fork=FALSE)))
+    expect_true(r(persistence_check, args=list(version=old.version, envir=tC, shared=FALSE, fork=FALSE)))
 })
 
 ###########################################################
 
 test_that("basilisk works with persistent processes", {
-    expect_true(r(process_check, args=list(version=new.version, envir="my_package_A", persist=TRUE, fork=FALSE)))
-    expect_true(r(process_check, args=list(version=old.version, envir="my_package_B", persist=TRUE, fork=FALSE)))
-    expect_true(r(process_check, args=list(version=old.version, envir="my_package_C", persist=TRUE, fork=FALSE)))
+    expect_true(r(process_check, args=list(version=new.version, envir=tA, persist=TRUE, fork=FALSE)))
+    expect_true(r(process_check, args=list(version=old.version, envir=tB, persist=TRUE, fork=FALSE)))
+    expect_true(r(process_check, args=list(version=old.version, envir=tC, persist=TRUE, fork=FALSE)))
 
-    out <- r(function(version) {
+    out <- r(function(version, envname) {
         library(basilisk)
         library(testthat)
-        Sys.setenv(WORKON_HOME="install-test-client")
 
-        envname <- "my_package_A"
         pkgname <- NULL
         proc <- basiliskStart(envname, shared=FALSE)
         old.pid <- parallel::clusterCall(basilisk:::.get_persist(envname, pkgname), Sys.getpid)[[1]]
@@ -229,6 +228,6 @@ test_that("basilisk works with persistent processes", {
         expect_error(parallel::clusterCall(basilisk:::.get_persist(envname, pkgname), Sys.getpid))
 
         TRUE
-    }, args=list(version=new.version))
+    }, args=list(version=new.version, envname=tA))
     expect_true(out)
 })
