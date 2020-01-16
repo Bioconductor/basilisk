@@ -124,7 +124,7 @@ tmploc2 <- file.path(tempdir(), "my_package_C_alt")
 setupBasiliskEnv(tmploc2, c('pandas==0.24.1',
     "python-dateutil==2.7.1", "pytz==2018.7"))
 
-cl <- basiliskStart('my_package_B')
+cl <- basiliskStart(tmploc2)
 basiliskRun(proc=cl, function() { 
     X <- reticulate::import("pandas"); X$`__version__` 
 })
