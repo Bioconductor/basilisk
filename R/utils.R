@@ -15,6 +15,7 @@
         # directory instead. Windows users will then have to sit through the
         # installation process... too bad for them, I guess.
         inst_path <- rappdirs::user_data_dir(appname="basilisk")
+        inst_path <- gsub("\\\\", "/", inst_path)
         inst_path <- file.path(inst_path, paste0("basilisk-", packageVersion("basilisk")))
     } else {
         inst_path <- system.file(package="basilisk")
