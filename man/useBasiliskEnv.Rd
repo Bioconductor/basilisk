@@ -27,31 +27,22 @@ Use \pkg{basilisk} environments for isolated execution of Python code with appro
 It is unlikely that developers should ever need to call \code{\link{useBasiliskEnv}} directly.
 Rather, this interaction should be automatically handled by \code{\link{basiliskStart}}.
 
-If \code{pkgname} is specified, \code{useBasiliskEnv} will search in the installation directory of \code{pkgname} for \code{basilisk/envname}
-Otherwise, it will look in the directory specified by the environment variable \code{BASILISK_NONPKG_DIR},
-defaulting to the current working directory.
+If \code{pkgname} is specified, \code{useBasiliskEnv} will search in the installation directory of \code{pkgname} for the specified \code{envname}
+Otherwise, the function will treat \code{envname} as the path to the desired environment.
 
 A side-effect of \code{useBasiliskEnv} with \code{dry=FALSE} is that the \code{"PYTHONPATH"} environment variable is unset for the duration of the R session
 (or \pkg{basilisk} process, depending on the back-end chosen by \code{\link{basiliskStart}}).
 This is a deliberate choice to avoid compromising the version guarantees if \code{\link{import}} is allowed to search other locations beyond the virtual environment.
 }
 \examples{
-##################################################
-# Creating virtualenvs in a temporary directory to 
-# avoid polluting the user's WORKON_HOME.
-tmploc <- file.path(tempdir(), "basilisk")
-dir.create(tmploc)
-old <- Sys.getenv("WORKON_HOME")
-Sys.setenv(WORKON_HOME=tmploc)
-##################################################
+tmploc <- file.path(tempdir(), "my_package_B")
+setupBasiliskEnv(tmploc, 'pandas')
+useBasiliskEnv(tmploc) # TRUE or FALSE, depending on global Python.
 
-setupBasiliskEnv('my_package_A_alt', 'pandas')
-useBasiliskEnv("my_package_A_alt")
+tmploc2 <- file.path(tempdir(), "my_package_B_alt")
+setupBasiliskEnv(tmploc2, 'pandas==0.24.1')
+useBasiliskEnv(tmploc2) # FALSE, as global Python is already occupied.
 
-##################################################
-# Restoring the old WORKON_HOME.
-Sys.setenv(WORKON_HOME=old)
-##################################################
 }
 \seealso{
 \code{\link{basiliskStart}}, for how these virtual environments should be used.

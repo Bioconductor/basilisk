@@ -17,9 +17,9 @@ It is required to include version numbers in each string.}
 \item{conda}{Logical scalar indicating whether a conda environment should be created.}
 }
 \value{
-A virtual or conda environment is created in the installation directory of \code{pkgname} if specified.
-Otherwise, it creates the environment in the directory specified by the environment variable \code{BASILISK_NONPKG_DIR}, 
-defaulting to the current working directory. 
+A virtual or conda environment is created containing the specified \code{packages}.
+If \code{pkgname} is specified, the environment is located in the installation directory of \code{pkgname}.
+Otherwise, it treats \code{envname} as a path to the desired location of the environment.
 The function itself returns a \code{NULL} value invisibly.
 }
 \description{
@@ -62,29 +62,15 @@ In such cases, the compatible versions of the core packages must again be explic
 }
 
 \examples{
-##################################################
-# Creating virtualenvs in a temporary directory to 
-# avoid polluting the user's WORKON_HOME.
-tmploc <- file.path(tempdir(), "basilisk")
-dir.create(tmploc)
-old <- Sys.getenv("WORKON_HOME")
-Sys.setenv(WORKON_HOME=tmploc)
-##################################################
-
-setupBasiliskEnv('my_package_A', c('pandas==0.25.3',
+tmploc <- file.path(tempdir(), "my_package_A")
+setupBasiliskEnv(tmploc, c('pandas==0.25.3',
     "python-dateutil==2.8.1", "pytz==2019.3"))
-useBasiliskEnv("my_package_A")
-X <- reticulate::import("pandas")
-X$`__version__`
 
 # No need to list versions of core packages, 
 # or to list them at all if they are dependencies.
-setupBasiliskEnv('my_package_A_alt', 'pandas')
+tmploc2 <- paste0(tmploc, "_alt")
+setupBasiliskEnv(tmploc2, 'pandas')
 
-##################################################
-# Restoring the old WORKON_HOME.
-Sys.setenv(WORKON_HOME=old)
-##################################################
 }
 \seealso{
 \code{\link{listCorePackages}}, for a list of core Python packages with pinned versions.

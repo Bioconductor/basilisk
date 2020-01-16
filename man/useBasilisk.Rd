@@ -11,7 +11,7 @@ A string containing the path to the \pkg{basilisk} Python executable, invisibly.
 }
 \description{
 Use \pkg{reticulate} to set up the Bioconductor-owned instance of Python provided by \pkg{basilisk}.
-This function is primarily intended for developer intended for use within other Bioconductor packages.
+This function is primarily intended for developer use within other Bioconductor packages.
 }
 \details{
 This uses \code{\link{use_python}} to register a consistent Python version that is isolated from the system installation.
