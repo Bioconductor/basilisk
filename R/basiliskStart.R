@@ -79,24 +79,16 @@
 #' \code{\link{getBasiliskFork}} and \code{\link{getBasiliskShared}}, to control various global options.
 #' 
 #' @examples
-#' ##################################################
-#' # Creating virtualenvs in a temporary directory to 
-#' # avoid polluting the user's WORKON_HOME.
-#' tmploc <- file.path(tempdir(), "basilisk")
-#' dir.create(tmploc)
-#' old <- Sys.getenv("WORKON_HOME")
-#' Sys.setenv(WORKON_HOME=tmploc)
-#' ##################################################
-#'
-#' # Loading one virtual environment into our R session:
-#' setupBasiliskEnv('my_package_A', c('pandas==0.25.3',
-#'     "python-dateutil==2.8.1", "pytz==2019.3"))
-#' useBasiliskEnv("my_package_A")
+#' # Globally loading one environment into our R session:
+#' tmploc <- file.path(tempdir(), "my_package_C")
+#' setupBasiliskEnv(tmploc, c('pandas', "python-dateutil", "pytz"))
+#' useBasiliskEnv(tmploc)
 #' X <- reticulate::import("pandas")
 #' X$`__version__` 
 #'
 #' # Co-exists with our other virtual environment in a separate process:
-#' setupBasiliskEnv('my_package_B', c('pandas==0.24.1',
+#' tmploc2 <- file.path(tempdir(), "my_package_C_alt")
+#' setupBasiliskEnv(tmploc2, c('pandas==0.24.1',
 #'     "python-dateutil==2.7.1", "pytz==2018.7"))
 #' 
 #' cl <- basiliskStart('my_package_B')
@@ -106,7 +98,7 @@
 #' basiliskStop(cl)
 #'
 #' # Persistence of variables is possible within a Start/Stop pair.
-#' cl <- basiliskStart('my_package_B')
+#' cl <- basiliskStart(tmploc2)
 #' basiliskRun(proc=cl, function() { 
 #'     assign(x="snake.in.my.shoes", 1, envir=parent.frame())
 #' })
@@ -119,11 +111,6 @@
 #' # Close persistent processes to avoid errors during CHECK.
 #' basiliskStop(cl, persist=FALSE)
 #' }
-#'
-#' ##################################################
-#' # Restoring the old WORKON_HOME.
-#' Sys.setenv(WORKON_HOME=old)
-#' ##################################################
 #' @export
 #' @importFrom parallel makePSOCKcluster clusterCall makeForkCluster
 #' @importFrom reticulate py_config py_available

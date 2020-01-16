@@ -49,29 +49,15 @@
 #' In such cases, the compatible versions of the core packages must again be explicitly listed in \code{packages}.
 #'
 #' @examples
-#' ##################################################
-#' # Creating virtualenvs in a temporary directory to 
-#' # avoid polluting the user's WORKON_HOME.
-#' tmploc <- file.path(tempdir(), "basilisk")
-#' dir.create(tmploc)
-#' old <- Sys.getenv("WORKON_HOME")
-#' Sys.setenv(WORKON_HOME=tmploc)
-#' ##################################################
-#' 
-#' setupBasiliskEnv('my_package_A', c('pandas==0.25.3',
+#' tmploc <- file.path(tempdir(), "my_package_A")
+#' setupBasiliskEnv(tmploc, c('pandas==0.25.3',
 #'     "python-dateutil==2.8.1", "pytz==2019.3"))
-#' useBasiliskEnv("my_package_A")
-#' X <- reticulate::import("pandas")
-#' X$`__version__`
 #'
 #' # No need to list versions of core packages, 
 #' # or to list them at all if they are dependencies.
-#' setupBasiliskEnv('my_package_A_alt', 'pandas')
+#' tmploc2 <- paste0(tmploc, "_alt")
+#' setupBasiliskEnv(tmploc2, 'pandas')
 #'
-#' ##################################################
-#' # Restoring the old WORKON_HOME.
-#' Sys.setenv(WORKON_HOME=old)
-#' ##################################################
 #' @seealso
 #' \code{\link{listCorePackages}}, for a list of core Python packages with pinned versions.
 #'
@@ -130,7 +116,8 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
 .setup_virtualenv <- function(envname, packages, pkgname) {
     # Creating a virtual environment in an appropriate location.
     if (is.null(pkgname)) {
-        vdir <- getwd()
+        vdir <- dirname(envname)
+        envname <- basename(envname)
     } else {
         vdir <- .choose_env_dir(pkgname)
         dir.create(vdir, recursive=TRUE, showWarnings=FALSE)

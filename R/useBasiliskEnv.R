@@ -25,22 +25,14 @@
 #' @author Aaron Lun
 #' 
 #' @examples
-#' ##################################################
-#' # Creating virtualenvs in a temporary directory to 
-#' # avoid polluting the user's WORKON_HOME.
-#' tmploc <- file.path(tempdir(), "basilisk")
-#' dir.create(tmploc)
-#' old <- Sys.getenv("WORKON_HOME")
-#' Sys.setenv(WORKON_HOME=tmploc)
-#' ##################################################
+#' tmploc <- file.path(tempdir(), "my_package_B")
+#' setupBasiliskEnv(tmploc, 'pandas')
+#' useBasiliskEnv(tmploc) # TRUE or FALSE, depending on global Python.
 #'
-#' setupBasiliskEnv('my_package_A_alt', 'pandas')
-#' useBasiliskEnv("my_package_A_alt")
-#' 
-#' ##################################################
-#' # Restoring the old WORKON_HOME.
-#' Sys.setenv(WORKON_HOME=old)
-#' ##################################################
+#' tmploc2 <- file.path(tempdir(), "my_package_B_alt")
+#' setupBasiliskEnv(tmploc2, 'pandas==0.24.1')
+#' useBasiliskEnv(tmploc2) # FALSE, as global Python is already occupied.
+#'
 #' @seealso
 #' \code{\link{basiliskStart}}, for how these virtual environments should be used.
 #'
@@ -54,7 +46,7 @@ useBasiliskEnv <- function(envname, pkgname=NULL, dry=FALSE, required=TRUE) {
     }
 
     if (is.null(pkgname)) {
-        envdir <- normalizePath(envname, mustWork=TRUE)
+        envdir <- envname
     } else {
         vdir <- .choose_env_dir(pkgname, mustWork=TRUE)
         envdir <- file.path(vdir, envname)
