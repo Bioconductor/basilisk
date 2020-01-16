@@ -60,15 +60,11 @@
 
 #' @importFrom utils packageVersion
 .choose_env_dir <- function(pkgname, mustWork=FALSE) {
-    if (!is.null(pkgname)) {
-        if (.is_windows()) {
-            vdir <- file.path(rappdirs::user_data_dir(appname=pkgname, appauthor="me",
-                version=packageVersion(pkgname)), .env_dir)
-        } else {
-            vdir <- file.path(system.file(package=pkgname), .env_dir)
-        }
+    if (.is_windows()) {
+        vdir <- file.path(rappdirs::user_data_dir(appname=pkgname, appauthor="me",
+            version=packageVersion(pkgname)), .env_dir)
     } else {
-        vdir <- Sys.getenv("BASILISK_NONPKG_DIR", unset=getwd())
+        vdir <- file.path(system.file(package=pkgname), .env_dir)
     }
     if (mustWork && !file.exists(vdir)) {
         stop("basilisk environment directory does not exist")

@@ -10,9 +10,9 @@
 #' @param conda Logical scalar indicating whether a conda environment should be created.
 #' 
 #' @return 
-#' A virtual or conda environment is created in the installation directory of \code{pkgname} if specified.
-#' Otherwise, it creates the environment in the directory specified by the environment variable \code{BASILISK_NONPKG_DIR}, 
-#' defaulting to the current working directory. 
+#' A virtual or conda environment is created containing the specified \code{packages}.
+#' If \code{pkgname} is specified, the environment is located in the installation directory of \code{pkgname}.
+#' Otherwise, it treats \code{envname} as a path to the desired location of the environment.
 #' The function itself returns a \code{NULL} value invisibly.
 #'
 #' @details
@@ -129,8 +129,13 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
 #' @importFrom reticulate virtualenv_create virtualenv_install virtualenv_remove virtualenv_root
 .setup_virtualenv <- function(envname, packages, pkgname) {
     # Creating a virtual environment in an appropriate location.
-    vdir <- .choose_env_dir(pkgname)
-    dir.create(vdir, recursive=TRUE, showWarnings=FALSE)
+    if (is.null(pkgname)) {
+        vdir <- getwd()
+    } else {
+        vdir <- .choose_env_dir(pkgname)
+        dir.create(vdir, recursive=TRUE, showWarnings=FALSE)
+    }
+
     old.work <- Sys.getenv("WORKON_HOME")
     Sys.setenv(WORKON_HOME=vdir)
     on.exit(Sys.setenv(WORKON_HOME=old.work), add=TRUE)
@@ -163,9 +168,13 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
 
 #' @importFrom reticulate conda_create conda_install
 .setup_condaenv <- function(envname, packages, pkgname) {
-    vdir <- .choose_env_dir(pkgname)
-    dir.create(vdir, recursive=TRUE, showWarnings=FALSE)
-    envdir <- file.path(vdir, envname)
+    if (is.null(pkgname)) {
+        envdir <- envname
+    } else {
+        vdir <- .choose_env_dir(pkgname)
+        dir.create(vdir, recursive=TRUE, showWarnings=FALSE)
+        envdir <- file.path(vdir, envname)
+    }
 
     # Effective no-op if the environment already exists, or if everything is
     # perfectly satisfied by the core installation.

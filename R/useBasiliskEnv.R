@@ -15,9 +15,8 @@
 #' It is unlikely that developers should ever need to call \code{\link{useBasiliskEnv}} directly.
 #' Rather, this interaction should be automatically handled by \code{\link{basiliskStart}}.
 #'
-#' If \code{pkgname} is specified, \code{useBasiliskEnv} will search in the installation directory of \code{pkgname} for \code{basilisk/envname}
-#' Otherwise, it will look in the directory specified by the environment variable \code{BASILISK_NONPKG_DIR},
-#' defaulting to the current working directory.
+#' If \code{pkgname} is specified, \code{useBasiliskEnv} will search in the installation directory of \code{pkgname} for the specified \code{envname}
+#' Otherwise, the function will treat \code{envname} as the path to the desired environment.
 #' 
 #' A side-effect of \code{useBasiliskEnv} with \code{dry=FALSE} is that the \code{"PYTHONPATH"} environment variable is unset for the duration of the R session
 #' (or \pkg{basilisk} process, depending on the back-end chosen by \code{\link{basiliskStart}}).
@@ -54,8 +53,12 @@ useBasiliskEnv <- function(envname, pkgname=NULL, dry=FALSE, required=TRUE) {
         on.exit(Sys.setenv(RETICULATE_PYTHON=old.retpy))
     }
 
-    vdir <- .choose_env_dir(pkgname, mustWork=TRUE)
-    envdir <- file.path(vdir, envname)
+    if (is.null(pkgname)) {
+        envdir <- normalizePath(envname, mustWork=TRUE)
+    } else {
+        vdir <- .choose_env_dir(pkgname, mustWork=TRUE)
+        envdir <- file.path(vdir, envname)
+    }
 
     mode <- "virtualenv"
     if (!file.exists(envdir)) {
