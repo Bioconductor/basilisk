@@ -39,18 +39,6 @@
         appauthor=sub("\\.[0-9]+$", "", packageVersion("basilisk")))
 }
 
-.detect_os <- function() {
-    if (.is_windows()) {
-        paste0("win", ifelse(.Machine$sizeof.pointer == 8, "64", "32"))
-    } else {
-        if (Sys.info()[["sysname"]] == "Darwin") {
-            "macosx"
-        } else {
-            "linux"
-        }
-    }
-}
-
 .is_windows <- function() {
     .Platform$OS.type=="windows" 
 }
