@@ -20,6 +20,15 @@
     base_url <- "https://repo.anaconda.com/archive"
 
     if (os %in% c("win64", "win32")) {
+        # DESTROYING the previous destination path. This avoids accumulating
+        # multiple Anaconda installations when basilisk is reinstalled. This
+        # also destroys the environments of the client packages, so we rely on
+        # the clients to auto-repopulate with their environments based on their
+        # .onLoad statements. Note, this isn't a problem on Linux and Mac where
+        # the previous installation is in the R installation directory and
+        # automatically removed on R package installation. 
+        unlink(dirname(dest_path), recursive=TRUE)
+
         arch <- if (os=="win64") "x86_64" else "x86"
         inst_file <- sprintf("Anaconda3-%s-Windows-%s.exe", version, arch)
         tmploc <- .expedient_download(file.path(base_url, inst_file))
