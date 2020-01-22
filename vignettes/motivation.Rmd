@@ -29,7 +29,7 @@ These versioning issues represent a major obstacle to reliable execution of Pyth
 
 # What?
 
-`r Biocpkg("basilisk")` provides a self-contained Python installation that is fully managed by the Bioconductor installation machinery.
+`r Biocpkg("basilisk")` provides a self-contained Python 3 installation that is fully managed by the Bioconductor installation machinery.
 This allows developers of downstream Bioconductor packages to be sure that they are working with the same version of Python on all systems.
 `r Biocpkg("basilisk")` uses the [Anaconda installers](https://repo.anaconda.com/) to provision a Python instance with a core set of popular packages, encouraging standardization of their versions for greater interoperability between Bioconductor packages. 
 Additionally, `r Biocpkg("basilisk")` provides utilities to manage different Python environments within a single R session, enabling multiple Bioconductor packages to use incompatible versions of Python packages in the course of a single analysis.
@@ -78,7 +78,11 @@ Continuing on from the above example: to use methods from the `aaron_env` enviro
 
         some_useful_thing <- basiliskRun(proc, function(arg1, arg2) {
             mod <- reticulate::import("scikit-learn")
-            mod$some_calculation(arg1, arg2)
+            output <- mod$some_calculation(arg1, arg2)
+
+            # The return value MUST be a pure R object, i.e., no reticulate
+            # Python objects, no pointers to shared memory. 
+            output 
         }, arg1=ARG_VALUE_1, arg2=ARG_VALUE_2)
 
         some_useful_thing
