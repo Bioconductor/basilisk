@@ -21,10 +21,9 @@ setupBasiliskEnv(tC, c(old.pandas, old.pandas.deps), conda=TRUE)
 setupBasiliskEnv(file.path(client.dir, 'occupier'), c(old.pandas, old.pandas.deps)) # for use in preloaded_check.
 
 #################################################################
-# Defining a helper function to check for correct persistence
-# (of variables, not of the process, hence the persist=FALSE).
+# Defining a helper function to check for correct persistence.
 
-persistence_check <- function(version, envir, persist=FALSE, ...) {
+persistence_check <- function(version, envir, ...) {
     library(basilisk)
     library(testthat)
 
@@ -62,13 +61,13 @@ persistence_check <- function(version, envir, persist=FALSE, ...) {
 
 # Defining helper functions to check new process creation.
 
-process_check <- function(version, envir, ..., persist=FALSE) {
+process_check <- function(version, envir, ...) {
     # Check code copied from related functions. Do NOT put into a separate function,
     # as otherwise r() will not find it in its new namespace.
     library(basilisk)
     library(testthat)
 
-    proc <- basiliskStart(envir, shared=FALSE, ..., persist=persist)
+    proc <- basiliskStart(envir, shared=FALSE, ...)
     test.version <- basiliskRun(proc, fun=function() {
         reticulate::import("pandas")$`__version__`
     })
@@ -82,13 +81,13 @@ process_check <- function(version, envir, ..., persist=FALSE) {
     TRUE
 }
 
-preloaded_check <- function(version, envir, ..., persist=FALSE) {
+preloaded_check <- function(version, envir, ...) {
     # Checking what happens when Python is already loaded.
     library(basilisk)
     library(testthat)
     useBasiliskEnv("install-test-client/occupier")
 
-    proc <- basiliskStart(envir, ..., persist=persist)
+    proc <- basiliskStart(envir, ...)
     test.version <- basiliskRun(proc, fun=function() {
         reticulate::import("pandas")$`__version__`
     })
@@ -106,12 +105,12 @@ preloaded_check <- function(version, envir, ..., persist=FALSE) {
 test_that("basilisk directly loads Python when possible", {
     skip_on_os('windows') # don't know why this doesn't load Python directly... don't care.
 
-    FUN <- function(version, envir, persist=FALSE) {
+    FUN <- function(version, envir) {
         library(basilisk)
         library(testthat)
         Sys.setenv(WORKON_HOME="install-test-client")
 
-        proc <- basiliskStart(envir, persist=persist)
+        proc <- basiliskStart(envir)
         expect_true(is.environment(proc))
 
         test.version <- basiliskRun(proc, fun=function() {
@@ -137,11 +136,6 @@ test_that("basilisk directly loads Python when possible", {
     expect_true(r(FUN, args=list(version=new.version, envir=tA)))
     expect_true(r(FUN, args=list(version=old.version, envir=tB)))
     expect_true(r(FUN, args=list(version=old.version, envir=tC)))
-
-    # Unaffected by persist=TRUE.
-    expect_true(r(FUN, args=list(version=new.version, envir=tA, persist=TRUE)))
-    expect_true(r(FUN, args=list(version=old.version, envir=tB, persist=TRUE)))
-    expect_true(r(FUN, args=list(version=old.version, envir=tC, persist=TRUE)))
 
     # Respects persistence of variables.
     expect_true(r(persistence_check, args=list(version=new.version, envir=tA)))
@@ -184,50 +178,4 @@ test_that("basilisk uses sockets as a fallback", {
     expect_true(r(persistence_check, args=list(version=new.version, envir=tA, shared=FALSE, fork=FALSE)))
     expect_true(r(persistence_check, args=list(version=old.version, envir=tB, shared=FALSE, fork=FALSE)))
     expect_true(r(persistence_check, args=list(version=old.version, envir=tC, shared=FALSE, fork=FALSE)))
-})
-
-###########################################################
-
-test_that("basilisk works with persistent processes", {
-    expect_true(r(process_check, args=list(version=new.version, envir=tA, persist=TRUE, fork=FALSE)))
-    expect_true(r(process_check, args=list(version=old.version, envir=tB, persist=TRUE, fork=FALSE)))
-    expect_true(r(process_check, args=list(version=old.version, envir=tC, persist=TRUE, fork=FALSE)))
-
-    out <- r(function(version, envname) {
-        library(basilisk)
-        library(testthat)
-
-        pkgname <- NULL
-        proc <- basiliskStart(envname, shared=FALSE)
-        old.pid <- parallel::clusterCall(basilisk:::.get_persist(envname, pkgname), Sys.getpid)[[1]]
-
-        # Same process is re-used.
-        proc2 <- basiliskStart(envname, shared=FALSE)
-        new.pid <- parallel::clusterCall(basilisk:::.get_persist(envname, pkgname), Sys.getpid)[[1]]
-        expect_identical(old.pid, new.pid)
-
-        test.version <- basiliskRun(proc2, fun=function() {
-            reticulate::import("pandas")$`__version__`
-        })
-        expect_identical(version, test.version)
-
-        # Reboots persistent process if it's been closed.
-        actual_proc <- basilisk:::.get_persist(envname, pkgname)
-        parallel::stopCluster(actual_proc)
-        basilisk:::.set_persist(envname, pkgname, actual_proc)
-        expect_error(parallel::clusterCall(basilisk:::.get_persist(envname, pkgname), Sys.getpid))
-
-        reproc <- basiliskStart(envname, shared=FALSE)
-        expect_error(parallel::clusterCall(basilisk:::.get_persist(envname, pkgname), Sys.getpid), NA)
-
-        # Running basiliskStop doesn't have any effect unless persist=FALSE.
-        basiliskStop(reproc)
-        expect_error(parallel::clusterCall(basilisk:::.get_persist(envname, pkgname), Sys.getpid), NA)
-
-        basiliskStop(reproc, persist=FALSE)
-        expect_error(parallel::clusterCall(basilisk:::.get_persist(envname, pkgname), Sys.getpid))
-
-        TRUE
-    }, args=list(version=new.version, envname=tA))
-    expect_true(out)
 })

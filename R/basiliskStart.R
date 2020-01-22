@@ -8,12 +8,11 @@
 #' @param fork Logical scalar indicating whether forking should be performed on non-Windows systems, see \code{\link{getBasiliskFork}}.
 #' If \code{FALSE}, a new worker process is created using communication over sockets.
 #' @param shared Logical scalar indicating whether \code{basiliskStart} is allowed to load a shared Python instance into the current R process, see \code{\link{getBasiliskShared}}.
-#' @param persist Logical scalar indicating whether a persistent process should be created, see \code{\link{getBasiliskPersist}}.
 #' @param fun A function to be executed in the \pkg{basilisk} process.
 #' @param ... Further arguments to be passed to \code{fun}.
 #'
 #' @return 
-#' \code{basiliskStart} returns a process object, the exact nature of which depends on \code{fork}, \code{shared} and \code{persist}.
+#' \code{basiliskStart} returns a process object, the exact nature of which depends on \code{fork} and \code{shared}.
 #' This object should only be used in \code{basiliskRun} and \code{basiliskStop}.
 #'
 #' \code{basiliskRun} returns the output of \code{fun(...)} when executed inside the separate process.
@@ -52,11 +51,8 @@
 #' \item Otherwise, \code{basiliskStart} will create a parallel socket process containing a separate R session.
 #' In the new process, \code{basiliskStart} will load the specified virtual environment for Python operations.
 #' This is the least efficient as it needs to transfer data over sockets but is guaranteed to work.
-#' \item If \code{persist=TRUE}, a forked or socket process created in this manner is kept active even after \code{\link{basiliskStop}}.
-#' It can then be re-used in subsequent calls to \code{\link{basiliskStart}},
-#' thus avoiding the overhead of setting up a new process and loading the relevant packages.
 #' }
-#' Developers can control these choices directly by explicitly specifying \code{shared}, \code{fork} and \code{persist},
+#' Developers can control these choices directly by explicitly specifying \code{shared} and \code{fork},
 #' while users can control them indirectly with \code{\link{setBasiliskFork}} and related functions.
 #'
 #' @section Constraints on user-defined functions:
@@ -106,35 +102,10 @@
 #'     get("snake.in.my.shoes", envir=parent.frame())
 #' })
 #' basiliskStop(cl)
-#' 
-#' \dontshow{
-#' # Close persistent processes to avoid errors during CHECK.
-#' basiliskStop(cl, persist=FALSE)
-#' }
 #' @export
 #' @importFrom parallel makePSOCKcluster clusterCall makeForkCluster
 #' @importFrom reticulate py_config py_available
-basiliskStart <- function(envname, pkgname=NULL, 
-    fork=getBasiliskFork(), shared=getBasiliskShared(), persist=getBasiliskPersist())
-{
-    if (persist) {
-        available <- .get_persist(envname, pkgname)
-
-        # If it's NULL, we either haven't run basiliskStart() yet, or we're
-        # allowed to use a shared Python library, in which case we proceed to
-        # the rest of the function.
-        if (!is.null(available)) {
-            # Protection against process invalidation; if so, we force it to
-            # create a new persistent process.
-            test <- try(clusterCall(available, fun=identity, x=1), silent=TRUE)
-            if (is(test, "try-error")) {
-                .set_persist(envname, pkgname, NULL)
-                available <- basiliskStart(envname, pkgname=pkgname, fork=fork, shared=FALSE, persist=TRUE)
-            }
-            return(available)
-        }
-    }
-
+basiliskStart <- function(envname, pkgname=NULL, fork=getBasiliskFork(), shared=getBasiliskShared()) {
     if (shared && 
         {
             # Seeing if we can just load it successfully.
@@ -153,38 +124,19 @@ basiliskStart <- function(envname, pkgname=NULL,
             proc <- makePSOCKcluster(1)
         }
         clusterCall(proc, useBasiliskEnv, envname=envname, pkgname=pkgname)
-
-        # Persisting the object for the next call to basiliskStart().
-        if (persist) {
-            .set_persist(envname, pkgname, proc)
-        }
     }
 
     proc
 }
 
-.create_persist_key <- function(envname, pkgname) paste0(envname, "_", pkgname)
-
-.get_persist <- function(envname, pkgname) {
-    key <- .create_persist_key(envname, pkgname)
-    getOption("basilisk.persist.values", list())[[key]]
-}
-
-.set_persist <- function(envname, pkgname, proc) {
-    key <- .create_persist_key(envname, pkgname)
-    available <- getOption("basilisk.persist.values", list())
-    available[[key]] <- proc
-    options(basilisk.persist.values=available)
-}
-
 #' @export
 #' @rdname basiliskStart
 #' @importFrom parallel stopCluster
-basiliskStop <- function(proc, persist=getBasiliskPersist()) {
+basiliskStop <- function(proc) {
     if (is.environment(proc)) {
         # Restore the old PYTHONPATH.
         Sys.setenv(PYTHONPATH=proc$.basilisk.pypath)
-    } else if (!persist) {
+    } else {
         stopCluster(proc)
     }
 }
@@ -193,11 +145,11 @@ basiliskStop <- function(proc, persist=getBasiliskPersist()) {
 #' @rdname basiliskStart
 #' @importFrom parallel clusterCall
 basiliskRun <- function(proc=NULL, fun, ..., envname, pkgname=NULL, 
-    fork=getBasiliskFork(), shared=getBasiliskShared(), persist=getBasiliskPersist())
+    fork=getBasiliskFork(), shared=getBasiliskShared()) 
 {
     if (is.null(proc)) {
-        proc <- basiliskStart(envname, pkgname=pkgname, fork=fork, shared=shared, persist=persist)
-        on.exit(basiliskStop(proc, persist=persist))
+        proc <- basiliskStart(envname, pkgname=pkgname, fork=fork, shared=shared)
+        on.exit(basiliskStop(proc))
     }
 
     if (is.environment(proc)) {
