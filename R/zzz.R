@@ -25,8 +25,11 @@
         # the clients to auto-repopulate with their environments based on their
         # .onLoad statements. Note, this isn't a problem on Linux and Mac where
         # the previous installation is in the R installation directory and
-        # automatically removed on R package installation. 
-        unlink(dirname(dest_path), recursive=TRUE)
+        # automatically removed on R package installation.
+        host <- dirname(dest_path)
+        all.candidates <- list.files(dirname(host), full.names=TRUE,
+            pattern=paste0("^", sub("\\.[0-9]+$", "", basename(host))))
+        unlink(all.candidates, recursive=TRUE)
 
         arch <- if (.Machine$sizeof.pointer == 8) "x86_64" else "x86"
         inst_file <- sprintf("Anaconda3-%s-Windows-%s.exe", version, arch)

@@ -32,11 +32,7 @@
 
 #' @importFrom utils packageVersion
 .find_windows_inst_dir <- function() {
-    # We add a truncated package version to ensure that we erase 
-    # installation copies from the same BioC release without affecting
-    # the behavior of simultaneous devel/release on one machine.
-    rappdirs::user_data_dir(appname="basilisk", 
-        appauthor=sub("\\.[0-9]+$", "", packageVersion("basilisk")))
+    rappdirs::user_data_dir(appname="basilisk", appauthor=packageVersion("basilisk"))
 }
 
 .is_windows <- function() {
