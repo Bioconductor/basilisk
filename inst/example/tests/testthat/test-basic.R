@@ -1,5 +1,5 @@
 # This tests that we can install basilisk-dependent packages.
-# library(testthat); source("test-package.R")
+# library(testthat); source("test-basic.R")
 
 test_that("internal test package installs correctly", {
     xpath <- basilisk:::.choose_env_dir("son.of.basilisk")
