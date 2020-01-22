@@ -5,8 +5,6 @@
 \alias{setBasiliskFork}
 \alias{getBasiliskShared}
 \alias{setBasiliskShared}
-\alias{getBasiliskPersist}
-\alias{setBasiliskPersist}
 \title{Options for \pkg{basilisk}}
 \usage{
 getBasiliskFork()
@@ -16,17 +14,12 @@ setBasiliskFork(value)
 getBasiliskShared()
 
 setBasiliskShared(value)
-
-getBasiliskPersist()
-
-setBasiliskPersist(value)
 }
 \arguments{
 \item{value}{Logical scalar:
 \itemize{
 \item For \code{setBasiliskFork}, whether forking should be used when available.
 \item For \code{setBasiliskShared}, whether the shared Python instance can be set in the R session.
-\item For \code{setBasiliskPesist}, whether the \pkg{basilisk} process can persist across function calls.
 }}
 }
 \value{
@@ -46,10 +39,6 @@ This is generally more efficient than socket communication when it is available 
 but can be less efficient if any garbage collection occurs inside the new process.
 In such cases, users or developers may wish to turn off forking with \code{setBasiliskFork(FALSE)},
 e.g., in functions where many R-based memory allocations are performed inside \code{\link{basiliskRun}}.
-
-\code{\link{basiliskStart}} will persist any process object across function calls by default.
-This avoids the overhead of starting a process, loading in all Python and R packages, etc. at every call.
-Users can turn off this behavior by setting \code{setBasiliskPersist(FALSE)}, which is occasionally desirable for debugging purposes.
 
 If many \pkg{basilisk}-dependent packages are to be used together on Unix systems, setting \code{setBasiliskShared(FALSE)} may be beneficial.
 This allows each package to fork to create a new process as no Python has been loaded in the parent R process (see \code{?\link{basiliskStart}}).
