@@ -32,7 +32,8 @@
 
 #' @importFrom utils packageVersion
 .find_windows_inst_dir <- function() {
-    rappdirs::user_data_dir(appname="basilisk", appauthor=packageVersion("basilisk"))
+    rappdirs::user_data_dir(appname="basilisk", 
+        appauthor=as.character(packageVersion("basilisk")))
 }
 
 .is_windows <- function() {
