@@ -15,12 +15,20 @@
 }
 
 .minstaller <- function(dest_path, testing=FALSE) {
-    os <- .detect_os()
     version <- "2019.10"
     base_url <- "https://repo.anaconda.com/archive"
 
-    if (os %in% c("win64", "win32")) {
-        arch <- if (os=="win64") "x86_64" else "x86"
+    if (.is_windows()) {
+        # DESTROYING the previous destination path. This avoids accumulating
+        # multiple Anaconda installations when basilisk is reinstalled. This
+        # also destroys the environments of the client packages, so we rely on
+        # the clients to auto-repopulate with their environments based on their
+        # .onLoad statements. Note, this isn't a problem on Linux and Mac where
+        # the previous installation is in the R installation directory and
+        # automatically removed on R package installation. 
+        unlink(dirname(dest_path), recursive=TRUE)
+
+        arch <- if (.Machine$sizeof.pointer == 8) "x86_64" else "x86"
         inst_file <- sprintf("Anaconda3-%s-Windows-%s.exe", version, arch)
         tmploc <- .expedient_download(file.path(base_url, inst_file))
 
@@ -32,7 +40,8 @@
 
     } else {
         # Stripped from https://github.com/hafen/rminiconda a long time ago...
-        sysname <- if (os=="macosx") "MacOSX" else "Linux"
+        is_mac <- Sys.info()[["sysname"]] == "Darwin"
+        sysname <- if (is_mac) "MacOSX" else "Linux"
         inst_file <- sprintf("Anaconda3-%s-%s-x86_64.sh", version, sysname)
 
         if (testing) {
@@ -52,7 +61,7 @@
             tmploc <- .expedient_download(file.path(base_url, inst_file))
             inst_args <- sprintf(" %s -b -p %s", tmploc, dest_path)
 
-            if (os=="macosx") {
+            if (is_mac) {
                 # The prebuilt R binary for Mac seems to set this variable,
                 # which causes default paths for zlib to be ignored and breaks
                 # installation. So, we unset it before attempting installation.

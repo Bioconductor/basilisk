@@ -6,7 +6,6 @@
 
 .core_dir <- "anaconda"
 
-#' @importFrom utils packageVersion
 .get_basilisk_dir <- function(mustWork=TRUE) {
     inst_dir <- Sys.getenv("BASILISK_CORE_DIR")
 
@@ -17,8 +16,7 @@
             # long if we ask for system.file(), so we'll just dump it in a user
             # directory instead. Windows users will then have to sit through the
             # installation process... too bad for them, I guess.
-            inst_path <- rappdirs::user_data_dir(appname="basilisk", appauthor="me",
-                version=packageVersion("basilisk"))
+            inst_path <- .find_windows_inst_dir()
         } else {
             inst_path <- system.file(package="basilisk")
         }
@@ -32,16 +30,13 @@
     inst_path
 }
 
-.detect_os <- function() {
-    if (.is_windows()) {
-        paste0("win", ifelse(.Machine$sizeof.pointer == 8, "64", "32"))
-    } else {
-        if (Sys.info()[["sysname"]] == "Darwin") {
-            "macosx"
-        } else {
-            "linux"
-        }
-    }
+#' @importFrom utils packageVersion
+.find_windows_inst_dir <- function() {
+    # We add a truncated package version to ensure that we erase 
+    # installation copies from the same BioC release without affecting
+    # the behavior of simultaneous devel/release on one machine.
+    rappdirs::user_data_dir(appname="basilisk", 
+        appauthor=sub("\\.[0-9]+$", "", packageVersion("basilisk")))
 }
 
 .is_windows <- function() {
@@ -61,11 +56,12 @@
 #' @importFrom utils packageVersion
 .choose_env_dir <- function(pkgname, mustWork=FALSE) {
     if (.is_windows()) {
-        vdir <- file.path(rappdirs::user_data_dir(appname=pkgname, appauthor="me",
-            version=packageVersion(pkgname)), .env_dir)
+        vdir <- file.path(.find_windows_inst_dir(), paste0(pkgname, "-", packageVersion(pkgname)))
     } else {
-        vdir <- file.path(system.file(package=pkgname), .env_dir)
+        vdir <- system.file(package=pkgname)
     }
+
+    vdir <- file.path(vdir, .env_dir)
     if (mustWork && !file.exists(vdir)) {
         stop("basilisk environment directory does not exist")
     }
