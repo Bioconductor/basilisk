@@ -106,24 +106,29 @@
 #' @importFrom parallel makePSOCKcluster clusterCall makeForkCluster
 #' @importFrom reticulate py_config py_available
 basiliskStart <- function(envname, pkgname=NULL, fork=getBasiliskFork(), shared=getBasiliskShared()) {
+    if (is.null(pkgname)) {
+        envpath <- envname
+    } else {
+        envdir <- .choose_env_dir(pkgname, mustWork=TRUE)
+        envpath <- file.path(envdir, envname)
+    }
+
     if (shared && 
         {
             # Seeing if we can just load it successfully.
             old.pypath <- Sys.getenv("PYTHONPATH")
-            useBasiliskEnv(envname, pkgname=pkgname, required=FALSE)
+            useBasiliskEnv(envpath, required=FALSE)
         }
     ) {
         proc <- new.env()
         proc$.basilisk.pypath <- old.pypath
     } else {
-        if (fork && !.is_windows() && 
-            (!py_available() || useBasiliskEnv(envname, pkgname=pkgname, dry=TRUE))
-        ) { 
+        if (fork && !.is_windows() && (!py_available() || useBasiliskEnv(envpath, dry=TRUE))) { 
             proc <- makeForkCluster(1)
         } else {
             proc <- makePSOCKcluster(1)
         }
-        clusterCall(proc, useBasiliskEnv, envname=envname, pkgname=pkgname)
+        clusterCall(proc, useBasiliskEnv, envpath=envpath)
     }
 
     proc

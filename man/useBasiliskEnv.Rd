@@ -4,12 +4,10 @@
 \alias{useBasiliskEnv}
 \title{Use \pkg{basilisk} environments}
 \usage{
-useBasiliskEnv(envname, pkgname = NULL, dry = FALSE, required = TRUE)
+useBasiliskEnv(envpath, dry = FALSE, required = TRUE)
 }
 \arguments{
-\item{envname}{String containing the name of the environment to create.}
-
-\item{pkgname}{String specifying the name of the R package that owns the environment.}
+\item{envpath}{String containing the path to the environment to use.}
 
 \item{dry}{Logical scalar indicating whether only the directory should be returned without loading the environment.}
 
@@ -26,9 +24,6 @@ Use \pkg{basilisk} environments for isolated execution of Python code with appro
 \details{
 It is unlikely that developers should ever need to call \code{\link{useBasiliskEnv}} directly.
 Rather, this interaction should be automatically handled by \code{\link{basiliskStart}}.
-
-If \code{pkgname} is specified, \code{useBasiliskEnv} will search in the installation directory of \code{pkgname} for the specified \code{envname}
-Otherwise, the function will treat \code{envname} as the path to the desired environment.
 
 A side-effect of \code{useBasiliskEnv} with \code{dry=FALSE} is that the \code{"PYTHONPATH"} environment variable is unset for the duration of the R session
 (or \pkg{basilisk} process, depending on the back-end chosen by \code{\link{basiliskStart}}).

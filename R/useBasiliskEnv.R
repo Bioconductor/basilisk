@@ -2,7 +2,7 @@
 #'
 #' Use \pkg{basilisk} environments for isolated execution of Python code with appropriate versions of all Python packages.
 #' 
-#' @inheritParams setupBasiliskEnv
+#' @param envpath String containing the path to the environment to use. 
 #' @param dry Logical scalar indicating whether only the directory should be returned without loading the environment.
 #' @param required Logical scalar indicating whether an error should be raised if the requested environment cannot be found.
 #' 
@@ -14,9 +14,7 @@
 #' @details
 #' It is unlikely that developers should ever need to call \code{\link{useBasiliskEnv}} directly.
 #' Rather, this interaction should be automatically handled by \code{\link{basiliskStart}}.
-#'
-#' If \code{pkgname} is specified, \code{useBasiliskEnv} will search in the installation directory of \code{pkgname} for the specified \code{envname}
-#' Otherwise, the function will treat \code{envname} as the path to the desired environment.
+#' We require \code{envpath} (rather than the usual \code{envname} and \code{pkgname}) to avoid difficult errors with \code{\link{system.file}} when the package has not yet been loaded in the child process of \code{\link{basiliskStart}}.
 #' 
 #' A side-effect of \code{useBasiliskEnv} with \code{dry=FALSE} is that the \code{"PYTHONPATH"} environment variable is unset for the duration of the R session
 #' (or \pkg{basilisk} process, depending on the back-end chosen by \code{\link{basiliskStart}}).
@@ -38,31 +36,24 @@
 #'
 #' @export
 #' @importFrom reticulate use_virtualenv py_config use_condaenv
-useBasiliskEnv <- function(envname, pkgname=NULL, dry=FALSE, required=TRUE) {
+useBasiliskEnv <- function(envpath, dry=FALSE, required=TRUE) {
     old.retpy <- Sys.getenv("RETICULATE_PYTHON")
     Sys.unsetenv("RETICULATE_PYTHON")
     if (old.retpy!="") {
         on.exit(Sys.setenv(RETICULATE_PYTHON=old.retpy))
     }
 
-    if (is.null(pkgname)) {
-        envdir <- envname
-    } else {
-        vdir <- .choose_env_dir(pkgname, mustWork=TRUE)
-        envdir <- file.path(vdir, envname)
-    }
-
     mode <- "virtualenv"
-    if (!file.exists(envdir)) {
+    if (!file.exists(envpath)) {
         mode <- "common"
-    } else if (any(grepl("conda", list.files(envdir)))) {
+    } else if (any(grepl("conda", list.files(envpath)))) {
         mode <- "conda"
     }
 
     if (mode!="common") {
-        envdir <- normalizePath(envdir, mustWork=TRUE)
+        envpath <- normalizePath(envpath, mustWork=TRUE)
     } else {
-        envdir <- normalizePath(.get_basilisk_dir())
+        envpath <- normalizePath(.get_basilisk_dir())
     }
 
     if (!dry) {
@@ -74,19 +65,19 @@ useBasiliskEnv <- function(envname, pkgname=NULL, dry=FALSE, required=TRUE) {
         Sys.unsetenv("PYTHONPATH")
 
         if (mode=="conda") {
-            use_condaenv(envdir, required=required)
+            use_condaenv(envpath, required=required)
         } else if (mode=="virtualenv") {
-            use_virtualenv(envdir, required=required)
+            use_virtualenv(envpath, required=required)
         } else {
-            use_python(.get_py_cmd(envdir), required=required)
+            use_python(.get_py_cmd(envpath), required=required)
         }
     }
 
     # Checking whether we're the same as the existing python instance,
     # which would indicate that we correctly loaded ourselves.
     if (mode=="virtualenv") {
-        identical(envdir, py_config()$virtualenv)
+        identical(envpath, py_config()$virtualenv)
     } else {
-        identical(.get_py_cmd(envdir), py_config()$python)
+        identical(.get_py_cmd(envpath), py_config()$python)
     }
 }
