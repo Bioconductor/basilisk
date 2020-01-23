@@ -2,7 +2,8 @@
 # library(testthat); source("test-package.R")
 
 test_that("internal test package installs correctly", {
-    skip_on_os("windows") # temporary hack for debugging.
-    stuff <- devtools::check(system.file("example", package="basilisk"), document=FALSE, error_on="error")
+#    skip_on_os("windows") # temporary hack for debugging.
+    stuff <- devtools::check(system.file("example", package="basilisk"), 
+        document=FALSE, error_on="error", args="--no-multiarch")
     expect_identical(stuff$status, 0L)
 })
