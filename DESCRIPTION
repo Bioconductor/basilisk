@@ -15,7 +15,6 @@ Suggests:
     rmarkdown,
     BiocStyle,
     testthat,
-    devtools,
     callr,
     BiocFileCache
 biocViews: Infrastructure
