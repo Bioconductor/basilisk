@@ -7,7 +7,8 @@ Authors@R: c(person("Aaron", "Lun", role=c("aut", "cre", "cph"),
 Imports: 
     reticulate,
     parallel,
-    utils
+    utils,
+    basilisk.utils
 Suggests:
     knitr,
     rmarkdown,
