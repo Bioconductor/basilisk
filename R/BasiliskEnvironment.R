@@ -29,6 +29,7 @@ NULL
 setClass("BasiliskEnvironment", slots=c(envname="character", pkgname="character", packages="character", conda="logical"))
 
 #' @export
+#' @import methods 
 BasiliskEnvironment <- function(envname, pkgname, packages, conda=FALSE) {
     new("BasiliskEnvironment", envname=envname, pkgname=pkgname, packages=packages, conda=conda)
 }
