@@ -11,14 +11,14 @@
 #' @importFrom reticulate import
 #' @importFrom basilisk basiliskStart basiliskRun basiliskStop
 test <- function() {
-    cl <- basiliskStart("env1", pkgname="son.of.basilisk")
+    cl <- basiliskStart(env1)
     pandas.names <- basiliskRun(cl, function() { 
         X <- reticulate::import("pandas")
         names(X) 
     })
     basiliskStop(cl)
 
-    cl <- basiliskStart("env2", pkgname="son.of.basilisk")
+    cl <- basiliskStart(env2)
     sklearn.names <- basiliskRun(cl, function() { 
         X <- reticulate::import("sklearn.ensemble")
         names(X)
