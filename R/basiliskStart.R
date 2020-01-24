@@ -121,7 +121,7 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
         proc <- new.env()
         proc$.basilisk.pypath <- old.pypath
     } else {
-        if (fork && !.is_windows() && (!py_available() || useBasiliskEnv(envpath, dry=TRUE))) { 
+        if (fork && !isWindows() && (!py_available() || useBasiliskEnv(envpath, dry=TRUE))) { 
             proc <- makeForkCluster(1)
         } else {
             proc <- makePSOCKcluster(1)

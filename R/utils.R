@@ -1,47 +1,12 @@
+#' @importFrom basilisk.utils isWindows
 .get_py_cmd <- function(loc) {
-    # Ripped out of reticulate::use_virtualenv.
-    suffix <- if (.is_windows()) "python.exe" else "bin/python"
+    suffix <- if (isWindows()) "python.exe" else "bin/python"
     file.path(loc, suffix)
 }
 
-.core_dir <- "anaconda"
-
-.get_basilisk_dir <- function(mustWork=TRUE) {
-    inst_dir <- Sys.getenv("BASILISK_CORE_DIR")
-
-    if (identical(inst_dir, "")) {
-        if (.is_windows()) {
-            # Because, y'know, of course windows has to be different in a painful
-            # way. In this case, it is something to do with the paths being too
-            # long if we ask for system.file(), so we'll just dump it in a user
-            # directory instead. Windows users will then have to sit through the
-            # installation process... too bad for them, I guess.
-            inst_path <- .find_windows_inst_dir()
-        } else {
-            inst_path <- system.file(package="basilisk")
-        }
-        inst_path <- file.path(inst_path, .core_dir)
-    }
-
-    if (mustWork && !file.exists(inst_path)) {
-        stop("basilisk installation directory does not exist")
-    }
-
-    inst_path
-}
-
-#' @importFrom utils packageVersion
-.find_windows_inst_dir <- function() {
-    rappdirs::user_data_dir(appname="basilisk", 
-        appauthor=as.character(packageVersion("basilisk")))
-}
-
-.is_windows <- function() {
-    .Platform$OS.type=="windows" 
-}
-
+#' @importFrom basilisk.utils isWindows
 .retrieve_conda <- function() {
-    if (.is_windows()) {
+    if (isWindows()) {
         "Scripts/conda.exe"
     } else {
         "bin/conda"
@@ -51,11 +16,15 @@
 .env_dir <- "basilisk"
 
 #' @importFrom utils packageVersion
+#' @importFrom basilisk.utils isWindows isMacOSX getExternalDir
 .choose_env_dir <- function(pkgname, mustWork=FALSE) {
-    if (.is_windows()) {
-        vdir <- file.path(.find_windows_inst_dir(), paste0(pkgname, "-", packageVersion(pkgname)))
+    if (isWindows() || isMacOSX()) {
+        vdir <- file.path(getExternalDir(), 
+            paste0(pkgname, "-", packageVersion(pkgname)))
     } else {
-        vdir <- system.file(package=pkgname)
+        # As this is run in configure, system.file() will not
+        # work, as pkgname isn't even installled yet!
+        vdir <- file.path(.libPaths()[1], pkgname)
     }
 
     vdir <- file.path(vdir, .env_dir)
@@ -63,8 +32,4 @@
         stop("basilisk environment directory does not exist")
     }
     vdir
-}
-
-.is_roxygen_running <- function(pkgname) {
-    basename(system.file(package=pkgname))!=pkgname
 }

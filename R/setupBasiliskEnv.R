@@ -19,13 +19,10 @@
 #' Use of \pkg{basilisk} environments is the recommended approach for Bioconductor packages to interact with the \pkg{basilisk} Python instance.
 #' This avoids version conflicts within an R session when different Bioconductor packages (or even different functions within a single package) require incompatible versions of Python packages.
 #' 
-#' Developers of Bioconductor packages should call \code{setupBasiliskEnv} with an appropriate \code{pkgname} in an \code{.onLoad} function.
-#' This will create the \pkg{basilisk} environment and install the relevant Python packages upon R package installation.
-#' The \pkg{son.of.basilisk} example in the \code{inst} directory of \pkg{basilisk} can be used as an example.
-#'
 #' If all of the requested packages fall into the \dQuote{core} list of packages (see \code{?\link{listCorePackages}}),
-#' a link is created to a common environment in the \pkg{basilisk} installation directory.
-#' This enables multiple client packages to use the same environment for greater efficiency with \code{\link{basiliskStart}}.
+#' this function is a no-op.
+#' Any attempt to use \code{envname} in \code{\link{basiliskStart}} will simply fall back to the core Anaconda instance.
+#' This enables multiple client packages to use the same Python for greater efficiency with \code{\link{basiliskStart}}.
 #' 
 #' If \code{pkgname} is specified and the \pkg{basilisk} environment is already present with all requested packages, \code{setupBasiliskEnv} is a no-op.
 #' This ensures that the function only installs the packages once at the first load during R package installation.
@@ -34,7 +31,12 @@
 #' MacOSX and Linux default to virtual environments to enable re-use of dependencies from the core installation, while Windows can only conda environments.
 #' Developers can force the former to conda environments with \code{conda=TRUE}.
 #'
-#' @section Dealing with versioning: 
+#' Developers of Bioconductor packages should call \code{\link{configureBasiliskEnv}} in their \code{configure} files,
+#' which will create the environments upon installation on Linux via \code{setupBasiliskEnv}.
+#' For other operating systems, \code{setupBasiliskEnv} is called lazily by \code{\link{basiliskStart}} 
+#' so no developer intervention is required.
+#'
+##' @section Dealing with versioning: 
 #' Pinned version numbers must be present for all requested packages in \code{packages}.
 #' This improved predictability makes debugging much easier when the R package is installed and executed on different systems.
 #' Explicit versions are also mandatory for all dependencies of requested packages,
@@ -62,13 +64,8 @@
 #' \code{\link{listCorePackages}}, for a list of core Python packages with pinned versions.
 #'
 #' @export
-#' @importFrom utils read.delim
+#' @importFrom basilisk.utils getBasiliskDir
 setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
-    # This clause solely exists to avoid weirdness due to devtools::document().
-    if (!is.null(pkgname) && .is_roxygen_running(pkgname)) {
-        return(invisible(NULL))
-    }
-
     versioned <- grepl("==", packages)
     if (!all(versioned)) {
         unversioned <- packages[!versioned]
@@ -105,13 +102,14 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
         on.exit(Sys.setenv(PYTHONPATH=old.pypath), add=TRUE)
     }
 
-    if (.is_windows() || conda) {
+    if (isWindows() || conda) {
         .setup_condaenv(envname, packages, pkgname)
     } else {
         .setup_virtualenv(envname, packages, pkgname)
     }
 }
 
+#' @importFrom basilisk.utils getBasiliskDir
 #' @importFrom reticulate virtualenv_create virtualenv_install virtualenv_remove virtualenv_root
 .setup_virtualenv <- function(envname, packages, pkgname) {
     # Creating a virtual environment in an appropriate location.
@@ -134,7 +132,7 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
         return(NULL)
     }
 
-    py.cmd <- .get_py_cmd(.get_basilisk_dir())
+    py.cmd <- .get_py_cmd(getBasiliskDir())
     previous <- .basilisk_freeze(py.cmd)
     if (all(packages %in% previous)) {
         return(NULL)
@@ -153,6 +151,7 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
     NULL
 }
 
+#' @importFrom basilisk.utils getBasiliskDir
 #' @importFrom reticulate conda_create conda_install
 .setup_condaenv <- function(envname, packages, pkgname) {
     if (is.null(pkgname)) {
@@ -169,7 +168,7 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
         return(NULL)
     }
 
-    py.cmd <- .get_py_cmd(.get_basilisk_dir())
+    py.cmd <- .get_py_cmd(getBasiliskDir())
     previous <- .basilisk_freeze(py.cmd)
     if (all(packages %in% previous)) {
         return(NULL)
@@ -178,7 +177,7 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
     # This is where it gets a bit crazy. We will do two installations; one to
     # check what unlisted dependencies of the listed packages get pulled down,
     # and another to actually enforce the versions of those dependencies.
-    conda.cmd <- file.path(.get_basilisk_dir(), .retrieve_conda())
+    conda.cmd <- file.path(getBasiliskDir(), .retrieve_conda())
     version <- sub("^Python ", "", system2(py.cmd, "--version", stdout=TRUE))
 
     DEPLOY <- function(PKG) {
