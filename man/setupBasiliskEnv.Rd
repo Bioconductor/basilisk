@@ -30,13 +30,10 @@ for isolated execution of Python code with appropriate versions of all Python pa
 Use of \pkg{basilisk} environments is the recommended approach for Bioconductor packages to interact with the \pkg{basilisk} Python instance.
 This avoids version conflicts within an R session when different Bioconductor packages (or even different functions within a single package) require incompatible versions of Python packages.
 
-Developers of Bioconductor packages should call \code{setupBasiliskEnv} with an appropriate \code{pkgname} in an \code{.onLoad} function.
-This will create the \pkg{basilisk} environment and install the relevant Python packages upon R package installation.
-The \pkg{son.of.basilisk} example in the \code{inst} directory of \pkg{basilisk} can be used as an example.
-
 If all of the requested packages fall into the \dQuote{core} list of packages (see \code{?\link{listCorePackages}}),
-a link is created to a common environment in the \pkg{basilisk} installation directory.
-This enables multiple client packages to use the same environment for greater efficiency with \code{\link{basiliskStart}}.
+this function is a no-op.
+Any attempt to use \code{envname} in \code{\link{basiliskStart}} will simply fall back to the core Anaconda instance.
+This enables multiple client packages to use the same Python for greater efficiency with \code{\link{basiliskStart}}.
 
 If \code{pkgname} is specified and the \pkg{basilisk} environment is already present with all requested packages, \code{setupBasiliskEnv} is a no-op.
 This ensures that the function only installs the packages once at the first load during R package installation.
@@ -44,6 +41,11 @@ This ensures that the function only installs the packages once at the first load
 We call these \pkg{basilisk} environments as the function will automatically switch between virtual and conda environments depending on the operating system.
 MacOSX and Linux default to virtual environments to enable re-use of dependencies from the core installation, while Windows can only conda environments.
 Developers can force the former to conda environments with \code{conda=TRUE}.
+
+Developers of client packages should call \code{\link{configureBasiliskEnv}} in their \code{configure} files,
+which will create the environments upon installation on Linux via \code{setupBasiliskEnv}.
+For other operating systems, \code{setupBasiliskEnv} is called lazily by \code{\link{basiliskStart}} 
+so no developer intervention is required.
 }
 \section{Dealing with versioning}{
  

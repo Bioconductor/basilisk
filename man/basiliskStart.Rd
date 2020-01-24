@@ -6,12 +6,7 @@
 \alias{basiliskRun}
 \title{Start and stop \pkg{basilisk}-related processes}
 \usage{
-basiliskStart(
-  envname,
-  pkgname = NULL,
-  fork = getBasiliskFork(),
-  shared = getBasiliskShared()
-)
+basiliskStart(env, fork = getBasiliskFork(), shared = getBasiliskShared())
 
 basiliskStop(proc)
 
@@ -19,16 +14,15 @@ basiliskRun(
   proc = NULL,
   fun,
   ...,
-  envname,
-  pkgname = NULL,
+  env,
   fork = getBasiliskFork(),
   shared = getBasiliskShared()
 )
 }
 \arguments{
-\item{envname}{String containing the name of the virtual environment to use.}
+\item{env}{A \linkS4class{BasiliskEnvironment} object specifying the \pkg{basilisk} environment to use.
 
-\item{pkgname}{String specifying the name of the R package that owns the environment.}
+Alternatively, a string specifying the path to an environment, though this should only be used for testing purposes.}
 
 \item{fork}{Logical scalar indicating whether forking should be performed on non-Windows systems, see \code{\link{getBasiliskFork}}.
 If \code{FALSE}, a new worker process is created using communication over sockets.}
@@ -72,6 +66,10 @@ Similarly, it would be unwise to interact with \code{proc} via any function othe
 If \code{proc=NULL} in \code{basiliskRun}, a process will be created and closed automatically.
 This may be convenient in functions where persistence is not required.
 Note that doing so requires specification of \code{pkgname} and \code{envname}.
+
+For various technical reasons, the \pkg{basilisk} environment will be created upon first use on MacOSX and Windows -
+see \code{\link{setupBasiliskEnv}} for more details.
+This also requires \code{env} to be a \linkS4class{BasiliskEnvironment} object.
 }
 \section{Choice of backend}{
 

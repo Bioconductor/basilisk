@@ -24,6 +24,7 @@ Use \pkg{basilisk} environments for isolated execution of Python code with appro
 \details{
 It is unlikely that developers should ever need to call \code{\link{useBasiliskEnv}} directly.
 Rather, this interaction should be automatically handled by \code{\link{basiliskStart}}.
+We require \code{envpath} (rather than the usual \code{envname} and \code{pkgname}) to avoid difficult errors with \code{\link{system.file}} when the package has not yet been loaded in the child process of \code{\link{basiliskStart}}.
 
 A side-effect of \code{useBasiliskEnv} with \code{dry=FALSE} is that the \code{"PYTHONPATH"} environment variable is unset for the duration of the R session
 (or \pkg{basilisk} process, depending on the back-end chosen by \code{\link{basiliskStart}}).
