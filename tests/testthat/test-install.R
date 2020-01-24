@@ -3,7 +3,7 @@
 
 #############################
 
-base.py <- basilisk:::.get_py_cmd(basilisk:::.get_basilisk_dir())
+base.py <- basilisk:::.get_py_cmd(basilisk.utils::getBasiliskDir())
 
 # Turning off these damn envvars, otherwise .basilisk_freeze doesn't behave.
 old.retpy <- Sys.getenv("RETICULATE_PYTHON")
@@ -31,7 +31,7 @@ test_that("setupBasiliskEnv uses the core installation when possible", {
     incoming <- basilisk:::.basilisk_freeze(base.py)
     expect_true(test.pandas %in% incoming)
     expect_error(setupBasiliskEnv(target, test.pandas), NA)
-    expect_false(file.exists(target))
+    expect_identical(list.files(target), character(0))
 })
 
 test_that("setupBasiliskEnv overrides an incompatible core installation", {
@@ -68,7 +68,7 @@ test_that("setupBasiliskEnv uses the core installation when possible (for conda)
     incoming <- basilisk:::.basilisk_freeze(base.py)
     expect_true(test.pandas %in% incoming)
     expect_error(setupBasiliskEnv(target, test.pandas, conda=TRUE), NA)
-    expect_false(file.exists(target))
+    expect_identical(list.files(target), character(0))
 })
 
 test_that("setupBasiliskEnv overrides an incompatible core installation (for conda)", {
