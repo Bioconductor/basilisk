@@ -111,6 +111,8 @@
 #' @importFrom parallel makePSOCKcluster clusterCall makeForkCluster
 #' @importFrom reticulate py_config py_available
 basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared()) {
+    envpath <- .obtain_env_path(env)
+
     if (shared && 
         {
             # Seeing if we can just load it successfully.
@@ -132,7 +134,7 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
     proc
 }
 
-#' @importFrom basilisk.utils isWindows isMacOSX
+#' @importFrom basilisk.utils isWindows isMacOSX getBasiliskDir installAnaconda
 .obtain_env_path <- function(env) {
     envname <- .getEnvName(env)
     pkgname <- .getPkgName(env)
@@ -145,6 +147,10 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
 
         if (!file.exists(envpath)) {
             if (isWindows() || isMacOSX()) {
+                if (!file.exists(getBasiliskDir())) {
+                    installAnaconda()
+                }
+
                 setupBasiliskEnv(envname, pkgname=pkgname, 
                     packages=.getPackages(env), conda=.useConda(env)) 
             } else {

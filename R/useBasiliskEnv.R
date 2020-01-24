@@ -36,6 +36,7 @@
 #'
 #' @export
 #' @importFrom reticulate use_virtualenv py_config use_condaenv
+#' @importFrom basilisk.utils getBasiliskDir
 useBasiliskEnv <- function(envpath, dry=FALSE, required=TRUE) {
     old.retpy <- Sys.getenv("RETICULATE_PYTHON")
     Sys.unsetenv("RETICULATE_PYTHON")
@@ -53,7 +54,7 @@ useBasiliskEnv <- function(envpath, dry=FALSE, required=TRUE) {
     if (mode!="common") {
         envpath <- normalizePath(envpath, mustWork=TRUE)
     } else {
-        envpath <- normalizePath(.get_basilisk_dir())
+        envpath <- normalizePath(getBasiliskDir())
     }
 
     if (!dry) {
