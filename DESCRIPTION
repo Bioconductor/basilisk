@@ -7,16 +7,13 @@ Authors@R: c(person("Aaron", "Lun", role=c("aut", "cre", "cph"),
 Imports: 
     reticulate,
     parallel,
-    utils,
-    methods,
-    rappdirs
+    utils
 Suggests:
     knitr,
     rmarkdown,
     BiocStyle,
     testthat,
-    callr,
-    BiocFileCache
+    callr
 biocViews: Infrastructure
 Description: 
     Installs a self-contained Python instance that is managed by the R installation.
