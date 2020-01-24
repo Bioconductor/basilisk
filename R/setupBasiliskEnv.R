@@ -31,7 +31,7 @@
 #' MacOSX and Linux default to virtual environments to enable re-use of dependencies from the core installation, while Windows can only conda environments.
 #' Developers can force the former to conda environments with \code{conda=TRUE}.
 #'
-#' Developers of Bioconductor packages should call \code{\link{configureBasiliskEnv}} in their \code{configure} files,
+#' Developers of client packages should call \code{\link{configureBasiliskEnv}} in their \code{configure} files,
 #' which will create the environments upon installation on Linux via \code{setupBasiliskEnv}.
 #' For other operating systems, \code{setupBasiliskEnv} is called lazily by \code{\link{basiliskStart}} 
 #' so no developer intervention is required.
@@ -126,7 +126,7 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
     on.exit(Sys.setenv(WORKON_HOME=old.work), add=TRUE)
 
     # Effective no-op if the environment already exists, or if everything is
-    # perfectly satisfied by the core installation.
+    # perfectly satisfied by the core installation (flagged as an empty dir).
     target <- file.path(path.expand(vdir), envname)
     if (file.exists(target)) {
         return(NULL)
@@ -135,6 +135,7 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
     py.cmd <- .get_py_cmd(getBasiliskDir())
     previous <- .basilisk_freeze(py.cmd)
     if (all(packages %in% previous)) {
+        dir.create(target, showWarnings=FALSE)
         return(NULL)
     }
  
@@ -163,7 +164,7 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
     }
 
     # Effective no-op if the environment already exists, or if everything is
-    # perfectly satisfied by the core installation.
+    # perfectly satisfied by the core installation (flagged as an empty dir).
     if (file.exists(envdir)) {
         return(NULL)
     }
@@ -171,6 +172,7 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
     py.cmd <- .get_py_cmd(getBasiliskDir())
     previous <- .basilisk_freeze(py.cmd)
     if (all(packages %in% previous)) {
+        dir.create(envdir, showWarnings=FALSE)
         return(NULL)
     }
 

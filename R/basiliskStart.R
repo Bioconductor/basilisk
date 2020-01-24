@@ -150,11 +150,8 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
                 if (!file.exists(getBasiliskDir())) {
                     installAnaconda()
                 }
-
                 setupBasiliskEnv(envname, pkgname=pkgname, 
                     packages=.getPackages(env), conda=.useConda(env)) 
-            } else {
-                stop(sprintf("no basilisk environment found at '%s'", envpath))
             }
         }
     }

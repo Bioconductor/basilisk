@@ -44,10 +44,11 @@ useBasiliskEnv <- function(envpath, dry=FALSE, required=TRUE) {
         on.exit(Sys.setenv(RETICULATE_PYTHON=old.retpy))
     }
 
-    mode <- "virtualenv"
-    if (!file.exists(envpath)) {
-        mode <- "common"
-    } else if (any(grepl("conda", list.files(envpath)))) {
+    mode <- "common"
+    contents <- list.files(envpath)
+    if ("bin" %in% contents) {
+        mode <- "virtualenv"
+    } else if (any(grepl("conda", contents))) {
         mode <- "conda"
     }
 
