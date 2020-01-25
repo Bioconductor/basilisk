@@ -107,6 +107,7 @@
 #'     get("snake.in.my.shoes", envir=parent.frame())
 #' })
 #' basiliskStop(cl)
+#'
 #' @export
 #' @importFrom parallel makePSOCKcluster clusterCall makeForkCluster
 #' @importFrom reticulate py_config py_available
@@ -134,7 +135,7 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
     proc
 }
 
-#' @importFrom basilisk.utils isWindows isMacOSX getBasiliskDir installAnaconda
+#' @importFrom basilisk.utils getBasiliskDir installAnaconda getEnvironmentDir
 .obtain_env_path <- function(env) {
     envname <- .getEnvName(env)
     pkgname <- .getPkgName(env)
@@ -146,13 +147,10 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
         envpath <- file.path(envdir, envname)
 
         if (!file.exists(envpath)) {
-            if (isWindows() || isMacOSX()) {
-                if (!file.exists(getBasiliskDir())) {
-                    installAnaconda()
-                }
-                setupBasiliskEnv(envname, pkgname=pkgname, 
-                    packages=.getPackages(env), conda=.useConda(env)) 
+            if (!file.exists(getBasiliskDir())) {
+                installAnaconda()
             }
+            setupBasiliskEnv(envpath, packages=.getPackages(env), conda=.useConda(env)) 
         }
     }
 

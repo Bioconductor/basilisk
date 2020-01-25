@@ -3,16 +3,13 @@
 #' Set up a Python virtual or conda environment (depending on the operating system)
 #' for isolated execution of Python code with appropriate versions of all Python packages.
 #' 
-#' @param envname String containing the name of the environment to create.
+#' @param envpath String containing the path to the environment to use. 
 #' @param packages Character vector containing the names of Python packages to install into the environment.
 #' It is required to include version numbers in each string.
-#' @param pkgname String specifying the name of the R package that owns the environment.
 #' @param conda Logical scalar indicating whether a conda environment should be created.
 #' 
 #' @return 
-#' A virtual or conda environment is created containing the specified \code{packages}.
-#' If \code{pkgname} is specified, the environment is located in the installation directory of \code{pkgname}.
-#' Otherwise, it treats \code{envname} as a path to the desired location of the environment.
+#' A virtual or conda environment is created at \code{envpath} containing the specified \code{packages}.
 #' The function itself returns a \code{NULL} value invisibly.
 #'
 #' @details
@@ -24,8 +21,8 @@
 #' Any attempt to use \code{envname} in \code{\link{basiliskStart}} will simply fall back to the core Anaconda instance.
 #' This enables multiple client packages to use the same Python for greater efficiency with \code{\link{basiliskStart}}.
 #' 
-#' If \code{pkgname} is specified and the \pkg{basilisk} environment is already present with all requested packages, \code{setupBasiliskEnv} is a no-op.
-#' This ensures that the function only installs the packages once at the first load during R package installation.
+#' If a \pkg{basilisk} environment is already present at \code{envpath}, \code{setupBasiliskEnv} is a no-op.
+#' This ensures that the function only installs the packages once.
 #'
 #' We call these \pkg{basilisk} environments as the function will automatically switch between virtual and conda environments depending on the operating system.
 #' MacOSX and Linux default to virtual environments to enable re-use of dependencies from the core installation, while Windows can only conda environments.
@@ -64,8 +61,12 @@
 #' \code{\link{listCorePackages}}, for a list of core Python packages with pinned versions.
 #'
 #' @export
-#' @importFrom basilisk.utils getBasiliskDir
-setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
+#' @importFrom basilisk.utils getBasiliskDir isWindows
+setupBasiliskEnv <- function(envpath, packages, conda=FALSE) {
+    if (file.exists(envpath)) {
+        return(NULL)
+    }
+
     versioned <- grepl("==", packages)
     if (!all(versioned)) {
         unversioned <- packages[!versioned]
@@ -103,44 +104,34 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
     }
 
     if (isWindows() || conda) {
-        .setup_condaenv(envname, packages, pkgname)
+        .setup_condaenv(envpath, packages)
     } else {
-        .setup_virtualenv(envname, packages, pkgname)
+        .setup_virtualenv(envpath, packages)
     }
 }
 
 #' @importFrom basilisk.utils getBasiliskDir
 #' @importFrom reticulate virtualenv_create virtualenv_install virtualenv_remove virtualenv_root
-.setup_virtualenv <- function(envname, packages, pkgname) {
+.setup_virtualenv <- function(envpath, packages) {
     # Creating a virtual environment in an appropriate location.
-    if (is.null(pkgname)) {
-        vdir <- dirname(envname)
-        envname <- basename(envname)
-    } else {
-        vdir <- getEnvironmentDir(pkgname)
-        dir.create(vdir, recursive=TRUE, showWarnings=FALSE)
-    }
+    vdir <- dirname(envpath)
+    envname <- basename(envpath)
 
     old.work <- Sys.getenv("WORKON_HOME")
     Sys.setenv(WORKON_HOME=vdir)
     on.exit(Sys.setenv(WORKON_HOME=old.work), add=TRUE)
 
-    # Effective no-op if the environment already exists, or if everything is
-    # perfectly satisfied by the core installation (flagged as an empty dir).
-    target <- file.path(path.expand(vdir), envname)
-    if (file.exists(target)) {
-        return(NULL)
-    }
-
+    # Effective no-op if the everything is perfectly satisfied by the core
+    # installation (flagged by creating an empty dir).
     py.cmd <- .get_py_cmd(getBasiliskDir())
     previous <- .basilisk_freeze(py.cmd)
     if (all(packages %in% previous)) {
-        dir.create(target, showWarnings=FALSE)
+        dir.create(envpath, showWarnings=FALSE)
         return(NULL)
     }
  
     virtualenv_create(envname, python=py.cmd)
-    env.cmd <- .get_py_cmd(target)
+    env.cmd <- .get_py_cmd(envpath)
     virtualenv_install(envname, packages, ignore_installed=FALSE)
     updated <- .basilisk_freeze(env.cmd)
 
@@ -154,25 +145,13 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
 
 #' @importFrom basilisk.utils getBasiliskDir
 #' @importFrom reticulate conda_create conda_install
-.setup_condaenv <- function(envname, packages, pkgname) {
-    if (is.null(pkgname)) {
-        envdir <- envname
-    } else {
-        vdir <- getEnvironmentDir(pkgname)
-        dir.create(vdir, recursive=TRUE, showWarnings=FALSE)
-        envdir <- file.path(vdir, envname)
-    }
-
-    # Effective no-op if the environment already exists, or if everything is
-    # perfectly satisfied by the core installation (flagged as an empty dir).
-    if (file.exists(envdir)) {
-        return(NULL)
-    }
-
+.setup_condaenv <- function(envpath, packages) {
+    # Effective no-op if the everything is perfectly satisfied by the core
+    # installation (flagged by creating an empty dir).
     py.cmd <- .get_py_cmd(getBasiliskDir())
     previous <- .basilisk_freeze(py.cmd)
     if (all(packages %in% previous)) {
-        dir.create(envdir, showWarnings=FALSE)
+        dir.create(envpath, showWarnings=FALSE)
         return(NULL)
     }
 
@@ -183,12 +162,12 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
     version <- sub("^Python ", "", system2(py.cmd, "--version", stdout=TRUE))
 
     DEPLOY <- function(PKG) {
-        conda_create(envname=envdir, packages=paste0("python=", version), conda=conda.cmd)
-        conda_install(envname=envdir, packages=PKG, python_version=version, conda=conda.cmd)
+        conda_create(envname=envpath, packages=paste0("python=", version), conda=conda.cmd)
+        conda_install(envname=envpath, packages=PKG, python_version=version, conda=conda.cmd)
     }
 
     DEPLOY(packages)
-    env.cmd <- .get_py_cmd(envdir)
+    env.cmd <- .get_py_cmd(envpath)
     updated <- .basilisk_freeze(env.cmd)
 
     if (any(!updated %in% c(previous, packages))) {
@@ -198,7 +177,7 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
 
         replace <- match(stripped, available)
         reattempt <- c(packages, previous[replace[!is.na(replace)]])
-        unlink(envdir, recursive=TRUE)
+        unlink(envpath, recursive=TRUE)
         DEPLOY(reattempt)
 
         updated <- .basilisk_freeze(env.cmd)
