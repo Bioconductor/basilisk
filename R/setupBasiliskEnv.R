@@ -14,25 +14,22 @@
 #' the function will return a logical scalar indicating whether any creation was performed.
 #'
 #' @details
-#' Use of \pkg{basilisk} environments is the recommended approach for Bioconductor packages to interact with the \pkg{basilisk} Python instance.
-#' This avoids version conflicts within an R session when different Bioconductor packages (or even different functions within a single package) require incompatible versions of Python packages.
+#' Use of \pkg{basilisk} environments avoids version conflicts within an R session when different Bioconductor packages (or even different functions within a single package) require incompatible versions of Python packages.
+#' We call these \pkg{basilisk} environments as the function will automatically switch between virtual and conda environments depending on the operating system.
+#' MacOSX and Linux default to virtual environments to enable re-use of dependencies from the core installation, while Windows can only conda environments.
+#' Developers can force the former to conda environments with \code{conda=TRUE}.
 #' 
 #' If all of the requested packages fall into the \dQuote{core} list of packages (see \code{?\link{listCorePackages}}),
 #' this function is a no-op.
 #' Any attempt to use \code{envname} in \code{\link{basiliskStart}} will simply fall back to the core Anaconda instance.
 #' This enables multiple client packages to use the same Python for greater efficiency with \code{\link{basiliskStart}}.
-#' 
-#' If a \pkg{basilisk} environment is already present at \code{envpath}, \code{setupBasiliskEnv} is a no-op.
+#' In addition, if a \pkg{basilisk} environment is already present at \code{envpath}, \code{setupBasiliskEnv} is a no-op.
 #' This ensures that the function only installs the packages once.
 #'
-#' We call these \pkg{basilisk} environments as the function will automatically switch between virtual and conda environments depending on the operating system.
-#' MacOSX and Linux default to virtual environments to enable re-use of dependencies from the core installation, while Windows can only conda environments.
-#' Developers can force the former to conda environments with \code{conda=TRUE}.
-#'
-#' Developers of client packages should call \code{\link{configureBasiliskEnv}} in their \code{configure} files,
-#' which will create the environments upon installation on Linux via \code{setupBasiliskEnv}.
-#' For other operating systems, \code{setupBasiliskEnv} is called lazily by \code{\link{basiliskStart}} 
-#' so no developer intervention is required.
+#' Developers of client packages should never need to call this function directly.
+#' For typical usage, \code{setupBasiliskEnv} is automatically called by \code{\link{basiliskStart}} to perform lazy installation.
+#' Developers should create \code{configure(.win)} files to call \code{\link{configureBasiliskEnv}},
+#' which will call \code{setupBasiliskEnv} during R package installation when \code{BASILISK_USE_SYSTEM_DIR} is set.
 #'
 ##' @section Dealing with versioning: 
 #' Pinned version numbers must be present for all requested packages in \code{packages}.
