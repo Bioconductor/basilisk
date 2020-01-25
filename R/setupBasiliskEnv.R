@@ -161,6 +161,13 @@ setupBasiliskEnv <- function(envpath, packages, conda=FALSE) {
     # This is where it gets a bit crazy. We will do two installations; one to
     # check what unlisted dependencies of the listed packages get pulled down,
     # and another to actually enforce the versions of those dependencies.
+    # 
+    # Unfortunately, we can't clone the base environment and just replace the
+    # packages that conflict, much like a virtual environment does. Well, we
+    # could, but the conda solver takes ages to run, so it is actually faster
+    # to do two installations. (To be fair to conda, it actually does fail if
+    # there is a version conflict, so that's got to count for something).
+
     conda.cmd <- file.path(getBasiliskDir(), .retrieve_conda())
     version <- sub("^Python ", "", system2(py.cmd, "--version", stdout=TRUE))
 
@@ -183,6 +190,7 @@ setupBasiliskEnv <- function(envpath, packages, conda=FALSE) {
         unlink(envpath, recursive=TRUE)
         DEPLOY(reattempt)
 
+        # Checking that our reattempt corrected all the unlisted dependencies.
         updated <- .basilisk_freeze(env.cmd)
         added <- setdiff(updated, c(previous, packages))
         stripped <- .full2pkg(added)
