@@ -117,7 +117,7 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
         vdir <- dirname(envname)
         envname <- basename(envname)
     } else {
-        vdir <- .choose_env_dir(pkgname)
+        vdir <- getEnvironmentDir(pkgname)
         dir.create(vdir, recursive=TRUE, showWarnings=FALSE)
     }
 
@@ -158,7 +158,7 @@ setupBasiliskEnv <- function(envname, packages, pkgname=NULL, conda=FALSE) {
     if (is.null(pkgname)) {
         envdir <- envname
     } else {
-        vdir <- .choose_env_dir(pkgname)
+        vdir <- getEnvironmentDir(pkgname)
         dir.create(vdir, recursive=TRUE, showWarnings=FALSE)
         envdir <- file.path(vdir, envname)
     }

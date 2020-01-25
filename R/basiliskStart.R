@@ -142,7 +142,7 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
     if (is.null(pkgname)) {
         envpath <- envname
     } else {
-        envdir <- .choose_env_dir(pkgname, assume.installed=TRUE)
+        envdir <- getEnvironmentDir(pkgname, assume.installed=TRUE)
         envpath <- file.path(envdir, envname)
 
         if (!file.exists(envpath)) {
