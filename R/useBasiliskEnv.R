@@ -18,7 +18,7 @@
 #' 
 #' A side-effect of \code{useBasiliskEnv} with \code{dry=FALSE} is that the \code{"PYTHONPATH"} environment variable is unset for the duration of the R session
 #' (or \pkg{basilisk} process, depending on the back-end chosen by \code{\link{basiliskStart}}).
-#' This is a deliberate choice to avoid compromising the version guarantees if \code{\link{import}} is allowed to search other locations beyond the virtual environment.
+#' This is a deliberate choice to avoid compromising the version guarantees if \code{\link{import}} is allowed to search other locations beyond the specified environment.
 #'
 #' @author Aaron Lun
 #' 
@@ -35,7 +35,7 @@
 #' \code{\link{basiliskStart}}, for how these virtual environments should be used.
 #'
 #' @export
-#' @importFrom reticulate use_virtualenv py_config use_condaenv use_python
+#' @importFrom reticulate py_config use_condaenv use_python
 #' @importFrom basilisk.utils getBasiliskDir
 useBasiliskEnv <- function(envpath, dry=FALSE, required=TRUE) {
     old.retpy <- Sys.getenv("RETICULATE_PYTHON")
@@ -44,19 +44,7 @@ useBasiliskEnv <- function(envpath, dry=FALSE, required=TRUE) {
         on.exit(Sys.setenv(RETICULATE_PYTHON=old.retpy))
     }
 
-    mode <- "common"
-    contents <- list.files(envpath)
-    if (any(grepl("conda", contents))) {
-        mode <- "conda"
-    } else if ("bin" %in% contents) {
-        mode <- "virtualenv"
-    }
-
-    if (mode!="common") {
-        envpath <- normalizePath(envpath, mustWork=TRUE)
-    } else {
-        envpath <- normalizePath(getBasiliskDir())
-    }
+    envpath <- normalizePath(envpath, mustWork=TRUE)
 
     if (!dry) {
         # Don't even try to be nice and add an on.exit() clause to protect the
@@ -66,20 +54,10 @@ useBasiliskEnv <- function(envpath, dry=FALSE, required=TRUE) {
         # the PYTHONPATH, we can get the wrong package loaded. 
         Sys.unsetenv("PYTHONPATH")
 
-        if (mode=="conda") {
-            use_condaenv(envpath, required=required)
-        } else if (mode=="virtualenv") {
-            use_virtualenv(envpath, required=required)
-        } else {
-            use_python(.get_py_cmd(envpath), required=required)
-        }
+        use_condaenv(envpath, required=required)
     }
 
     # Checking whether we're the same as the existing python instance,
     # which would indicate that we correctly loaded ourselves.
-    if (mode=="virtualenv") {
-        identical(envpath, py_config()$virtualenv)
-    } else {
-        identical(.get_py_cmd(envpath), py_config()$python)
-    }
+    identical(.get_py_cmd(envpath), py_config()$python)
 }
