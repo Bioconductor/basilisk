@@ -66,10 +66,6 @@ Similarly, it would be unwise to interact with \code{proc} via any function othe
 If \code{proc=NULL} in \code{basiliskRun}, a process will be created and closed automatically.
 This may be convenient in functions where persistence is not required.
 Note that doing so requires specification of \code{pkgname} and \code{envname}.
-
-For various technical reasons, the \pkg{basilisk} environment will be created upon first use on MacOSX and Windows -
-see \code{\link{setupBasiliskEnv}} for more details.
-This also requires \code{env} to be a \linkS4class{BasiliskEnvironment} object.
 }
 \section{Choice of backend}{
 
@@ -100,6 +96,23 @@ Developers should not rely on closures to capture variables in the calling envir
 \item Developers should \emph{not} attempt to pass complex objects to memory in or out of \code{fun}.
 This mostly refers to objects that contain custom pointers to memory, e.g., file handles, pointers to \pkg{reticulate} objects.
 }
+}
+
+\section{Use of lazy installation}{
+
+If the specified \pkg{basilisk} environment is not present and \code{env} is a \linkS4class{BasiliskEnvironment} object,
+the environment will be created upon first use of \code{basiliskStart}.
+If the Anaconda instance is not present, it will also be installed upon first use of \code{basiliskStart}.
+The motivation for this is to avoid portability problems with hard-coded paths when \pkg{basilisk} is provided as a binary.
+
+Both Anaconda and the environments will be placed in an external user-writable directory,
+the location of which can be changed by setting the \code{BASILISK_EXTERNAL_DIR} variable.
+This may occasionally be necessary if the file path to the default location is too long for Windows,
+or if the default path has spaces that break the Anaconda installer.
+
+Advanced users may consider turning on \code{BASILISK_USE_SYSTEM_DIR} for installations from source,
+which will place both Anaconda and the environments in the R system directory.
+This simplifies permission management and avoids duplication in enterprise settings.
 }
 
 \examples{
