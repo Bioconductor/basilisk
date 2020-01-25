@@ -10,7 +10,8 @@
 #' 
 #' @return 
 #' A virtual or conda environment is created at \code{envpath} containing the specified \code{packages}.
-#' The function itself returns a \code{NULL} value invisibly.
+#' Under certain conditions (see Details), no environment is created;
+#' the function will return a logical scalar indicating whether any creation was performed.
 #'
 #' @details
 #' Use of \pkg{basilisk} environments is the recommended approach for Bioconductor packages to interact with the \pkg{basilisk} Python instance.
@@ -64,7 +65,7 @@
 #' @importFrom basilisk.utils getBasiliskDir isWindows installAnaconda
 setupBasiliskEnv <- function(envpath, packages, conda=FALSE) {
     if (file.exists(envpath)) {
-        return(NULL)
+        return(FALSE)
     }
 
     installAnaconda() # no-ops if it's already there.
@@ -129,7 +130,7 @@ setupBasiliskEnv <- function(envpath, packages, conda=FALSE) {
     previous <- .basilisk_freeze(py.cmd)
     if (all(packages %in% previous)) {
         dir.create(envpath, showWarnings=FALSE)
-        return(NULL)
+        return(FALSE)
     }
  
     virtualenv_create(envname, python=py.cmd)
@@ -142,7 +143,7 @@ setupBasiliskEnv <- function(envpath, packages, conda=FALSE) {
         stop(sprintf("need to list dependency on '%s'", added[1]))
     } 
 
-    NULL
+    TRUE 
 }
 
 #' @importFrom basilisk.utils getBasiliskDir
@@ -154,7 +155,7 @@ setupBasiliskEnv <- function(envpath, packages, conda=FALSE) {
     previous <- .basilisk_freeze(py.cmd)
     if (all(packages %in% previous)) {
         dir.create(envpath, showWarnings=FALSE)
-        return(NULL)
+        return(FALSE)
     }
 
     # This is where it gets a bit crazy. We will do two installations; one to
@@ -191,7 +192,7 @@ setupBasiliskEnv <- function(envpath, packages, conda=FALSE) {
         }
     }
 
-    NULL
+    TRUE 
 }
 
 .basilisk_freeze <- function(py.cmd) {

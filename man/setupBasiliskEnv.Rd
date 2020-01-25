@@ -16,7 +16,8 @@ It is required to include version numbers in each string.}
 }
 \value{
 A virtual or conda environment is created at \code{envpath} containing the specified \code{packages}.
-The function itself returns a \code{NULL} value invisibly.
+Under certain conditions (see Details), no environment is created;
+the function will return a logical scalar indicating whether any creation was performed.
 }
 \description{
 Set up a Python virtual or conda environment (depending on the operating system)

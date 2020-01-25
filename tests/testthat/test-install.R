@@ -30,13 +30,13 @@ test_that("setupBasiliskEnv uses the core installation when possible", {
     
     incoming <- basilisk:::.basilisk_freeze(base.py)
     expect_true(test.pandas %in% incoming)
-    expect_error(setupBasiliskEnv(target, test.pandas), NA)
+    expect_false(setupBasiliskEnv(target, test.pandas))
     expect_identical(list.files(target), character(0))
 })
 
 test_that("setupBasiliskEnv overrides an incompatible core installation", {
     unlink(target, recursive=TRUE)
-    expect_error(setupBasiliskEnv(target, c(old.pandas, old.pandas.deps)), NA)
+    expect_true(setupBasiliskEnv(target, c(old.pandas, old.pandas.deps)))
 
     incoming <- basilisk:::.basilisk_freeze(base.py)
     expect_true(test.pandas %in% incoming)
@@ -45,11 +45,14 @@ test_that("setupBasiliskEnv overrides an incompatible core installation", {
     incoming <- basilisk:::.basilisk_freeze(env.py)
     expect_true(old.pandas %in% incoming)
     expect_true(all(old.pandas.deps %in% incoming))
+    
+    # Trying it again is a no-op.
+    expect_false(setupBasiliskEnv(target, c(old.pandas, old.pandas.deps)))
 })
 
 test_that("setupBasiliskEnv allows core packages to have unspecified versions", {
     unlink(target, recursive=TRUE)
-    expect_error(setupBasiliskEnv(target, c("numpy", old.pandas)), NA) # adding old pandas to force it to make a venv.
+    expect_true(setupBasiliskEnv(target, c("numpy", old.pandas))) # adding old pandas to force it to make a venv.
 
     test.numpy <- core.set$full[core.set$package=="numpy"]
     incoming <- basilisk:::.basilisk_freeze(env.py)
@@ -67,14 +70,14 @@ test_that("setupBasiliskEnv uses the core installation when possible (for conda)
 
     incoming <- basilisk:::.basilisk_freeze(base.py)
     expect_true(test.pandas %in% incoming)
-    expect_error(setupBasiliskEnv(target, test.pandas, conda=TRUE), NA)
+    expect_false(setupBasiliskEnv(target, test.pandas, conda=TRUE))
     expect_identical(list.files(target), character(0))
 })
 
 test_that("setupBasiliskEnv overrides an incompatible core installation (for conda)", {
     skip_on_os("windows") # conda is the default anyway.
     unlink(target, recursive=TRUE)
-    expect_error(setupBasiliskEnv(target, c(old.pandas, old.pandas.deps), conda=TRUE), NA)
+    expect_true(setupBasiliskEnv(target, c(old.pandas, old.pandas.deps), conda=TRUE))
 
     incoming <- basilisk:::.basilisk_freeze(base.py)
     expect_true(test.pandas %in% incoming)
@@ -83,12 +86,15 @@ test_that("setupBasiliskEnv overrides an incompatible core installation (for con
     incoming <- basilisk:::.basilisk_freeze(env.py)
     expect_true(old.pandas %in% incoming)
     expect_true(all(old.pandas.deps %in% incoming))
+
+    # Trying it again is a no-op.
+    expect_false(setupBasiliskEnv(target, c(old.pandas, old.pandas.deps), conda=TRUE))
 })
 
 test_that("setupBasiliskEnv allows core packages to have unspecified versions (for conda)", {
     skip_on_os("windows") # conda is the default anyway.
     unlink(target, recursive=TRUE)
-    expect_error(setupBasiliskEnv(target, c("numpy", old.pandas), conda=TRUE), NA) # forcing it to install rather than gloss over.
+    expect_true(setupBasiliskEnv(target, c("numpy", old.pandas), conda=TRUE), NA) # forcing it to install rather than gloss over.
 
     test.numpy <- core.set$full[core.set$package=="numpy"]
     incoming <- basilisk:::.basilisk_freeze(env.py)
