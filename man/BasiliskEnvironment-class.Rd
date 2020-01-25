@@ -8,18 +8,16 @@
 \description{
 The BasiliskEnvironment class provides a simple structure 
 containing all of the information to construct a \pkg{basilisk} environment.
-It is used by \code{\link{basiliskStart}} to perform lazy installation 
-of the environment on certain OS's.
+It is used by \code{\link{basiliskStart}} to perform lazy installation.
 }
 \section{Constructor}{
 
-\code{BasiliskEnvironment(envname, pkgname, packages, conda)} will return a BasiliskEnvironment object, given:
+\code{BasiliskEnvironment(envname, pkgname, packages)} will return a BasiliskEnvironment object, given:
 \itemize{
 \item \code{envname}, string containing the name of the environment.
 \item \code{pkgname}, string containing the name of the package that owns the environment.
 \item \code{packages}, character vector containing the names of the required Python packages,
 see \code{\link{setupBasiliskEnv}} for requirements.
-\item \code{conda}, logical scalar indicating whether a conda environment should be constructed.
 }
 }
 

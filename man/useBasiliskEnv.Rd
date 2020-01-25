@@ -28,7 +28,7 @@ We require \code{envpath} (rather than the usual \code{envname} and \code{pkgnam
 
 A side-effect of \code{useBasiliskEnv} with \code{dry=FALSE} is that the \code{"PYTHONPATH"} environment variable is unset for the duration of the R session
 (or \pkg{basilisk} process, depending on the back-end chosen by \code{\link{basiliskStart}}).
-This is a deliberate choice to avoid compromising the version guarantees if \code{\link{import}} is allowed to search other locations beyond the virtual environment.
+This is a deliberate choice to avoid compromising the version guarantees if \code{\link{import}} is allowed to search other locations beyond the specified environment.
 }
 \examples{
 tmploc <- file.path(tempdir(), "my_package_B")

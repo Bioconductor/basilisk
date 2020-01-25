@@ -4,68 +4,50 @@
 \alias{setupBasiliskEnv}
 \title{Set up a \pkg{basilisk} environments}
 \usage{
-setupBasiliskEnv(envpath, packages, conda = FALSE)
+setupBasiliskEnv(envpath, packages)
 }
 \arguments{
 \item{envpath}{String containing the path to the environment to use.}
 
-\item{packages}{Character vector containing the names of Python packages to install into the environment.
-It is required to include version numbers in each string.}
-
-\item{conda}{Logical scalar indicating whether a conda environment should be created.}
+\item{packages}{Character vector containing the names of conda packages to install into the environment.
+Version numbers must be included.}
 }
 \value{
-A virtual or conda environment is created at \code{envpath} containing the specified \code{packages}.
-Under certain conditions (see Details), no environment is created;
-the function will return a logical scalar indicating whether any creation was performed.
+A conda environment is created at \code{envpath} containing the specified \code{packages}.
+The function will return a logical scalar indicating whether creation was performed,
+which will be \code{FALSE} if the environment already exists.
 }
 \description{
-Set up a Python virtual or conda environment (depending on the operating system)
-for isolated execution of Python code with appropriate versions of all Python packages.
+Set up a Python conda environment for isolated execution of Python code with appropriate versions of all Python packages.
 }
 \details{
-Use of \pkg{basilisk} environments avoids version conflicts within an R session when different Bioconductor packages (or even different functions within a single package) require incompatible versions of Python packages.
-We call these \pkg{basilisk} environments as the function will automatically switch between virtual and conda environments depending on the operating system.
-MacOSX and Linux default to virtual environments to enable re-use of dependencies from the core installation, while Windows can only conda environments.
-Developers can force the former to conda environments with \code{conda=TRUE}.
-
-If all of the requested packages fall into the \dQuote{core} list of packages (see \code{?\link{listCorePackages}}),
-this function is a no-op.
-Any attempt to use \code{envname} in \code{\link{basiliskStart}} will simply fall back to the core Anaconda instance.
-This enables multiple client packages to use the same Python for greater efficiency with \code{\link{basiliskStart}}.
-In addition, if a \pkg{basilisk} environment is already present at \code{envpath}, \code{setupBasiliskEnv} is a no-op.
-This ensures that the function only installs the packages once.
+\pkg{basilisk} environments are simply Python conda environments that are created and managed by \pkg{basilisk}.
+Each \pkg{basilisk} environment can contain different Python packages with different versions,
+allowing us to avoid version conflicts within an R session when different Bioconductor packages (or even different functions within a single package) require incompatible versions of Python packages.
 
 Developers of client packages should never need to call this function directly.
 For typical usage, \code{setupBasiliskEnv} is automatically called by \code{\link{basiliskStart}} to perform lazy installation.
-Developers should create \code{configure(.win)} files to call \code{\link{configureBasiliskEnv}},
+Developers should also create \code{configure(.win)} files to call \code{\link{configureBasiliskEnv}},
 which will call \code{setupBasiliskEnv} during R package installation when \code{BASILISK_USE_SYSTEM_DIR} is set.
-}
-\section{Dealing with versioning}{
- 
-Pinned version numbers must be present for all requested packages in \code{packages}.
+
+Pinned version numbers must be present for all requested conda packages in \code{packages}.
 This improved predictability makes debugging much easier when the R package is installed and executed on different systems.
-Explicit versions are also mandatory for all dependencies of requested packages,
-which is again necessary to ensure that the same versions are deployed across systems.
+Note that this refers to conda packages, not Python packages, where the version notation for the former uses a single \code{=};
+any \code{==} will be coerced to \code{=} automatically.
 
-The only exception to the above rule is for \dQuote{core} packages that are installed into the \pkg{basilisk} Python instance.
-Such core packages do not need be listed with explicit version numbers in \code{packages} (or at all, for that matter).
-You can also request a core package without specifying the version, which will automatically be pinned for you.
-A full list of core packages with pinned versions is provided at \code{\link{listCorePackages}}.
+It is also good practice to explicitly list the dependencies of all desired packages.
+This protects against future changes in the behavior of your code if conda's dependency resolver defaults to a different version of a required package.
+We suggest using \code{conda env export} to identify relevant dependencies and include them in \code{packages};
+the only reason that pinned dependencies are not mandatory is because some dependencies are OS-specific,
+requiring some manual pruning of the output of \code{conda env export}.
 
-The exception to the exception occurs when your requested packages are not compatible with the pinned versions of the core packages.
-In such cases, the compatible versions of the core packages must again be explicitly listed in \code{packages}.
+If a \pkg{basilisk} environment is already present at \code{envpath}, \code{setupBasiliskEnv} is a no-op.
+This ensures that the function only installs the packages once.
 }
-
 \examples{
 tmploc <- file.path(tempdir(), "my_package_A")
-setupBasiliskEnv(tmploc, c('pandas==0.25.3',
-    "python-dateutil==2.8.1", "pytz==2019.3"))
-
-# No need to list versions of core packages, 
-# or to list them at all if they are dependencies.
-tmploc2 <- paste0(tmploc, "_alt")
-setupBasiliskEnv(tmploc2, 'pandas')
+setupBasiliskEnv(tmploc, c('pandas=0.25.3',
+    "python-dateutil=2.8.1", "pytz=2019.3"))
 
 }
 \seealso{

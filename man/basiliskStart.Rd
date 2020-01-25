@@ -22,7 +22,9 @@ basiliskRun(
 \arguments{
 \item{env}{A \linkS4class{BasiliskEnvironment} object specifying the \pkg{basilisk} environment to use.
 
-Alternatively, a string specifying the path to an environment, though this should only be used for testing purposes.}
+Alternatively, a string specifying the path to an environment, though this should only be used for testing purposes.
+
+Alternatively, \code{NULL} to indicate that the base environment of the \pkg{basilisk} Anaconda instance should be used.}
 
 \item{fork}{Logical scalar indicating whether forking should be performed on non-Windows systems, see \code{\link{getBasiliskFork}}.
 If \code{FALSE}, a new worker process is created using communication over sockets.}
@@ -47,9 +49,9 @@ This object should only be used in \code{basiliskRun} and \code{basiliskStop}.
 Creates a \pkg{basilisk} process in which Python operations (via \pkg{reticulate}) can be safely performed with the correct versions of Python packages.
 }
 \details{
-These functions ensure that any Python operations in \code{fun} are guaranteed to use the virtual environment specified by \code{envname}.
-This avoids version conflicts in the presence of other Python instances or virtual environments loaded by other packages or by the user.
-Thus, \pkg{basilisk}-powered R packages are not affected by (and if \code{shared=FALSE}, do not affect) the activity of other R packages.
+These functions ensure that any Python operations in \code{fun} will use the environment specified by \code{envname}.
+This avoids version conflicts in the presence of other Python instances or environments loaded by other packages or by the user.
+Thus, \pkg{basilisk} clients are not affected by (and if \code{shared=FALSE}, do not affect) the activity of other R packages.
 
 If necessary, objects created in \code{fun} can persist across calls to \code{basiliskRun}, e.g., for file handles.
 This requires the use of \code{\link{assign}} with \code{envir=parent.frame()} to set a persistent object,
@@ -70,18 +72,23 @@ Note that doing so requires specification of \code{pkgname} and \code{envname}.
 \section{Choice of backend}{
 
 \itemize{
-\item If \code{shared=TRUE} and no Python version has already been loaded, \code{basiliskStart} will load Python directly into the R session from the specified virtual environment.
-Similarly, if the existing virtual environment is the same as the requested environment, \code{basiliskStart} will use that directly.
+\item If \code{shared=TRUE} and no Python version has already been loaded, \code{basiliskStart} will load Python directly into the R session from the specified environment.
+Similarly, if the existing environment is the same as the requested environment, \code{basiliskStart} will use that directly.
 This mode is most efficient as it avoids creating any new processes, but the use of a shared Python configuration may prevent non-\pkg{basilisk} packages from working correctly in the same session.
 \item Otherwise, if \code{fork=TRUE}, no Python version has already been loaded and we are not on Windows, \code{basiliskStart} will create a new process by forking.
-In the forked process, \code{basiliskStart} will load the specified virtual environment for operations in Python.
+In the forked process, \code{basiliskStart} will load the specified environment for operations in Python.
 This is less efficient as it needs to create a new process but it avoids forcing a Python configuration on other packages in the same R session.
 \item Otherwise, \code{basiliskStart} will create a parallel socket process containing a separate R session.
-In the new process, \code{basiliskStart} will load the specified virtual environment for Python operations.
+In the new process, \code{basiliskStart} will load the specified environment for Python operations.
 This is the least efficient as it needs to transfer data over sockets but is guaranteed to work.
 }
+
 Developers can control these choices directly by explicitly specifying \code{shared} and \code{fork},
 while users can control them indirectly with \code{\link{setBasiliskFork}} and related functions.
+
+If the Anaconda installation provided with \pkg{basilisk} satisfies the requirements of the client package,
+it is strongly recommended to set \code{env=NULL} rather than constructing a separate environment.
+This is obviously easier but it is also more efficient as it increases the chance of multiple \pkg{basilisk} clients being able to share a common Python instance within the same R session.
 }
 
 \section{Constraints on user-defined functions}{
@@ -116,26 +123,26 @@ This simplifies permission management and avoids duplication in enterprise setti
 }
 
 \examples{
-# Globally loading one environment into our R session:
+# Loading the base environment:
+cl <- basiliskStart(NULL)
+basiliskRun(proc=cl, function() { 
+    X <- reticulate::import("pandas"); X$`__version__` 
+})
+basiliskStop(cl)
+
+# Co-exists with our other environment:
 tmploc <- file.path(tempdir(), "my_package_C")
-setupBasiliskEnv(tmploc, c('pandas', "python-dateutil", "pytz"))
-useBasiliskEnv(tmploc)
-X <- reticulate::import("pandas")
-X$`__version__` 
+setupBasiliskEnv(tmploc, c('pandas=0.24.1',
+    "python-dateutil=2.7.1", "pytz=2018.7"))
 
-# Co-exists with our other virtual environment in a separate process:
-tmploc2 <- file.path(tempdir(), "my_package_C_alt")
-setupBasiliskEnv(tmploc2, c('pandas==0.24.1',
-    "python-dateutil==2.7.1", "pytz==2018.7"))
-
-cl <- basiliskStart(tmploc2)
+cl <- basiliskStart(tmploc)
 basiliskRun(proc=cl, function() { 
     X <- reticulate::import("pandas"); X$`__version__` 
 })
 basiliskStop(cl)
 
 # Persistence of variables is possible within a Start/Stop pair.
-cl <- basiliskStart(tmploc2)
+cl <- basiliskStart(tmploc)
 basiliskRun(proc=cl, function() { 
     assign(x="snake.in.my.shoes", 1, envir=parent.frame())
 })
@@ -146,7 +153,7 @@ basiliskStop(cl)
 
 }
 \seealso{
-\code{\link{setupBasiliskEnv}}, to set up the virtual environments.
+\code{\link{setupBasiliskEnv}}, to set up the conda environments.
 
 \code{\link{getBasiliskFork}} and \code{\link{getBasiliskShared}}, to control various global options.
 }
