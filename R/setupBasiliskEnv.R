@@ -61,11 +61,13 @@
 #' \code{\link{listCorePackages}}, for a list of core Python packages with pinned versions.
 #'
 #' @export
-#' @importFrom basilisk.utils getBasiliskDir isWindows
+#' @importFrom basilisk.utils getBasiliskDir isWindows installAnaconda
 setupBasiliskEnv <- function(envpath, packages, conda=FALSE) {
     if (file.exists(envpath)) {
         return(NULL)
     }
+
+    installAnaconda() # no-ops if it's already there.
 
     versioned <- grepl("==", packages)
     if (!all(versioned)) {
