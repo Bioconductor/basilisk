@@ -37,71 +37,116 @@ Consistency in the execution environment enables reproducible analysis, simplifi
 
 # How?
 
-The _son.of.basilisk_ package (in the `inst/example` directory of this package) is provided as an example of how a developer might write an R/Bioconductor package that depends on `r Biocpkg("basilisk")`.
-Key points are:
+## Overview
 
-- `StagedInstall: no` should be set in the `DESCRIPTION` to ensure that Python packages are installed with the correct hard-coded paths within the R package installation directory.
+The _son.of.basilisk_ package (provided in the `inst/example` directory of this package) is provided as an example of how one might write a client package that depends on `r Biocpkg("basilisk")`.
+This is a fully operational example package that can be installed and run, so prospective developers should use it as a template for their own packages.
+In the rest of this section, we will discuss the `r Biocpkg("basilisk")`-specific parts of R/Bioconductor package development. 
 
-- `Imports: basilisk` should be set along with appropriate directives in the `NAMESPACE`, e.g., 
+## Setting up the package
 
-    ```
-    importFrom(basilisk, setupBasiliskEnv)
-    importFrom(basilisk, basiliskStart)
-    importFrom(basilisk, basiliskStop)
-    importFrom(basilisk, basiliskRun)
-    ```
+`StagedInstall: no` should be set, to ensure that Python packages are installed with the correct hard-coded paths within the R package installation directory.
 
-- An `.onLoad()` function should be present that calls `setupBasiliskEnv()`, to allow the relevant Python packages to be installed during R package installation.
-This requires us to specify the version numbers of all desired packages and their dependencies (excepting core packages, see `listCorePackages()`).
-For example, if we wanted to install `r PyPiLink("scikit-learn")`, we would have:
+`Imports: basilisk` should be set along with appropriate directives in the `NAMESPACE` for all `r Biocpkg("basilisk")` functions that are used.
 
-    ```r
-    .onLoad <- function(libname, pkgname) {
-        # Technically, we don't need to list need dependencies or version
-        # numbers if we're requesting a package in the core list. However,
-        # version numbers and dependencies are required for anything else.
-        setupBasiliskEnv("aaron_env", c("scikit-learn==0.21.1", 
-            "joblib==0.14.0"), pkgname=pkgname)
-    }
-    ```
+`.BBSoptions` should contain `UnsupportedPlatforms: win32`, as builds on Windows 32-bit are not supported.
 
-    Despite its appearance, it actually only gets executed during package installation; 
-    all subsequent calls to `setupBasiliskEnv()` are no-ops.
+## Creating the environments
 
-- Any R functions that use Python code should do so via `basiliskRun()`, which ensures that different Bioconductor packages play nice when their dependencies clash.
-Continuing on from the above example: to use methods from the `aaron_env` environment, the functions in our hypothetical _AaronPackage_ package will contain a code chunk like this:
+A `basilisk.R` file should be present in the `R/` subdirectory, containing commands to produce a `BasiliskEnvironment` object.
+These objects define the Python environments to be constructed by `r Biocpkg("basilisk")` on behalf of your client package.
+The commands in this file can be as simple as those shown below, though non-core packages (i.e., not listed in `listCorePackages()`) will also require version numbers.
 
-    ```r
-    my_example_function <- function(ARG_VALUE_1, ARG_VALUE_2) { 
-        proc <- basiliskStart("aaron_env", pkgname="AaronPackage")
-        on.exit(basiliskStop(proc))
+```{r}
+my_env <- BasiliskEnvironment(envname="my_env_name",
+    pkgname="ClientPackage",
+    packages=c("pandas", "sklearn")
+)
 
-        some_useful_thing <- basiliskRun(proc, function(arg1, arg2) {
-            mod <- reticulate::import("scikit-learn")
-            output <- mod$some_calculation(arg1, arg2)
+second_env <- BasiliskEnvironment(envname="second_env_name",
+    pkgname="ClientPackage",
+    packages=c("scipy", "numpy==1.17") # if we don't like the core version.
+)
+```
 
-            # The return value MUST be a pure R object, i.e., no reticulate
-            # Python objects, no pointers to shared memory. 
-            output 
-        }, arg1=ARG_VALUE_1, arg2=ARG_VALUE_2)
+An executable `configure` file should be created in the top level of the client package, containing the command shown below.
+This enables creation of environments during `r Biocpkg("basilisk")` installation if `BASILISK_USE_SYSTEM_DIR` is set.
 
-        some_useful_thing
-    }
-    ```
+```sh
+#!/bin/sh
 
-    It is probably unwise to use `proc` across user-visible functions, i.e., the end-user should never have an opportunity to interact with `proc`.
-`r Biocpkg("basilisk")` is primarily intended for developers of R/Bioconductor packages, **not** for end-users.
+${R_HOME}/bin/Rscript -e "basilisk::configureBasiliskEnv()"
+```
 
-# Notes for advanced users 
+For completeness, `configure.win` should also be created:
 
-It is possible to direct `r Biocpkg("basilisk")` to use an existing Anaconda installation by setting the `BASILISK_CORE_DIR` environment variable to an absolute path to the Anaconda installation directory prior to loading `r Biocpkg("basilisk")`.
-This may be desirable to avoid redundant copies of the same Anaconda installation, especially on Windows.
+```sh
+#!/bin/sh
+
+${R_HOME}/bin${R_ARCH_BIN}/Rscript.exe -e "basilisk::configureBasiliskEnv()"
+```
+
+## Using the environments
+
+Any R functions that use Python code should do so via `basiliskRun()`, which ensures that different Bioconductor packages play nice when their dependencies clash.
+To use methods from the `my_env` environment that we previously defined, the functions in our hypothetical _ClientPackage_ package should define functions like:
+
+```r
+my_example_function <- function(ARG_VALUE_1, ARG_VALUE_2) { 
+    proc <- basiliskStart(my_env)
+    on.exit(basiliskStop(proc))
+
+    some_useful_thing <- basiliskRun(proc, function(arg1, arg2) {
+        mod <- reticulate::import("scikit-learn")
+        output <- mod$some_calculation(arg1, arg2)
+
+        # The return value MUST be a pure R object, i.e., no reticulate
+        # Python objects, no pointers to shared memory. 
+        output 
+    }, arg1=ARG_VALUE_1, arg2=ARG_VALUE_2)
+
+    some_useful_thing
+}
+```
+
+Note that `basiliskStart()` will lazily install Anaconda and the required environments if they are not already present.
+This can result in some delays on the first time that any function using `r Biocpkg("basilisk")` is called;
+after that, the installed content will simply be re-used.
+
+It is probably unwise to use `proc` across user-visible functions, i.e., the end-user should never have an opportunity to interact with `proc`.
+
+# Tuning installation behavior
+
+## Modifying environment variables 
+
+All environment variables described here must be set at both installation time and run time to have any effect.
+If any value is changed, it is generally safest to reinstall `r Biocpkg("basilisk")` and all of its clients.
+
+Setting the `BASILISK_EXTERNAL_DIR` environment variable will change where the Anaconda installation and environments are placed.
+This is usually unnecessary unless the default path generated by `r CRANpkg("rappdirs")` contains spaces;
+or the combination of the default path and Anaconda's directory structure exceeds the 260 character limit on Windows.
+
+Setting `BASILISK_USE_SYSTEM_DIR` to `1` will instruct `r Biocpkg("basilisk")` to install Anaconda in the R system directory during its own installation.
+Similarly, all (correctly `configure`d) client packages will install their environments in the corresponding system directory when they themselves are being installed.
+This is very useful for enterprise-level deployments as (i) it avoids duplication of Anaconda installations and environments in each user's home directory, and (ii) it ensures that all users with access to the R installation will always have access to the Anaconda installation and environments.
+However, it requires installation from source and thus is not set by default.
+
+It is possible to direct `r Biocpkg("basilisk")` to use an existing Anaconda installation by setting the `BASILISK_EXTERNAL_ANACONDA` environment variable to an absolute path to the Anaconda installation directory.
+This may be desirable to avoid redundant copies of the same Anaconda installation.
 However, in such cases, it is the **user's responsibility** to administer the Anaconda installation to ensure that the correct versions of all packages are available for `r Biocpkg("basilisk")`'s clients.
-This additional work is generally not worth saving a few GB of disk space.
 
-Developers can use `basiliskStart()`, `basiliskRun()` and `basiliskStop()` on any conda or virtual environment, not just those constructed with `setupBasiliskEnv()`.
+Setting `BASILISK_NO_DESTROY` to `1` will instruct `r Biocpkg("basilisk")` to _not_ destroy previous Anaconda installations and environments upon reinstallation of `r Biocpkg("basilisk")`.
+This destruction is done by default to avoid accumulating multiple Anaconda installations when `r Biocpkg("basilisk")` is reinstalled, which would otherwise inflate disk usage over time.
+However, it is not desirable if there are multiple R instances running different versions of `r Biocpkg("basilisk")` from the same Bioconductor release, as installation by one R instance would delete the installed content for the other.
+(Multiple R instances running different Bioconductor releases are not affected.)
+This option has no effect if `BASILISK_USE_SYSTEM_DIR` is set.
+
+## Custom environment creation
+
+Given a path, `basiliskStart()` can operate on any conda or virtual environment, not just those constructed by `r Biocpkg("basilisk")`.
 It is possible to manually set up the desired environment with, e.g., Python 2.7, or to manually modify an existing environment to include custom Python packages not in PyPi or Conda.
 This allows users to continue to take advantage of `r Biocpkg("basilisk")`'s graceful handling of Python collisions in more complex applications. 
+However, this can be quite a pain to do portably, so one should avoid this where possible.
 
 # Session information
 
