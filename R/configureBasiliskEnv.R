@@ -13,6 +13,7 @@
 #' @details 
 #' This function is designed to be called in the \code{configure} file of client packages,
 #' triggering the construction of \pkg{basilisk} environments during package installation.
+#' It will only run if the \code{BASILISK_USE_SYSTEM_DIR} environment variable is set to \code{"1"}.
 #'
 #' We take a source file as input to avoid duplicated definitions of the \linkS4class{BasiliskEnvironment}s.
 #' These objects are used in \code{\link{basiliskStart}} in the body of the package, so they naturally belong in \code{R/}; 
@@ -33,15 +34,21 @@
 #'
 #' @export
 #' @importFrom methods is
+#' @importFrom basilisk.utils useSystemDir getEnvironmentDir
 configureBasiliskEnv <- function(src="R/basilisk.R") {
+    if (!useSystemDir()) {
+        return(invisible(NULL))
+    }
+
     envir <- new.env()
     eval(parse(file=src), envir=envir)
 
     for (nm in ls(envir)) {
         current <- get(nm, envir=envir, inherits=FALSE)
         if (is(current, "BasiliskEnvironment")) {
-            setupBasiliskEnv(envname=.getEnvName(current),
-                pkgname=.getPkgName(current),
+            env <- getEnvironmentDir(.getPkgName(current), assume.installed=FALSE)
+            setupBasiliskEnv(
+                envpath=file.path(envdir, .getEnvName(current)),
                 packages=.getPackages(current),
                 conda=.useConda(current)
             )
