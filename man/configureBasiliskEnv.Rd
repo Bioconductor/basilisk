@@ -20,6 +20,7 @@ Configure the \pkg{basilisk} environments in the \code{configure} file of client
 \details{
 This function is designed to be called in the \code{configure} file of client packages,
 triggering the construction of \pkg{basilisk} environments during package installation.
+It will only run if the \code{BASILISK_USE_SYSTEM_DIR} environment variable is set to \code{"1"}.
 
 We take a source file as input to avoid duplicated definitions of the \linkS4class{BasiliskEnvironment}s.
 These objects are used in \code{\link{basiliskStart}} in the body of the package, so they naturally belong in \code{R/}; 

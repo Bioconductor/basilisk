@@ -130,6 +130,7 @@ basiliskRun(proc=cl, function() {
     get("snake.in.my.shoes", envir=parent.frame())
 })
 basiliskStop(cl)
+
 }
 \seealso{
 \code{\link{setupBasiliskEnv}}, to set up the virtual environments.

@@ -4,22 +4,18 @@
 \alias{setupBasiliskEnv}
 \title{Set up a \pkg{basilisk} environments}
 \usage{
-setupBasiliskEnv(envname, packages, pkgname = NULL, conda = FALSE)
+setupBasiliskEnv(envpath, packages, conda = FALSE)
 }
 \arguments{
-\item{envname}{String containing the name of the environment to create.}
+\item{envpath}{String containing the path to the environment to use.}
 
 \item{packages}{Character vector containing the names of Python packages to install into the environment.
 It is required to include version numbers in each string.}
 
-\item{pkgname}{String specifying the name of the R package that owns the environment.}
-
 \item{conda}{Logical scalar indicating whether a conda environment should be created.}
 }
 \value{
-A virtual or conda environment is created containing the specified \code{packages}.
-If \code{pkgname} is specified, the environment is located in the installation directory of \code{pkgname}.
-Otherwise, it treats \code{envname} as a path to the desired location of the environment.
+A virtual or conda environment is created at \code{envpath} containing the specified \code{packages}.
 The function itself returns a \code{NULL} value invisibly.
 }
 \description{
@@ -35,8 +31,8 @@ this function is a no-op.
 Any attempt to use \code{envname} in \code{\link{basiliskStart}} will simply fall back to the core Anaconda instance.
 This enables multiple client packages to use the same Python for greater efficiency with \code{\link{basiliskStart}}.
 
-If \code{pkgname} is specified and the \pkg{basilisk} environment is already present with all requested packages, \code{setupBasiliskEnv} is a no-op.
-This ensures that the function only installs the packages once at the first load during R package installation.
+If a \pkg{basilisk} environment is already present at \code{envpath}, \code{setupBasiliskEnv} is a no-op.
+This ensures that the function only installs the packages once.
 
 We call these \pkg{basilisk} environments as the function will automatically switch between virtual and conda environments depending on the operating system.
 MacOSX and Linux default to virtual environments to enable re-use of dependencies from the core installation, while Windows can only conda environments.
