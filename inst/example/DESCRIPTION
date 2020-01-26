@@ -1,12 +1,13 @@
 Package: son.of.basilisk
-Version: 0.0.1
+Version: 0.99.0
+Date: 2020-01-25
 Title: Son of Basilisk
 Authors@R:
     person("Aaron", "Lun", email="infinite.monkeys.with.keyboards@gmail.com",
         role=c("aut", "cre"))
 License: GPL-3
-Description: Provides an example of how to set up a 
-    package that depends on the basilisk package.
+Description: Provides a functioning example of how to set up a 
+    client package that depends on the basilisk package.
 Imports:
     basilisk,
     reticulate
