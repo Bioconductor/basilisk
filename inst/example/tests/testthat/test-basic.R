@@ -2,11 +2,11 @@
 # library(testthat); source("test-basic.R")
 
 test_that("internal test package installs correctly", {
-    xpath <- basilisk:::.choose_env_dir("son.of.basilisk")
-    expect_true(file.exists(file.path(xpath, "env1")))
-    expect_false(file.exists(file.path(xpath, "env2"))) # defaults to the core installation.
+    xpath <- basilisk.utils::getEnvironmentDir("son.of.basilisk")
 
     output <- son.of.basilisk::test()
+    expect_true(file.exists(file.path(xpath, "env1")))
+    expect_true(file.exists(file.path(xpath, "env2")))
 
     expect_type(output$pandas, "character")
     expect_true(length(output$pandas) > 0L)
