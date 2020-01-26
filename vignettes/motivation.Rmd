@@ -3,7 +3,7 @@ title: Freezing Python versions inside Bioconductor packages
 author: 
 - name: Aaron Lun
   email: infinite.monkeys.with.keyboards@gmail.com
-date: "Revised: 15 January 2019"
+date: "Revised: January 25, 2019"
 output:
   BiocStyle::html_document
 package: basilisk
@@ -51,23 +51,28 @@ We will assume that readers are familiar with general R package development prac
 
 `.BBSoptions` should contain `UnsupportedPlatforms: win32`, as builds on Windows 32-bit are not supported.
 
-## Creating the environments
+## Creating environments
 
-A `basilisk.R` file should be present in the `R/` subdirectory, containing commands to produce a `BasiliskEnvironment` object.
+If the base Anaconda instance is not sufficient for the operation of the client package,
+we need to create some environments with the requisite packages using the `conda` package manager.
+A `basilisk.R` file should be present in the `R/` subdirectory containing commands to produce a `BasiliskEnvironment` object.
 These objects define the Python environments to be constructed by `r Biocpkg("basilisk")` on behalf of your client package.
-The commands in this file can be as simple as those shown below, though non-core packages (i.e., not listed in `listCorePackages()`) will also require version numbers.
 
 ```{r}
 my_env <- BasiliskEnvironment(envname="my_env_name",
     pkgname="ClientPackage",
-    packages=c("pandas", "sklearn")
+    packages=c("pandas==0.25.1", "sklearn==0.22.1")
 )
 
 second_env <- BasiliskEnvironment(envname="second_env_name",
     pkgname="ClientPackage",
-    packages=c("scipy", "numpy==1.17") # if we don't like the core version.
+    packages=c("scipy=1.4.1", "numpy==1.17") 
 )
 ```
+
+As shown above, all listed Python packages should have valid version numbers that can be obtained by `conda`.
+It is also good practice to explicitly list the versions of any dependencies so as to future-proof the installation process.
+We suggest using `conda env export` to identify a set of compatible Python packages that provides an operational environment.
 
 An executable `configure` file should be created in the top level of the client package, containing the command shown below.
 This enables creation of environments during `r Biocpkg("basilisk")` installation if `BASILISK_USE_SYSTEM_DIR` is set.
@@ -113,6 +118,10 @@ Note that `basiliskStart()` will lazily install Anaconda and the required enviro
 This can result in some delays on the first time that any function using `r Biocpkg("basilisk")` is called;
 after that, the installed content will simply be re-used.
 
+If the base Anaconda instance is sufficient, we recommend calling  `basiliskStart(NULL)` instead.
+This avoids the hassle of setting up an environment and pinning versions.
+It also improves run-time efficiency by allowing re-use of a shared Python instance across different client packages.
+
 It is probably unwise to use `proc` across user-visible functions, i.e., the end-user should never have an opportunity to interact with `proc`.
 
 # Additional notes
@@ -153,7 +162,7 @@ This option has no effect if `BASILISK_USE_SYSTEM_DIR` is set.
 Given a path, `basiliskStart()` can operate on any conda or virtual environment, not just those constructed by `r Biocpkg("basilisk")`.
 It is possible to manually set up the desired environment with, e.g., Python 2.7, or to manually modify an existing environment to include custom Python packages not in PyPi or Conda.
 This allows users to continue to take advantage of `r Biocpkg("basilisk")`'s graceful handling of Python collisions in more complex applications. 
-However, this can be quite a pain to do portably, so one should avoid this where possible.
+However, it can be quite difficult to guarantee portability so one should try to avoid doing this.
 
 # Session information
 
