@@ -10,14 +10,9 @@ library(callr)
 new.version <- sub(".*==", "", test.pandas)
 old.version <- sub(".*==", "", old.pandas)
 
-tA <- file.path(client.dir, 'my_package_A')
+tA <- NULL # use the base environment.
 tB <- file.path(client.dir, 'my_package_B')
-tC <- file.path(client.dir, 'my_package_C')
-
-setupBasiliskEnv(tA, test.pandas) # This doesn't do anything, as it just uses the common installation.
 setupBasiliskEnv(tB, c(old.pandas, old.pandas.deps))
-setupBasiliskEnv(tC, c(old.pandas, old.pandas.deps), conda=TRUE)
-
 setupBasiliskEnv(file.path(client.dir, 'occupier'), c(old.pandas, old.pandas.deps)) # for use in preloaded_check.
 
 #################################################################
@@ -135,31 +130,25 @@ test_that("basilisk directly loads Python when possible", {
 
     expect_true(r(FUN, args=list(version=new.version, envir=tA)))
     expect_true(r(FUN, args=list(version=old.version, envir=tB)))
-    expect_true(r(FUN, args=list(version=old.version, envir=tC)))
 
     # Respects persistence of variables.
     expect_true(r(persistence_check, args=list(version=new.version, envir=tA)))
     expect_true(r(persistence_check, args=list(version=old.version, envir=tB)))
-    expect_true(r(persistence_check, args=list(version=old.version, envir=tC)))
 })
 
 ###########################################################
 
 test_that("basilisk forks when possible", { # ... though on windows, this just uses sockets.
     expect_true(r(process_check, args=list(version=new.version, envir=tA)))
-    expect_true(r(process_check, args=list(version=new.version, envir=tA)))
     expect_true(r(process_check, args=list(version=old.version, envir=tB)))
-    expect_true(r(process_check, args=list(version=old.version, envir=tC)))
 
     # Forcing basilisk to use sockets by loading another virtual environment in advance.
     expect_true(r(preloaded_check, args=list(version=new.version, envir=tA)))
     expect_true(r(preloaded_check, args=list(version=old.version, envir=tB)))
-    expect_true(r(preloaded_check, args=list(version=old.version, envir=tC)))
 
     # Respects persistence of variables.
     expect_true(r(persistence_check, args=list(version=new.version, envir=tA, shared=FALSE)))
     expect_true(r(persistence_check, args=list(version=old.version, envir=tB, shared=FALSE)))
-    expect_true(r(persistence_check, args=list(version=old.version, envir=tC, shared=FALSE)))
 })
 
 ###########################################################
@@ -167,15 +156,12 @@ test_that("basilisk forks when possible", { # ... though on windows, this just u
 test_that("basilisk uses sockets as a fallback", {
     expect_true(r(process_check, args=list(version=new.version, envir=tA, fork=FALSE)))
     expect_true(r(process_check, args=list(version=old.version, envir=tB, fork=FALSE)))
-    expect_true(r(process_check, args=list(version=old.version, envir=tC, fork=FALSE)))
 
     # Forcing basilisk to use sockets by loading another virtual environment in advance.
     expect_true(r(preloaded_check, args=list(version=new.version, envir=tA, fork=FALSE)))
     expect_true(r(preloaded_check, args=list(version=old.version, envir=tB, fork=FALSE)))
-    expect_true(r(preloaded_check, args=list(version=old.version, envir=tC, fork=FALSE)))
 
     # Respects persistence of variables.
     expect_true(r(persistence_check, args=list(version=new.version, envir=tA, shared=FALSE, fork=FALSE)))
     expect_true(r(persistence_check, args=list(version=old.version, envir=tB, shared=FALSE, fork=FALSE)))
-    expect_true(r(persistence_check, args=list(version=old.version, envir=tC, shared=FALSE, fork=FALSE)))
 })
