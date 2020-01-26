@@ -24,7 +24,7 @@
 #' 
 #' @examples
 #' tmploc <- file.path(tempdir(), "my_package_B")
-#' setupBasiliskEnv(tmploc, 'pandas')
+#' setupBasiliskEnv(tmploc, 'pandas==0.25.1')
 #' useBasiliskEnv(tmploc) # TRUE or FALSE, depending on global Python.
 #'
 #' tmploc2 <- file.path(tempdir(), "my_package_B_alt")
