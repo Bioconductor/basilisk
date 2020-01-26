@@ -14,7 +14,6 @@
 #' @details
 #' It is unlikely that developers should ever need to call \code{\link{useBasiliskEnv}} directly.
 #' Rather, this interaction should be automatically handled by \code{\link{basiliskStart}}.
-#' We require \code{envpath} (rather than the usual \code{envname} and \code{pkgname}) to avoid difficult errors with \code{\link{system.file}} when the package has not yet been loaded in the child process of \code{\link{basiliskStart}}.
 #' 
 #' A side-effect of \code{useBasiliskEnv} with \code{dry=FALSE} is that the \code{"PYTHONPATH"} environment variable is unset for the duration of the R session
 #' (or \pkg{basilisk} process, depending on the back-end chosen by \code{\link{basiliskStart}}).
@@ -23,13 +22,14 @@
 #' @author Aaron Lun
 #' 
 #' @examples
+#' # This may return TRUE or FALSE, depending on the available Python.
 #' tmploc <- file.path(tempdir(), "my_package_B")
 #' setupBasiliskEnv(tmploc, 'pandas==0.25.1')
-#' useBasiliskEnv(tmploc) # TRUE or FALSE, depending on global Python.
+#' useBasiliskEnv(tmploc, required=FALSE) 
 #'
-#' tmploc2 <- file.path(tempdir(), "my_package_B_alt")
-#' setupBasiliskEnv(tmploc2, 'pandas==0.24.1')
-#' useBasiliskEnv(tmploc2) # FALSE, as global Python is already occupied.
+#' # This will return FALSE, as the available Python is already set.
+#' baseloc <- basilisk.utils::getBasiliskDir()
+#' useBasiliskEnv(baseloc, required=FALSE)
 #'
 #' @seealso
 #' \code{\link{basiliskStart}}, for how these virtual environments should be used.
