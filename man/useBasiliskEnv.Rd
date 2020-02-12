@@ -30,15 +30,14 @@ A side-effect of \code{useBasiliskEnv} with \code{dry=FALSE} is that the \code{"
 This is a deliberate choice to avoid compromising the version guarantees if \code{\link{import}} is allowed to search other locations beyond the specified environment.
 }
 \examples{
-# This may return TRUE or FALSE, depending on global Python.
+# This may return TRUE or FALSE, depending on the available Python.
 tmploc <- file.path(tempdir(), "my_package_B")
 setupBasiliskEnv(tmploc, 'pandas==0.25.1')
 useBasiliskEnv(tmploc, required=FALSE) 
 
-# This will return FALSE, as global Python is already occupied.
-tmploc2 <- file.path(tempdir(), "my_package_B_alt")
-setupBasiliskEnv(tmploc2, 'pandas==0.24.1')
-useBasiliskEnv(tmploc2, required=FALSE)
+# This will return FALSE, as the available Python is already set.
+baseloc <- basilisk.utils::getBasiliskDir()
+useBasiliskEnv(baseloc, required=FALSE)
 
 }
 \seealso{
