@@ -38,6 +38,14 @@ test_that("setupBasiliskEnv obtains the correct version of the packages", {
     expect_false(setupBasiliskEnv(target, c(old.pandas, old.pandas.deps)))
 })
 
+test_that("setupBasiliskEnv will install Python 2.7 if requested", {
+    unlink(target, recursive=TRUE)
+    setupBasiliskEnv(target, "python=2.7")
+    env.py <- basilisk:::.get_py_cmd(target)
+    py.ver <- system2(env.py, "--version", stderr=TRUE, stdout=TRUE)
+    expect_match(py.ver, "2\\.7")
+})
+
 #############################
 
 if (old.retpy!="") {
