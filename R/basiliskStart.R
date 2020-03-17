@@ -28,7 +28,7 @@
 #' Thus, \pkg{basilisk} clients are not affected by (and if \code{shared=FALSE}, do not affect) the activity of other R packages.
 #' 
 #' If necessary, objects created in \code{fun} can persist across calls to \code{basiliskRun}, e.g., for file handles.
-#' This requires the use of \code{\link{assign}} with \code{envir=parent.frame()} to set a persistent object,
+#' This requires the use of \code{\link{assign}} with \code{envir} set to \code{\link{findPersistentEnv}} to persist a variable,
 #' and a corresponding \code{\link{get}} to retrieve that object in later calls. 
 #' See Examples for more details.
 #'
@@ -118,11 +118,11 @@
 #'
 #' # Persistence of variables is possible within a Start/Stop pair.
 #' cl <- basiliskStart(tmploc)
-#' basiliskRun(proc=cl, function() { 
-#'     assign(x="snake.in.my.shoes", 1, envir=parent.frame())
+#' basiliskRun(proc=cl, function() {
+#'     assign(x="snake.in.my.shoes", 1, envir=basilisk::findPersistentEnv())
 #' })
 #' basiliskRun(proc=cl, function() {
-#'     get("snake.in.my.shoes", envir=parent.frame())
+#'     get("snake.in.my.shoes", envir=basilisk::findPersistentEnv())
 #' })
 #' basiliskStop(cl)
 #'

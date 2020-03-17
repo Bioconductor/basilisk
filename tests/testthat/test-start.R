@@ -27,7 +27,7 @@ persistence_check <- function(version, envir, ...) {
     basiliskRun(proc=cl, function() {
         # For R:
         X <- reticulate::import("pandas")
-        assign(x="snake.in.my.shoes", X$`__version__`, envir=parent.frame())
+        assign(x="snake.in.my.shoes", X$`__version__`, envir=basilisk::findPersistentEnv())
 
         # For Python:
         reticulate::py_run_string(sprintf("greeting = 'howdy, %s'", X$`__version__`))
@@ -40,7 +40,7 @@ persistence_check <- function(version, envir, ...) {
 
     # Variable persists to the next call.
     out <- basiliskRun(proc=cl, function() {
-        get("snake.in.my.shoes", envir=parent.frame())
+        get("snake.in.my.shoes", envir=basilisk::findPersistentEnv())
     })
     expect_identical(out, version)
 
