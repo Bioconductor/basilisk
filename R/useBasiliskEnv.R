@@ -36,7 +36,7 @@
 #'
 #' @export
 #' @importFrom reticulate py_config use_condaenv use_python
-#' @importFrom basilisk.utils getBasiliskDir
+#' @importFrom basilisk.utils getBasiliskDir getPythonBinary
 useBasiliskEnv <- function(envpath, dry=FALSE, required=TRUE) {
     old.retpy <- Sys.getenv("RETICULATE_PYTHON")
     Sys.unsetenv("RETICULATE_PYTHON")
@@ -59,5 +59,5 @@ useBasiliskEnv <- function(envpath, dry=FALSE, required=TRUE) {
 
     # Checking whether we're the same as the existing python instance,
     # which would indicate that we correctly loaded ourselves.
-    identical(.get_py_cmd(envpath), py_config()$python)
+    identical(getPythonBinary(envpath), py_config()$python)
 }

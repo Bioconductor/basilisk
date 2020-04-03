@@ -48,7 +48,7 @@
 #' \code{\link{listCorePackages}}, for a list of core Python packages with pinned versions.
 #'
 #' @export
-#' @importFrom basilisk.utils getBasiliskDir installAnaconda 
+#' @importFrom basilisk.utils getBasiliskDir installAnaconda getCondaBinary getPythonBinary
 #' @importFrom reticulate conda_install
 setupBasiliskEnv <- function(envpath, packages) {
     if (file.exists(envpath)) {
@@ -78,8 +78,8 @@ setupBasiliskEnv <- function(envpath, packages) {
     }
 
     base.dir <- getBasiliskDir()
-    conda.cmd <- file.path(base.dir, .retrieve_conda())
-    py.cmd <- .get_py_cmd(base.dir)
+    conda.cmd <- getCondaBinary(base.dir)
+    py.cmd <- getPythonBinary(base.dir)
 
     # Checking if a Python version was specified in 'packages'.
     if (any(is.py <- grepl("^python=", packages))) {

@@ -17,10 +17,10 @@
 #' listCorePackages()
 #' 
 #' @export
-#' @importFrom basilisk.utils getBasiliskDir installAnaconda
+#' @importFrom basilisk.utils getBasiliskDir installAnaconda getPythonBinary
 listCorePackages <- function() {
     installAnaconda()
-    out <- .basilisk_freeze(.get_py_cmd(getBasiliskDir()))
+    out <- .basilisk_freeze(getPythonBinary(getBasiliskDir()))
     data.frame(full=out, package=.full2pkg(out), stringsAsFactors=FALSE)
 }
 

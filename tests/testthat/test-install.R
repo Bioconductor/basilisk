@@ -3,7 +3,7 @@
 
 #############################
 
-base.py <- basilisk:::.get_py_cmd(basilisk.utils::getBasiliskDir())
+base.py <- basilisk.utils::getPythonBinary(basilisk.utils::getBasiliskDir())
 
 # Turning off these damn envvars, otherwise .basilisk_freeze doesn't behave.
 old.retpy <- Sys.getenv("RETICULATE_PYTHON")
@@ -15,7 +15,7 @@ Sys.unsetenv("PYTHONPATH")
 #############################
 
 target <- file.path(client.dir, "thingo")
-env.py <- basilisk:::.get_py_cmd(target)
+env.py <- basilisk.utils::getPythonBinary(target)
 
 test_that("setupBasiliskEnv refuses to work without all specified versions", {
     unlink(target, recursive=TRUE)
@@ -41,7 +41,7 @@ test_that("setupBasiliskEnv obtains the correct version of the packages", {
 test_that("setupBasiliskEnv will install Python 2.7 if requested", {
     unlink(target, recursive=TRUE)
     setupBasiliskEnv(target, "python=2.7")
-    env.py <- basilisk:::.get_py_cmd(target)
+    env.py <- basilisk.utils::getPythonBinary(target)
     py.ver <- system2(env.py, "--version", stderr=TRUE, stdout=TRUE)
     expect_match(py.ver, "2\\.7")
 })
