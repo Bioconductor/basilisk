@@ -175,6 +175,9 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
         envpath <- file.path(envdir, envname)
 
         if (!file.exists(envpath)) {
+            if (destroyOldVersions()) {
+                clearObsoleteDir(envdir)
+            }
             setupBasiliskEnv(envpath, packages=.getPackages(env))
         }
     }
