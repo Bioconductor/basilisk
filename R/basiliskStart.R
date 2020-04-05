@@ -154,15 +154,11 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
     proc
 }
 
-#' @importFrom basilisk.utils getBasiliskDir installAnaconda getEnvironmentDir
+#' @importFrom basilisk.utils getBasiliskDir installAnaconda getEnvironmentDir clearObsoleteDir destroyOldVersions
 .obtain_env_path <- function(env) {
-    base.dir <- getBasiliskDir(assume.installed=FALSE)
-    if (!file.exists(base.dir)) {
-        installAnaconda()
-    }
-
     if (is.null(env)) {
-        return(base.dir)
+        installAnaconda()
+        return(getBasiliskDir())
     }
 
     envname <- .getEnvName(env)
@@ -175,6 +171,10 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
         envpath <- file.path(envdir, envname)
 
         if (!file.exists(envpath)) {
+            if (useSystemDir()) {
+                stop(sprinf("environment '%s' should have been created during %s installation", envname, pkgname))
+            } 
+
             if (destroyOldVersions()) {
                 clearObsoleteDir(envdir)
             }
