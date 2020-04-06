@@ -172,7 +172,7 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
 
         if (!file.exists(envpath)) {
             if (useSystemDir()) {
-                stop(sprinf("environment '%s' should have been created during %s installation", envname, pkgname))
+                stop(sprintf("environment '%s' should have been created during %s installation", envname, pkgname))
             } 
 
             if (destroyOldVersions()) {
