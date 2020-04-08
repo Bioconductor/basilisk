@@ -16,13 +16,16 @@ It is used by \code{\link{basiliskStart}} to perform lazy installation.
 \itemize{
 \item \code{envname}, string containing the name of the environment.
 \item \code{pkgname}, string containing the name of the package that owns the environment.
-\item \code{packages}, character vector containing the names of the required Python packages,
+\item \code{packages}, character vector containing the names of the required Python packages from conda,
+see \code{\link{setupBasiliskEnv}} for requirements.
+\item \code{pip}, character vector containing names of additional Python packages from PyPi,
 see \code{\link{setupBasiliskEnv}} for requirements.
 }
 }
 
 \examples{
-BasiliskEnvironment("my_env1", "AaronPackage", packages=c("sklearn", "pandas"))
+BasiliskEnvironment("my_env1", "AaronPackage", 
+    packages=c("scikit-learn=0.22.0", "pandas=0.24.1"))
 }
 \author{
 Aaron lun

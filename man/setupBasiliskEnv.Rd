@@ -4,12 +4,15 @@
 \alias{setupBasiliskEnv}
 \title{Set up a \pkg{basilisk} environments}
 \usage{
-setupBasiliskEnv(envpath, packages)
+setupBasiliskEnv(envpath, packages, pip = NULL)
 }
 \arguments{
 \item{envpath}{String containing the path to the environment to use.}
 
 \item{packages}{Character vector containing the names of conda packages to install into the environment.
+Version numbers must be included.}
+
+\item{pip}{Character vector containing the names of additional packages to install from PyPi using pip.
 Version numbers must be included.}
 }
 \value{
@@ -39,6 +42,11 @@ Pinned version numbers must be present for all requested conda packages in \code
 This improved predictability makes debugging much easier when the R package is installed and executed on different systems.
 Note that this refers to conda packages, not Python packages, where the version notation for the former uses a single \code{=};
 any \code{==} will be coerced to \code{=} automatically.
+
+It is possible to use the \code{pip} argument to install additional packages from PyPi after all the conda packages are installed.
+All packages listed here are also expected to have pinned versions, this time using the \code{==} notation.
+However, some caution is required when mixing packages from conda and pip,
+see \url{https://www.anaconda.com/using-pip-in-a-conda-environment} for more details.
 
 It is also good practice to explicitly list the versions of the dependencies of all desired packages.
 This protects against future changes in the behavior of your code if conda's dependency resolver defaults to a different version of a required package.
