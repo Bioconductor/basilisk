@@ -5,6 +5,8 @@
 #' @param envpath String containing the path to the environment to use. 
 #' @param packages Character vector containing the names of conda packages to install into the environment.
 #' Version numbers must be included.
+#' @param pip Character vector containing the names of additional packages to install from PyPi using pip.
+#' Version numbers must be included.
 #' 
 #' @return 
 #' A conda environment is created at \code{envpath} containing the specified \code{packages}.
@@ -30,6 +32,11 @@
 #' Note that this refers to conda packages, not Python packages, where the version notation for the former uses a single \code{=};
 #' any \code{==} will be coerced to \code{=} automatically.
 #'
+#' It is possible to use the \code{pip} argument to install additional packages from PyPi after all the conda packages are installed.
+#' All packages listed here are also expected to have pinned versions, this time using the \code{==} notation.
+#' However, some caution is required when mixing packages from conda and pip,
+#' see \url{https://www.anaconda.com/using-pip-in-a-conda-environment} for more details.
+#'
 #' It is also good practice to explicitly list the versions of the dependencies of all desired packages.
 #' This protects against future changes in the behavior of your code if conda's dependency resolver defaults to a different version of a required package.
 #' We suggest using \code{conda env export} to identify relevant dependencies and include them in \code{packages};
@@ -50,16 +57,13 @@
 #' @export
 #' @importFrom basilisk.utils getBasiliskDir installAnaconda getCondaBinary getPythonBinary
 #' @importFrom reticulate conda_install
-setupBasiliskEnv <- function(envpath, packages) {
+setupBasiliskEnv <- function(envpath, packages, pip=NULL) {
     if (file.exists(envpath)) {
         return(FALSE)
     }
 
     packages <- sub("==", "=", packages)
-    if (any(failed <- !grepl("=", packages))) {
-        stop(paste("versions must be explicitly specified for",
-            paste(sprintf("'%s'", packages[failed]), collapse=", ")))
-    }
+    .check_versions(packages, "=")
 
     installAnaconda() # no-ops if it's already there.
 
@@ -93,6 +97,16 @@ setupBasiliskEnv <- function(envpath, packages) {
     dir.create(envpath, recursive=TRUE) 
     conda_install(envname=normalizePath(envpath), conda=conda.cmd, 
         python_version=version, packages=packages)
+
+    if (length(pip)) {
+        .check_versions(pip, "==")
+
+        env.py <- getPythonBinary(envpath)
+        result <- system2(env.py, c("-m", "pip", "install", pip))
+        if (result!=0L) {
+            stop("failed to install additional packages via pip")
+        }
+    }
     
     TRUE 
 }
@@ -105,4 +119,11 @@ setupBasiliskEnv <- function(envpath, packages) {
         on.exit(Sys.setenv(PYTHONPATH=old.pypath), add=TRUE)
     }
     system2(py.cmd, c("-m", "pip", "freeze"), stdout=TRUE)
+}
+
+.check_versions <- function(packages, pattern) {
+    if (any(failed <- !grepl(pattern, packages))) {
+        stop(paste("versions must be explicitly specified for",
+            paste(sprintf("'%s'", packages[failed]), collapse=", ")))
+    }
 }

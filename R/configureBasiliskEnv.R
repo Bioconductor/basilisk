@@ -49,7 +49,8 @@ configureBasiliskEnv <- function(src="R/basilisk.R") {
             envdir <- getEnvironmentDir(.getPkgName(current), installed=FALSE)
             setupBasiliskEnv(
                 envpath=file.path(envdir, .getEnvName(current)),
-                packages=.getPackages(current)
+                packages=.getPackages(current),
+                pip=.getPipPackages(current)
             )
         }
     }

@@ -46,6 +46,15 @@ test_that("setupBasiliskEnv will install Python 2.7 if requested", {
     expect_match(py.ver, "2\\.7")
 })
 
+test_that("setupBasiliskEnv works with pip-hosted packages", {
+    unlink(target, recursive=TRUE)
+    expect_true(setupBasiliskEnv(target, old.pandas.deps, pip=old.pandas))
+
+    incoming <- basilisk:::.basilisk_freeze(env.py)
+    expect_true(old.pandas %in% incoming)
+    expect_true(all(old.pandas.deps %in% incoming))
+})
+
 #############################
 
 if (old.retpy!="") {

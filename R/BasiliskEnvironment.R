@@ -11,12 +11,15 @@
 #' \itemize{
 #' \item \code{envname}, string containing the name of the environment.
 #' \item \code{pkgname}, string containing the name of the package that owns the environment.
-#' \item \code{packages}, character vector containing the names of the required Python packages,
+#' \item \code{packages}, character vector containing the names of the required Python packages from conda,
+#' see \code{\link{setupBasiliskEnv}} for requirements.
+#' \item \code{pip}, character vector containing names of additional Python packages from PyPi,
 #' see \code{\link{setupBasiliskEnv}} for requirements.
 #' }
 #' 
 #' @examples
-#' BasiliskEnvironment("my_env1", "AaronPackage", packages=c("sklearn", "pandas"))
+#' BasiliskEnvironment("my_env1", "AaronPackage", 
+#'     packages=c("scikit-learn=0.22.0", "pandas=0.24.1"))
 #' @docType class
 #' @name BasiliskEnvironment-class
 #' @aliases BasiliskEnvironment-class
@@ -24,12 +27,12 @@
 NULL
 
 #' @export
-setClass("BasiliskEnvironment", slots=c(envname="character", pkgname="character", packages="character"))
+setClass("BasiliskEnvironment", slots=c(envname="character", pkgname="character", packages="character", pip="character"))
 
 #' @export
 #' @import methods 
-BasiliskEnvironment <- function(envname, pkgname, packages) {
-    new("BasiliskEnvironment", envname=envname, pkgname=pkgname, packages=packages)
+BasiliskEnvironment <- function(envname, pkgname, packages, pip=character(0)) {
+    new("BasiliskEnvironment", envname=envname, pkgname=pkgname, packages=packages, pip=pip)
 }
 
 setValidity("BasiliskEnvironment", function(object) {
@@ -45,6 +48,10 @@ setValidity("BasiliskEnvironment", function(object) {
 
     if (any(is.na(.getPackages(object)))) {
         msg <- c(msg, "'packages' should not contain NA strings")
+    }
+
+    if (any(is.na(.getPipPackages(object)))) {
+        msg <- c(msg, "'pip' should not contain NA strings")
     }
 
     if (length(msg)) {
@@ -67,3 +74,5 @@ setMethod(".getEnvName", "character", identity)
 setMethod(".getPkgName", "character", function(x) NULL) 
 
 .getPackages <- function(x) x@packages
+
+.getPipPackages <- function(x) x@pip
