@@ -10,6 +10,7 @@
 #' \code{BasiliskEnvironment(envname, pkgname, packages)} will return a BasiliskEnvironment object, given:
 #' \itemize{
 #' \item \code{envname}, string containing the name of the environment.
+#' Environment names starting with an underscore are reserved for internal use.
 #' \item \code{pkgname}, string containing the name of the package that owns the environment.
 #' \item \code{packages}, character vector containing the names of the required Python packages from conda,
 #' see \code{\link{setupBasiliskEnv}} for requirements.
@@ -40,6 +41,9 @@ setValidity("BasiliskEnvironment", function(object) {
 
     if (length(val <- .getEnvName(object))!=1 || is.na(val) || !is.character(val)){ 
         msg <- c(msg, "'envname' should be a non-NA string")
+    }
+    if (grepl("^_", val)) {
+        msg <- c(msg, "environment names starting with an underscore are reserved")
     }
 
     if (length(val <- .getPkgName(object))!=1 || is.na(val) || !is.character(val)){ 

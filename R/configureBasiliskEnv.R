@@ -43,16 +43,38 @@ configureBasiliskEnv <- function(src="R/basilisk.R") {
     envir <- new.env()
     eval(parse(file=src), envir=envir)
 
-    for (nm in ls(envir)) {
+    # Only retaining those that are Basilisk environments.
+    env.vars <- ls(envir)
+
+    keep <- vapply(env.vars, function(nm) {
         current <- get(nm, envir=envir, inherits=FALSE)
-        if (is(current, "BasiliskEnvironment")) {
-            envdir <- getEnvironmentDir(.getPkgName(current), installed=FALSE)
-            setupBasiliskEnv(
-                envpath=file.path(envdir, .getEnvName(current)),
-                packages=.getPackages(current),
-                pip=.getPipPackages(current)
-            )
-        }
+        is(current, "BasiliskEnvironment")
+    }, TRUE)
+
+    if (!any(keep)) {
+        return(invisible(NULL))
+    }
+
+    env.vars <- env.vars[keep]
+    tmp <- get(env.vars[1], envir=envir, inherits=FALSE)
+    envdir <- getEnvironmentDir(.getPkgName(tmp), installed=FALSE)
+
+    # Setting this so that conda doesn't try to dump the requested packages
+    # into the (conceptually, if not actually, read-only) base installation.
+    old <- Sys.getenv("CONDA_PKGS_DIRS")
+    on.exit(Sys.setenv(CONDA_PKGS_DIRS=old))
+    new.pkg.dir <- file.path(envdir, "_pkgs")
+    dir.create(new.pkg.dir, showWarnings=FALSE, recursive=TRUE)
+    Sys.setenv(CONDA_PKGS_DIRS=normalizePath(new.pkg.dir))
+
+    # Actually creating the environments.
+    for (nm in env.vars) {
+        current <- get(nm, envir=envir, inherits=FALSE)
+        setupBasiliskEnv(
+            envpath=file.path(envdir, .getEnvName(current)),
+            packages=.getPackages(current),
+            pip=.getPipPackages(current)
+        )
     }
 
     invisible(NULL)
