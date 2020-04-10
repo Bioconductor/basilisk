@@ -15,6 +15,7 @@ It is used by \code{\link{basiliskStart}} to perform lazy installation.
 \code{BasiliskEnvironment(envname, pkgname, packages)} will return a BasiliskEnvironment object, given:
 \itemize{
 \item \code{envname}, string containing the name of the environment.
+Environment names starting with an underscore are reserved for internal use.
 \item \code{pkgname}, string containing the name of the package that owns the environment.
 \item \code{packages}, character vector containing the names of the required Python packages from conda,
 see \code{\link{setupBasiliskEnv}} for requirements.
