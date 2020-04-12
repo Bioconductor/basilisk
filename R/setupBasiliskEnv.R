@@ -75,37 +75,38 @@ setupBasiliskEnv <- function(envpath, packages, pip=NULL) {
         on.exit(Sys.setenv(RETICULATE_PYTHON=old.retpy), add=TRUE)
     }
 
+    # It's just generally good to unset this variable lest conda end up in a
+    # fistfight with PYTHONPATH over where things should go.
     old.pypath <- Sys.getenv("PYTHONPATH")
     if (old.pypath!="") {
         Sys.unsetenv("PYTHONPATH")
         on.exit(Sys.setenv(PYTHONPATH=old.pypath), add=TRUE)
     }
 
+    if (isWindows()) {
+        # Motivated by ContinuumIO/anaconda-issues#10576, mimic the effect of
+        # activation, at least for dynamic linking.
+        old.val <- Sys.getenv("CONDA_DLL_SEARCH_MODIFICATION_ENABLE")
+        on.exit(Sys.setenv(CONDA_DLL_SEARCH_MODIFICATION_ENABLE=old.val), add=TRUE)
+        Sys.setenv(CONDA_DLL_SEARCH_MODIFICATION_ENABLE=1)
+    }
+
     base.dir <- getBasiliskDir()
     conda.cmd <- getCondaBinary(base.dir)
     py.cmd <- getPythonBinary(base.dir)
 
-    # Checking if a Python version was specified in 'packages'.
+    # Determining the Python version to use (possibly from `packages=`).
     if (any(is.py <- grepl("^python=", packages))) {
         version <- sub("^python=+", "", packages[is.py][1])
     } else {
         version <- sub("^Python ", "", system2(py.cmd, "--version", stdout=TRUE))
     }
 
-    # We ensure that it exists and installs to the specified location,
-    # rather than being tucked away in Anaconda's 'envs' directory.
     dir.create(envpath, recursive=TRUE) 
     conda_install(envname=normalizePath(envpath), conda=conda.cmd, 
         python_version=version, packages=packages)
 
     if (length(pip)) {
-        if (isWindows()) {
-            # Motivated by ContinuumIO/anaconda-issues#10576
-            old.val <- Sys.getenv("CONDA_DLL_SEARCH_MODIFICATION_ENABLE")
-            on.exit(Sys.setenv(CONDA_DLL_SEARCH_MODIFICATION_ENABLE=old.val), add=TRUE)
-            Sys.setenv(CONDA_DLL_SEARCH_MODIFICATION_ENABLE=1)
-        }
-
         .check_versions(pip, "==")
         env.py <- getPythonBinary(envpath)
         result <- system2(env.py, c("-m", "pip", "install", pip))
