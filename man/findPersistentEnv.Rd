@@ -14,10 +14,6 @@ to allow variables to be passed across calls.
 The persistent environment is where variables can be stored across \code{\link{basiliskRun}} calls.
 When \code{proc} is an environment, it serves as the persistent environment;
 otherwise, if \code{proc} is a process, the global environment of the process is the persistent environment.
-
-It is very important that this function be called inside the frame of the \code{FUN} passed to \code{\link{basiliskRun}}.
-It should not be called inside nested functions within \code{FUN},
-otherwise the look-up of the \code{\link{parent.frame}} will not work correctly.
 }
 \examples{
 cl <- basiliskStart(NULL)

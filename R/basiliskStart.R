@@ -206,14 +206,19 @@ basiliskStop <- function(proc) {
 basiliskRun <- function(proc=NULL, fun, ..., env, fork=getBasiliskFork(), shared=getBasiliskShared()) {
     if (is.null(proc)) {
         proc <- basiliskStart(env, fork=fork, shared=shared)
-        on.exit(basiliskStop(proc))
+        on.exit(basiliskStop(proc), add=TRUE)
     }
 
     if (is.environment(proc)) {
+        globals$set(envir=proc)
+        on.exit(globals$set(envir=NULL), add=TRUE)
+
         # Ensure any 'assign' calls add to 'proc'.
         proc$.basilisk.args <- list(...)
         proc$.basilisk.fun <- fun
+
         output <- evalq(do.call(.basilisk.fun, .basilisk.args), envir=proc, enclos=proc)
+
         rm(".basilisk.args", envir=proc)
         rm(".basilisk.fun", envir=proc)
     } else {
