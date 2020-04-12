@@ -8,6 +8,13 @@
 #' When \code{proc} is an environment, it serves as the persistent environment;
 #' otherwise, if \code{proc} is a process, the global environment of the process is the persistent environment.
 #'
+#' Developers should avoid naming persistent variables with the \code{.basilisk} prefix.
+#' These are reserved for internal use and may be overwritten by later calls to \code{\link{basiliskRun}}.
+#'
+#' @return
+#' An environment to which persistent variables can be assigned,
+#' for use in later \code{\link{basiliskRun}} calls on the same \code{proc}.
+#'
 #' @author Aaron Lun
 #'
 #' @seealso
