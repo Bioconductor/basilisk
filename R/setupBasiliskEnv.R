@@ -55,7 +55,7 @@
 #' \code{\link{listCorePackages}}, for a list of core Python packages with pinned versions.
 #'
 #' @export
-#' @importFrom basilisk.utils getBasiliskDir installAnaconda getCondaBinary getPythonBinary
+#' @importFrom basilisk.utils getBasiliskDir installAnaconda getCondaBinary getPythonBinary isWindows
 #' @importFrom reticulate conda_install
 setupBasiliskEnv <- function(envpath, packages, pip=NULL) {
     if (file.exists(envpath)) {
@@ -99,8 +99,14 @@ setupBasiliskEnv <- function(envpath, packages, pip=NULL) {
         python_version=version, packages=packages)
 
     if (length(pip)) {
-        .check_versions(pip, "==")
+        if (isWindows()) {
+            # Motivated by ContinuumIO/anaconda-issues#10576
+            old.val <- Sys.getenv("CONDA_DLL_SEARCH_MODIFICATION_ENABLE")
+            on.exit(Sys.setenv(CONDA_DLL_SEARCH_MODIFICATION_ENABLE=old.val), add=TRUE)
+            Sys.setenv(CONDA_DLL_SEARCH_MODIFICATION_ENABLE=1)
+        }
 
+        .check_versions(pip, "==")
         env.py <- getPythonBinary(envpath)
         result <- system2(env.py, c("-m", "pip", "install", pip))
         if (result!=0L) {
