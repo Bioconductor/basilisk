@@ -51,12 +51,16 @@
 #' \code{\link{basiliskStart}}, for how these \pkg{basilisk} environments should be used.
 #'
 #' @export
-#' @importFrom reticulate py_config use_condaenv 
+#' @importFrom reticulate py_available use_condaenv 
 #' @importFrom basilisk.utils getBasiliskDir getPythonBinary isWindows
 useBasiliskEnv <- function(envpath, dry=FALSE, required=TRUE) {
     envpath <- normalizePath(envpath, mustWork=TRUE)
     if (dry) {
-        return(.same_as_loaded(envpath))
+        if (!py_available()) {
+            return(FALSE)
+        } else {
+            return(.same_as_loaded(envpath))
+        }
     }
 
     previous <- .coerce_env_vars()
