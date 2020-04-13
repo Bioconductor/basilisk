@@ -103,7 +103,6 @@ test_that("basilisk directly loads Python when possible", {
     FUN <- function(version, envir) {
         library(basilisk)
         library(testthat)
-        Sys.setenv(WORKON_HOME="install-test-client")
 
         proc <- basiliskStart(envir)
         expect_true(is.environment(proc))

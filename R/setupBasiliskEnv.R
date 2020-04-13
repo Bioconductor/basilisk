@@ -67,29 +67,8 @@ setupBasiliskEnv <- function(envpath, packages, pip=NULL) {
 
     installAnaconda() # no-ops if it's already there.
 
-    # Unsetting this variable, otherwise it seems to override the python=
-    # argument in virtualenv_create() (see LTLA/basilisk#1).
-    old.retpy <- Sys.getenv("RETICULATE_PYTHON")
-    if (old.retpy!="") {
-        Sys.unsetenv("RETICULATE_PYTHON")
-        on.exit(Sys.setenv(RETICULATE_PYTHON=old.retpy), add=TRUE)
-    }
-
-    # It's just generally good to unset this variable lest conda end up in a
-    # fistfight with PYTHONPATH over where things should go.
-    old.pypath <- Sys.getenv("PYTHONPATH")
-    if (old.pypath!="") {
-        Sys.unsetenv("PYTHONPATH")
-        on.exit(Sys.setenv(PYTHONPATH=old.pypath), add=TRUE)
-    }
-
-    if (isWindows()) {
-        # Motivated by ContinuumIO/anaconda-issues#10576, mimic the effect of
-        # activation, at least for dynamic linking.
-        old.val <- Sys.getenv("CONDA_DLL_SEARCH_MODIFICATION_ENABLE")
-        on.exit(Sys.setenv(CONDA_DLL_SEARCH_MODIFICATION_ENABLE=old.val), add=TRUE)
-        Sys.setenv(CONDA_DLL_SEARCH_MODIFICATION_ENABLE=1)
-    }
+    previous <- .coerce_env_vars()
+    on.exit(.restore_env_vars(previous), add=TRUE)
 
     base.dir <- getBasiliskDir()
     conda.cmd <- getCondaBinary(base.dir)
@@ -116,16 +95,6 @@ setupBasiliskEnv <- function(envpath, packages, pip=NULL) {
     }
     
     TRUE 
-}
-
-.basilisk_freeze <- function(py.cmd) {
-    # Unsetting the PYTHONPATH to avoid freezing other versions.
-    old.pypath <- Sys.getenv("PYTHONPATH")
-    if (old.pypath!="") {
-        Sys.unsetenv("PYTHONPATH")
-        on.exit(Sys.setenv(PYTHONPATH=old.pypath), add=TRUE)
-    }
-    system2(py.cmd, c("-m", "pip", "freeze"), stdout=TRUE)
 }
 
 .check_versions <- function(packages, pattern) {

@@ -135,13 +135,12 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
 
     if (shared && 
         {
-            # Seeing if we can just load it successfully.
-            old.pypath <- Sys.getenv("PYTHONPATH")
-            useBasiliskEnv(envpath, required=FALSE)
+            used <- useBasiliskEnv(envpath, required=FALSE) # Seeing if we can just load it successfully.
+            used$loaded
         }
     ) {
         proc <- new.env()
-        proc$.basilisk.pypath <- old.pypath
+        proc$.basilisk.previous <- used$previous
     } else {
         if (fork && !isWindows() && (!py_available() || useBasiliskEnv(envpath, dry=TRUE))) { 
             proc <- makeForkCluster(1)
@@ -193,8 +192,7 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
 #' @importFrom parallel stopCluster
 basiliskStop <- function(proc) {
     if (is.environment(proc)) {
-        # Restore the old PYTHONPATH.
-        Sys.setenv(PYTHONPATH=proc$.basilisk.pypath)
+        .restore_env_vars(proc$.basilisk.previous)
     } else {
         stopCluster(proc)
     }

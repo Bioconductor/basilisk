@@ -1,19 +1,7 @@
 # This checks that the version-controlling behavior of setupBasiliskEnv is correct.
 # library(testthat); library(basilisk); source("setup.R"); source("test-install.R"); 
 
-#############################
-
 base.py <- basilisk.utils::getPythonBinary(basilisk.utils::getBasiliskDir())
-
-# Turning off these damn envvars, otherwise .basilisk_freeze doesn't behave.
-old.retpy <- Sys.getenv("RETICULATE_PYTHON")
-Sys.unsetenv("RETICULATE_PYTHON")
-
-old.pypath <- Sys.getenv("PYTHONPATH")
-Sys.unsetenv("PYTHONPATH")
-
-#############################
-
 target <- file.path(client.dir, "thingo")
 env.py <- basilisk.utils::getPythonBinary(target)
 
@@ -54,12 +42,3 @@ test_that("setupBasiliskEnv works with pip-hosted packages", {
     expect_true(old.pandas %in% incoming)
     expect_true(all(old.pandas.deps %in% incoming))
 })
-
-#############################
-
-if (old.retpy!="") {
-    Sys.setenv(RETICULATE_PYTHON=old.retpy)
-}
-if (old.pypath!="") {
-    Sys.setenv(PYTHONPATH=old.pypath)
-}

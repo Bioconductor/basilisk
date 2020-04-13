@@ -24,6 +24,13 @@ listCorePackages <- function() {
     data.frame(full=out, package=.full2pkg(out), stringsAsFactors=FALSE)
 }
 
+.basilisk_freeze <- function(py.cmd) {
+    previous <- .coerce_env_vars()
+    on.exit(.restore_env_vars(previous))
+    system2(py.cmd, c("-m", "pip", "freeze"), stdout=TRUE)
+}
+
+
 .full2pkg <- function(packages) {
     sub("[><=]+.*", "", packages)
 }
