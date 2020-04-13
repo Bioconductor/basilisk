@@ -1,5 +1,10 @@
 .make_globals <- function () {
-    current <- list(envir=NULL)
+    current <- list(
+        envir=NULL,
+        fork=TRUE,
+        shared=TRUE
+    )
+
     list(
         set=function(...) {
             replacements <- list(...)

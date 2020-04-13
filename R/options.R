@@ -38,23 +38,33 @@
 #' @export
 #' @rdname basiliskOptions
 getBasiliskFork <- function() {
-    getOption('basilisk.fork', TRUE)
+    globals$get("fork")
 }
 
 #' @export
 #' @rdname basiliskOptions
 setBasiliskFork <- function(value) {
-    options(basilisk.fork=value)
+    .check_logical(value)
+    globals$set(fork=value)
+    value
 }
 
 #' @export
 #' @rdname basiliskOptions
 getBasiliskShared <- function() {
-    getOption('basilisk.shared', TRUE)
+    globals$get("shared")
 }
 
 #' @export
 #' @rdname basiliskOptions
 setBasiliskShared <- function(value) {
-    options(basilisk.shared=value)
+    .check_logical(value)
+    globals$set(shared=value)
+    value
+}
+
+.check_logical <- function(value) {
+    if (length(value)!=1 || is.na(value)) {
+        stop("'value' should be a non-NA logical scalar")
+    }
 }
