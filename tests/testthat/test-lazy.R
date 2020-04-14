@@ -19,7 +19,7 @@ test_that("lazy Anaconda installation works as expected", {
     expect_true(file.exists(placeholder))
 
     expect_true(basilisk.utils::installAnaconda())
-    target <- file.path(tmp, packageVersion("basilisk"), "anaconda")
+    target <- file.path(tmp, packageVersion("basilisk"), "0")
     expect_true(file.exists(target))
     expect_false(file.exists(placeholder))
 
