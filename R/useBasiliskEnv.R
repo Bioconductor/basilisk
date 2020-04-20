@@ -114,13 +114,14 @@ useBasiliskEnv <- function(envpath, dry=FALSE, required=TRUE) {
     output <- ADD(output, "RETICULATE_PYTHON_ENV")
     Sys.unsetenv("RETICULATE_PYTHON_ENV")
 
-    if (isWindows()) {
-        output <- ADD(output, "CONDA_DLL_SEARCH_MODIFICATION_ENABLE")
-
-        # Motivated by ContinuumIO/anaconda-issues#10576, mimic the effect of
-        # activation, at least for dynamic linking.
-        Sys.setenv(CONDA_DLL_SEARCH_MODIFICATION_ENABLE=1)
-    }
+#    # As much as I would like to do this, it breaks on Windows. Who knows why?
+#    if (isWindows()) {
+#        output <- ADD(output, "CONDA_DLL_SEARCH_MODIFICATION_ENABLE")
+#
+#        # Motivated by ContinuumIO/anaconda-issues#10576, mimic the effect of
+#        # activation, at least for dynamic linking.
+#        Sys.setenv(CONDA_DLL_SEARCH_MODIFICATION_ENABLE=1)
+#    }
 
     output
 }

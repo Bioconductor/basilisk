@@ -35,6 +35,7 @@ test_that("setupBasiliskEnv will install Python 2.7 if requested", {
 })
 
 test_that("setupBasiliskEnv works with pip-hosted packages", {
+    skip_on_os("windows") 
     unlink(target, recursive=TRUE)
     expect_true(setupBasiliskEnv(target, old.pandas.deps, pip=old.pandas))
 
