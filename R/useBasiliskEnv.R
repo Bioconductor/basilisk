@@ -83,7 +83,9 @@ useBasiliskEnv <- function(envpath, dry=FALSE, required=TRUE) {
 # Checking whether we're the same as the existing python instance,
 # which would indicate that we correctly loaded `envpath`.
 {
-    identical(getPythonBinary(envpath), py_config()$python)
+    expected <- normalizePath(getPythonBinary(envpath)) 
+    actual <- normalizePath(py_config()$python)
+    identical(expected, actual)
 }
 
 #' @importFrom basilisk.utils isWindows
