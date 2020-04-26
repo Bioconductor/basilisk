@@ -63,7 +63,7 @@ useBasiliskEnv <- function(envpath, dry=FALSE, required=TRUE) {
         }
     }
 
-    previous <- .coerce_env_vars()
+    previous <- .coerce_env_vars(envpath)
     use_condaenv(envpath, required=required)
     same <- .same_as_loaded(envpath)
 
@@ -88,8 +88,7 @@ useBasiliskEnv <- function(envpath, dry=FALSE, required=TRUE) {
     identical(expected, actual)
 }
 
-#' @importFrom basilisk.utils isWindows
-.coerce_env_vars <- function() {
+.coerce_env_vars <- function(envpath=NULL) {
     ADD <- function(listing, var) {
         listing[[var]] <- Sys.getenv(var, unset=NA)
         listing
@@ -114,16 +113,73 @@ useBasiliskEnv <- function(envpath, dry=FALSE, required=TRUE) {
     output <- ADD(output, "RETICULATE_PYTHON_ENV")
     Sys.unsetenv("RETICULATE_PYTHON_ENV")
 
-#    # As much as I would like to do this, it breaks on Windows. Who knows why?
-#    if (isWindows()) {
-#        output <- ADD(output, "CONDA_DLL_SEARCH_MODIFICATION_ENABLE")
-#
-#        # Motivated by ContinuumIO/anaconda-issues#10576, mimic the effect of
-#        # activation, at least for dynamic linking.
-#        Sys.setenv(CONDA_DLL_SEARCH_MODIFICATION_ENABLE=1)
-#    }
+    # Activating the conda environment, to set up the proper PATH (especially
+    # on Windows, where this is used for DLL look-up).
+    output <- .activate_condaenv(output, envpath)
 
     output
+}
+
+#' @importFrom basilisk.utils isWindows getBasiliskDir
+.activate_condaenv <- function(listing, envpath) {
+    if (isWindows()) {
+        act.bat <- file.path(getBasiliskDir(), "condabin", "conda.bat")
+        act.cmd <- c(shQuote(act.bat), "activate")
+        if (!is.null(envpath)) {
+            act.cmd <- c(act.cmd, shQuote(envpath))
+        }
+        act.cmd <- c(act.cmd, "&&", "SET")
+    } else {
+        profile.sh <- file.path(getBasiliskDir(), "etc", "profile.d", "conda.sh")
+        act.cmd <- c(".", shQuote(profile.sh), "&&", "conda", "activate")
+        if (!is.null(envpath)) {
+            act.cmd <- c(act.cmd, shQuote(envpath))
+        }
+        act.cmd <- c(act.cmd, "&&", "printenv")
+    }
+
+    # Identifying all environment variables after activation.
+    # Note that this does NOT persist!
+    activated <- system(paste(act.cmd, collapse=" "), intern=TRUE)
+    activated <- activated[grepl("=", activated)]
+    actvar <- sub(".*=", "", activated)
+    names(actvar) <- sub("=.*", "", activated)
+
+    existing <- Sys.getenv()
+    extvar <- existing
+    names(extvar) <- names(existing)
+
+    if (isWindows()) {
+        # Case insensitive on Windows. Hey, I don't make the rules.
+        names(extvar) <- toupper(names(extvar))
+        names(actvar) <- toupper(names(actvar))
+    }
+
+    # Manually applying changes to the environment variables while recording 
+    # their previous state so that we can unset them appropriately.
+    needs.setting <- setdiff(names(actvar), names(extvar))
+    for (i in needs.setting) {
+        listing[[i]] <- NA
+    }
+
+    needs.replacing <- intersect(names(extvar), names(actvar))
+    needs.replacing <- needs.replacing[extvar[needs.replacing]!=actvar[needs.replacing]]
+    for (i in needs.replacing) {
+        listing[[i]] <- extvar[[i]]
+    }
+
+    to.change <- union(needs.replacing, needs.setting)
+    if (length(to.change)) {
+        do.call(Sys.setenv, as.list(actvar[to.change]))
+    }
+
+    needs.unsetting <- setdiff(names(extvar), names(actvar))
+    for (i in needs.unsetting) {
+        listing[[i]] <- extvar[[i]]
+    }
+    Sys.unsetenv(needs.unsetting)
+
+    listing
 }
 
 .restore_env_vars <- function(listing) {
