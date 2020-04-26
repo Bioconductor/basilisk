@@ -90,7 +90,10 @@ useBasiliskEnv <- function(envpath, dry=FALSE, required=TRUE) {
 
 .coerce_env_vars <- function(envpath=NULL) {
     ADD <- function(listing, var) {
-        listing[[var]] <- Sys.getenv(var, unset=NA)
+        previous <- Sys.getenv(var, unset=NA)
+        if (!is.na(previous)) {
+            listing[[var]] <- previous
+        }
         listing
     }
 
