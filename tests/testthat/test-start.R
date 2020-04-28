@@ -98,8 +98,6 @@ preloaded_check <- function(version, envir, ...) {
 #################################################################
 
 test_that("basilisk directly loads Python when possible", {
-    skip_on_os('windows') # don't know why this doesn't load Python directly... don't care.
-
     FUN <- function(version, envir) {
         library(basilisk)
         library(testthat)

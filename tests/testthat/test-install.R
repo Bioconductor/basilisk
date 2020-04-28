@@ -27,7 +27,6 @@ test_that("setupBasiliskEnv obtains the correct version of the packages", {
 })
 
 test_that("setupBasiliskEnv will install Python 2.7 if requested", {
-    skip_on_os("windows") # sometimes this works, sometimes it doesn't. Who knows?
     unlink(target, recursive=TRUE)
     setupBasiliskEnv(target, "python=2.7")
     env.py <- basilisk.utils::getPythonBinary(target)
@@ -36,7 +35,6 @@ test_that("setupBasiliskEnv will install Python 2.7 if requested", {
 })
 
 test_that("setupBasiliskEnv works with pip-hosted packages", {
-    skip_on_os("windows") # Problems with PATH and finding the right SSL libraries.
     unlink(target, recursive=TRUE)
     expect_true(setupBasiliskEnv(target, old.pandas.deps, pip=old.pandas))
 
