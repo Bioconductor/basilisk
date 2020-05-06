@@ -23,6 +23,7 @@ Developers should avoid naming persistent variables with the \code{.basilisk} pr
 These are reserved for internal use and may be overwritten by later calls to \code{\link{basiliskRun}}.
 }
 \examples{
+# Using the base environment for brevity.
 cl <- basiliskStart(NULL)
 basiliskRun(proc=cl, function() {
     assign(x="snake.in.my.shoes", 1, envir=basilisk::findPersistentEnv())

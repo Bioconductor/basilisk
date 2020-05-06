@@ -55,7 +55,7 @@ the only reason that pinned dependencies are not mandatory is because some depen
 requiring some manual pruning of the output of \code{conda env export}.
 
 It is possible to specify a different version of Python in \code{packages} by supplying, e.g., \code{"python=2.7.10"}.
-If no Python version is listed, the version in the Anaconda installation is used by default.
+If no Python version is listed, the version in the base conda installation is used by default.
 }
 
 \examples{

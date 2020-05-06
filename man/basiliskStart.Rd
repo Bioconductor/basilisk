@@ -24,7 +24,7 @@ basiliskRun(
 
 Alternatively, a string specifying the path to an environment, though this should only be used for testing purposes.
 
-Alternatively, \code{NULL} to indicate that the base environment of the \pkg{basilisk} Anaconda instance should be used.}
+Alternatively, \code{NULL} to indicate that the base conda installation should be used as the environment.}
 
 \item{fork}{Logical scalar indicating whether forking should be performed on non-Windows systems, see \code{\link{getBasiliskFork}}.
 If \code{FALSE}, a new worker process is created using communication over sockets.}
@@ -86,7 +86,7 @@ This is the least efficient as it needs to transfer data over sockets but is gua
 Developers can control these choices directly by explicitly specifying \code{shared} and \code{fork},
 while users can control them indirectly with \code{\link{setBasiliskFork}} and related functions.
 
-If the Anaconda installation provided with \pkg{basilisk} satisfies the requirements of the client package,
+If the base conda installation provided with \pkg{basilisk} satisfies the requirements of the client package,
 it is strongly recommended to set \code{env=NULL} rather than constructing a separate environment.
 This is obviously easier but it is also more efficient as it increases the chance of multiple \pkg{basilisk} clients being able to share a common Python instance within the same R session.
 }
@@ -96,7 +96,7 @@ This is obviously easier but it is also more efficient as it increases the chanc
 In \code{basiliskRun}, there is no guarantee that \code{fun} has access to the environment in which \code{basiliskRun} is called.
 This has a number of consequences for the type of code that can be written inside \code{fun}:
 \itemize{
-\item Functions or variables from non-base packages used inside \code{fun} should be prefixed with the package namespace, or the package itself should be reloaded inside \code{fun}.
+\item Functions or variables from non-base R packages used inside \code{fun} should be prefixed with the package namespace, or the package itself should be reloaded inside \code{fun}.
 \item Any other variables used inside \code{fun} should be explicitly passed as an argument.
 Developers should not rely on closures to capture variables in the calling environment of \code{basiliskRun}.
 \item Relevant global variables should be reset inside \code{fun}.
@@ -109,37 +109,42 @@ This mostly refers to objects that contain custom pointers to memory, e.g., file
 
 If the specified \pkg{basilisk} environment is not present and \code{env} is a \linkS4class{BasiliskEnvironment} object,
 the environment will be created upon first use of \code{basiliskStart}.
-If the Anaconda instance is not present, it will also be installed upon first use of \code{basiliskStart}.
+If the base conda installation is not present, it will also be installed upon first use of \code{basiliskStart}.
 The motivation for this is to avoid portability problems with hard-coded paths when \pkg{basilisk} is provided as a binary.
 
-Both Anaconda and the environments will be placed in an external user-writable directory,
-the location of which can be changed by setting the \code{BASILISK_EXTERNAL_DIR} variable.
+By default, both the base conda installation and the environments will be placed in an external user-writable directory.
+The location of this directory can be changed by setting the \code{BASILISK_EXTERNAL_DIR} environment variable to the desired path.
 This may occasionally be necessary if the file path to the default location is too long for Windows,
-or if the default path has spaces that break the Anaconda installer.
+or if the default path has spaces that break the Miniconda installer.
 
-Advanced users may consider turning on \code{BASILISK_USE_SYSTEM_DIR} for installations from source,
-which will place both Anaconda and the environments in the R system directory.
+Advanced users may consider setting the environment variable \code{BASILISK_USE_SYSTEM_DIR} to 1 
+when installing \pkg{basilisk} and its client packages from source.
+which will place both the base installation and the environments in the R system directory. 
 This simplifies permission management and avoids duplication in enterprise settings.
 }
 
 \examples{
-# Loading the base environment:
-cl <- basiliskStart(NULL)
-basiliskRun(proc=cl, function() { 
-    X <- reticulate::import("pandas"); X$`__version__` 
-})
-basiliskStop(cl)
-
-# Co-exists with our other environment:
-tmploc <- file.path(tempdir(), "my_package_C")
-setupBasiliskEnv(tmploc, c('pandas=0.24.1',
-    "python-dateutil=2.7.1", "pytz=2018.7"))
+# Loading one environment:
+tmploc <- file.path(tempdir(), "my_package_B")
+setupBasiliskEnv(tmploc, c('pandas=0.25.1',
+    "python-dateutil=2.8.0", "pytz=2019.3"))
 
 cl <- basiliskStart(tmploc)
 basiliskRun(proc=cl, function() { 
     X <- reticulate::import("pandas"); X$`__version__` 
 })
 basiliskStop(cl)
+
+# Co-exists with our other environment:
+tmploc2 <- file.path(tempdir(), "my_package_C")
+setupBasiliskEnv(tmploc2, c('pandas=0.24.1',
+    "python-dateutil=2.7.1", "pytz=2018.7"))
+
+cl2 <- basiliskStart(tmploc2)
+basiliskRun(proc=cl2, function() { 
+    X <- reticulate::import("pandas"); X$`__version__` 
+})
+basiliskStop(cl2)
 
 # Persistence of variables is possible within a Start/Stop pair.
 cl <- basiliskStart(tmploc)

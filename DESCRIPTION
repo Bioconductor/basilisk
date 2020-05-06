@@ -1,6 +1,6 @@
 Package: basilisk
-Version: 1.1.1
-Date: 2020-04-28
+Version: 1.1.2
+Date: 2020-05-06
 Title: Freezing Python Versions Inside Bioconductor Packages
 Authors@R: c(person("Aaron", "Lun", role=c("aut", "cre", "cph"),
         email="infinite.monkeys.with.keyboards@gmail.com"),
@@ -22,7 +22,6 @@ Description:
     This aims to provide a consistent Python version that can be used reliably by Bioconductor packages.
     Module versions are also controlled to guarantee consistent behavior on different user systems.
 License: GPL-3
-Workflow: true
 RoxygenNote: 7.1.0
 StagedInstall: false
 VignetteBuilder: knitr
