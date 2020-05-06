@@ -52,7 +52,7 @@
 #'
 #' @export
 #' @importFrom reticulate py_available use_condaenv 
-#' @importFrom basilisk.utils getBasiliskDir getPythonBinary isWindows
+#' @importFrom basilisk.utils getBasiliskDir getPythonBinary 
 useBasiliskEnv <- function(envpath, dry=FALSE, required=TRUE) {
     envpath <- normalizePath(envpath, mustWork=TRUE)
     if (dry) {
@@ -63,8 +63,12 @@ useBasiliskEnv <- function(envpath, dry=FALSE, required=TRUE) {
         }
     }
 
+    if (!required && py_available()) {
+        return(list(loaded=.same_as_loaded(envpath), previous=list()))
+    }
+
     previous <- .coerce_env_vars(envpath)
-    use_condaenv(envpath, required=required)
+    use_condaenv(envpath, required=TRUE)
     same <- .same_as_loaded(envpath)
 
     # Make life a bit easier and restore old environment variables
