@@ -21,6 +21,7 @@
 #' \code{\link{basiliskRun}}, where this function can be used.
 #' 
 #' @examples
+#' # Using the base environment for brevity.
 #' cl <- basiliskStart(NULL)
 #' basiliskRun(proc=cl, function() {
 #'     assign(x="snake.in.my.shoes", 1, envir=basilisk::findPersistentEnv())

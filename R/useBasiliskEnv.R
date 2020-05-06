@@ -40,7 +40,8 @@
 #' @examples
 #' # This may return TRUE or FALSE, depending on the available Python.
 #' tmploc <- file.path(tempdir(), "my_package_B")
-#' setupBasiliskEnv(tmploc, 'pandas==0.25.1')
+#' setupBasiliskEnv(tmploc, c('pandas==0.25.1',
+#'     "python-dateutil=2.8.0", "pytz=2019.3"))
 #' useBasiliskEnv(tmploc, required=FALSE) 
 #'
 #' # This will return FALSE, as the available Python is already set.
