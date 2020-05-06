@@ -44,7 +44,7 @@
 #' requiring some manual pruning of the output of \code{conda env export}.
 #'
 #' It is possible to specify a different version of Python in \code{packages} by supplying, e.g., \code{"python=2.7.10"}.
-#' If no Python version is listed, the version in the Anaconda installation is used by default.
+#' If no Python version is listed, the version in the base conda installation is used by default.
 #'
 #' @examples
 #' tmploc <- file.path(tempdir(), "my_package_A")
@@ -55,7 +55,7 @@
 #' \code{\link{listCorePackages}}, for a list of core Python packages with pinned versions.
 #'
 #' @export
-#' @importFrom basilisk.utils getBasiliskDir installAnaconda getCondaBinary getPythonBinary isWindows getLockFile
+#' @importFrom basilisk.utils getBasiliskDir installMiniconda getCondaBinary getPythonBinary isWindows getLockFile
 #' @importFrom reticulate conda_install
 setupBasiliskEnv <- function(envpath, packages, pip=NULL) {
     lock.file <- getLockFile(envpath)
@@ -73,7 +73,7 @@ setupBasiliskEnv <- function(envpath, packages, pip=NULL) {
     packages <- sub("==", "=", packages)
     .check_versions(packages, "=")
 
-    installAnaconda() # no-ops if it's already there.
+    installMiniconda() # no-ops if it's already there.
 
     previous <- .coerce_env_vars()
     on.exit(.restore_env_vars(previous), add=TRUE)
