@@ -1,7 +1,7 @@
 # Setting up common variables.
 
-core.set <- listCorePackages()
-test.pandas <- core.set$full[core.set$package=="pandas"]
+test.pandas <- "pandas==0.25.1"
+test.pandas.deps <- c("python-dateutil==2.8.0", "pytz==2019.3")
 
 old.pandas <- "pandas==0.24.1"
 old.pandas.deps <- c("python-dateutil==2.7.1", "pytz==2018.7")

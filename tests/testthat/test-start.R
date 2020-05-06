@@ -10,10 +10,11 @@ library(callr)
 new.version <- sub(".*==", "", test.pandas)
 old.version <- sub(".*==", "", old.pandas)
 
-tA <- NULL # use the base environment.
+tA <- file.path(client.dir, "my_package_A") 
+setupBasiliskEnv(tA, c(test.pandas, test.pandas.deps))
+
 tB <- file.path(client.dir, 'my_package_B')
 setupBasiliskEnv(tB, c(old.pandas, old.pandas.deps))
-setupBasiliskEnv(file.path(client.dir, 'occupier'), c(old.pandas, old.pandas.deps)) # for use in preloaded_check.
 
 #################################################################
 # Defining a helper function to check for correct persistence.
@@ -80,7 +81,7 @@ preloaded_check <- function(version, envir, ...) {
     # Checking what happens when Python is already loaded.
     library(basilisk)
     library(testthat)
-    useBasiliskEnv("install-test-client/occupier")
+    useBasiliskEnv(basilisk.utils::getBasiliskDir())
 
     proc <- basiliskStart(envir, ...)
     test.version <- basiliskRun(proc, fun=function() {

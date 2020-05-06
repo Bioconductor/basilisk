@@ -1,7 +1,6 @@
 # This checks that the version-controlling behavior of setupBasiliskEnv is correct.
 # library(testthat); library(basilisk); source("setup.R"); source("test-install.R"); 
 
-base.py <- basilisk.utils::getPythonBinary(basilisk.utils::getBasiliskDir())
 target <- file.path(client.dir, "thingo")
 env.py <- basilisk.utils::getPythonBinary(target)
 
@@ -11,13 +10,14 @@ test_that("setupBasiliskEnv refuses to work without all specified versions", {
 })
 
 test_that("setupBasiliskEnv obtains the correct version of the packages", {
-    unlink(target, recursive=TRUE)
-    expect_true(setupBasiliskEnv(target, c(old.pandas, old.pandas.deps)))
-
-    incoming <- basilisk:::.basilisk_freeze(base.py)
+    unlink(target, recursive=TRUE, force=TRUE)
+    expect_true(setupBasiliskEnv(target, c(test.pandas, test.pandas.deps)))
+    incoming <- basilisk:::.basilisk_freeze(env.py)
     expect_true(test.pandas %in% incoming)
-    expect_true(!any(old.pandas.deps %in% incoming))
+    expect_true(all(test.pandas.deps %in% incoming))
 
+    unlink(target, recursive=TRUE, force=TRUE)
+    expect_true(setupBasiliskEnv(target, c(old.pandas, old.pandas.deps)))
     incoming <- basilisk:::.basilisk_freeze(env.py)
     expect_true(old.pandas %in% incoming)
     expect_true(all(old.pandas.deps %in% incoming))

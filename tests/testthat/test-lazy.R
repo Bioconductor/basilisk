@@ -1,8 +1,7 @@
-# This tests the lazy installation of an Anaconda installation via installAnaconda().
-# We put this here as it depends on an existing installation of Anaconda.
+# This tests the lazy installation of Miniconda. 
 # library(testthat); library(basilisk); source("test-lazy.R")
 
-test_that("lazy Anaconda installation works as expected", {
+test_that("lazy Miniconda installation works as expected", {
     skip_on_os("windows") # avoid problems with long paths on Windows.
 
     tmp <- tempfile()
@@ -18,13 +17,13 @@ test_that("lazy Anaconda installation works as expected", {
     dir.create(placeholder, showWarnings=FALSE)
     expect_true(file.exists(placeholder))
 
-    expect_true(basilisk.utils::installAnaconda())
+    expect_true(basilisk.utils::installMiniconda())
     target <- file.path(tmp, packageVersion("basilisk"), "0")
     expect_true(file.exists(target))
     expect_false(file.exists(placeholder))
 
     # Skips the next evaluation, as we've already created it.
-    expect_false(basilisk.utils::installAnaconda())
+    expect_false(basilisk.utils::installMiniconda())
     expect_true(file.exists(target))
 
     Sys.setenv(BASILISK_EXTERNAL_DIR=old.2)
