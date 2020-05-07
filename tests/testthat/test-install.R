@@ -27,7 +27,7 @@ test_that("setupBasiliskEnv obtains the correct version of the packages", {
 })
 
 test_that("setupBasiliskEnv will install Python 2.7 if requested", {
-    unlink(target, recursive=TRUE)
+    unlink(target, recursive=TRUE, force=TRUE)
     setupBasiliskEnv(target, "python=2.7")
     env.py <- basilisk.utils::getPythonBinary(target)
     py.ver <- system2(env.py, "--version", stderr=TRUE, stdout=TRUE)
@@ -35,7 +35,7 @@ test_that("setupBasiliskEnv will install Python 2.7 if requested", {
 })
 
 test_that("setupBasiliskEnv works with pip-hosted packages", {
-    unlink(target, recursive=TRUE)
+    unlink(target, recursive=TRUE, force=TRUE)
     expect_true(setupBasiliskEnv(target, old.pandas.deps, pip=old.pandas))
 
     incoming <- basilisk:::.basilisk_freeze(env.py)
