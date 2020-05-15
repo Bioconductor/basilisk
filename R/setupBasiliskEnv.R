@@ -67,7 +67,7 @@ setupBasiliskEnv <- function(envpath, packages, pip=NULL) {
 
         warning(sprintf("replacing incomplete conda environment at '%s'", envpath))
         unlink(envpath, recursive=TRUE, force=TRUE)
-        unlink(lock.file)
+        unlink(lock.file, force=TRUE)
     }
 
     packages <- sub("==", "=", packages)
@@ -104,7 +104,7 @@ setupBasiliskEnv <- function(envpath, packages, pip=NULL) {
         }
     }
 
-    unlink(lock.file)
+    unlink(lock.file, force=TRUE)
     TRUE 
 }
 
