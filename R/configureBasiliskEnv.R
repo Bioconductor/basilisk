@@ -34,7 +34,7 @@
 #'
 #' @export
 #' @importFrom methods is
-#' @importFrom basilisk.utils useSystemDir getEnvironmentDir
+#' @importFrom basilisk.utils useSystemDir getEnvironmentDir dir.create2
 configureBasiliskEnv <- function(src="R/basilisk.R") {
     if (!useSystemDir()) {
         return(invisible(NULL))
@@ -63,8 +63,9 @@ configureBasiliskEnv <- function(src="R/basilisk.R") {
     # into the (conceptually, if not actually, read-only) base installation.
     old <- Sys.getenv("CONDA_PKGS_DIRS")
     on.exit(Sys.setenv(CONDA_PKGS_DIRS=old))
+
     new.pkg.dir <- file.path(envdir, "_pkgs")
-    dir.create(new.pkg.dir, showWarnings=FALSE, recursive=TRUE)
+    dir.create2(new.pkg.dir)
     Sys.setenv(CONDA_PKGS_DIRS=normalizePath(new.pkg.dir))
 
     # Actually creating the environments.

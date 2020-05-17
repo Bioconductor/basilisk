@@ -55,7 +55,8 @@
 #' \code{\link{listCorePackages}}, for a list of core Python packages with pinned versions.
 #'
 #' @export
-#' @importFrom basilisk.utils getBasiliskDir installMiniconda getCondaBinary getPythonBinary isWindows getLockFile
+#' @importFrom basilisk.utils getBasiliskDir installMiniconda getCondaBinary 
+#' getPythonBinary isWindows getLockFile unlink2 dir.create2
 #' @importFrom reticulate conda_install
 setupBasiliskEnv <- function(envpath, packages, pip=NULL) {
     lock.file <- getLockFile(envpath)
@@ -66,8 +67,8 @@ setupBasiliskEnv <- function(envpath, packages, pip=NULL) {
         }
 
         warning(sprintf("replacing incomplete conda environment at '%s'", envpath))
-        unlink(envpath, recursive=TRUE, force=TRUE)
-        unlink(lock.file, force=TRUE)
+        unlink2(envpath)
+        unlink2(lock.file)
     }
 
     packages <- sub("==", "=", packages)
@@ -89,7 +90,7 @@ setupBasiliskEnv <- function(envpath, packages, pip=NULL) {
         version <- sub("^Python ", "", system2(py.cmd, "--version", stdout=TRUE))
     }
 
-    dir.create(envpath, recursive=TRUE) 
+    dir.create2(envpath)
     write(file=lock.file, x=character(0))
     
     conda_install(envname=normalizePath(envpath), conda=conda.cmd, 
@@ -104,7 +105,7 @@ setupBasiliskEnv <- function(envpath, packages, pip=NULL) {
         }
     }
 
-    unlink(lock.file, force=TRUE)
+    unlink2(lock.file)
     TRUE 
 }
 
