@@ -6,9 +6,10 @@ Authors@R: c(person("Aaron", "Lun", role=c("aut", "cre", "cph"),
         email="infinite.monkeys.with.keyboards@gmail.com"),
         person("Vince", "Carey", role="ctb"))
 Imports: 
-    reticulate,
-    parallel,
+    utils,
     methods,
+    parallel,
+    reticulate,
     basilisk.utils
 Suggests:
     knitr,

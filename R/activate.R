@@ -33,6 +33,7 @@
     output
 }
 
+#' @importFrom utils getFromNamespace
 #' @importFrom basilisk.utils isWindows getBasiliskDir
 .activate_condaenv <- function(listing, envpath) {
     if (isWindows()) {
@@ -51,7 +52,7 @@
 
     # Couldn't be bothered to reimplement the stuff in
     # initDefaultClusterOptions, so here we are.
-    p <- parallel:::defaultClusterOptions$port
+    p <- getFromNamespace(x="defaultClusterOptions", "parallel")$port
 
     # Identifying all environment variables after activation.
     con.cmd <- paste(sprintf("con <- socketConnection(port=%i, open='wb', blocking=TRUE)", p),
