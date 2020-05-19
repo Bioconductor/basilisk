@@ -115,7 +115,7 @@ The motivation for this is to avoid portability problems with hard-coded paths w
 By default, both the base conda installation and the environments will be placed in an external user-writable directory.
 The location of this directory can be changed by setting the \code{BASILISK_EXTERNAL_DIR} environment variable to the desired path.
 This may occasionally be necessary if the file path to the default location is too long for Windows,
-or if the default path has spaces that break the Miniconda installer.
+or if the default path has spaces that break the Miniconda/Anaconda installer.
 
 Advanced users may consider setting the environment variable \code{BASILISK_USE_SYSTEM_DIR} to 1 
 when installing \pkg{basilisk} and its client packages from source.

@@ -13,9 +13,9 @@ A data.frame containing the \code{full}, a versioned package string, and \code{p
 List the set of core Python packages (and their version numbers) that are provided by \pkg{basilisk}.
 }
 \details{
-The composition of the core list is determined by the Miniconda list for Python 3.7 (\url{https://docs.anaconda.com/anaconda/packages/pkg-docs/}).
-Note that there are subtle differences between the package lists for different operating systems;
-developers of clients of \pkg{basilisk} should avoid such OS-specific core packages.
+This is provided for informational purposes only;
+developers should not expect the same core packages to be present across operating systems.
+\code{?\link{installConda}} has some more comments on the version of the conda installer used for each OS.
 }
 \examples{
 listCorePackages()
