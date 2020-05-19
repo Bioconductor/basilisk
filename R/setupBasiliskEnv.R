@@ -55,7 +55,7 @@
 #' \code{\link{listCorePackages}}, for a list of core Python packages with pinned versions.
 #'
 #' @export
-#' @importFrom basilisk.utils getBasiliskDir installMiniconda getCondaBinary 
+#' @importFrom basilisk.utils getBasiliskDir installConda getCondaBinary 
 #' getPythonBinary isWindows getLockFile unlink2 dir.create2
 #' @importFrom reticulate conda_install
 setupBasiliskEnv <- function(envpath, packages, pip=NULL) {
@@ -74,7 +74,7 @@ setupBasiliskEnv <- function(envpath, packages, pip=NULL) {
     packages <- sub("==", "=", packages)
     .check_versions(packages, "=")
 
-    installMiniconda() # no-ops if it's already there.
+    installConda() # no-ops if it's already there.
 
     previous <- .coerce_env_vars()
     on.exit(.restore_env_vars(previous), add=TRUE)

@@ -15,9 +15,9 @@
 #' listCorePackages()
 #' 
 #' @export
-#' @importFrom basilisk.utils getBasiliskDir installMiniconda getPythonBinary
+#' @importFrom basilisk.utils getBasiliskDir installConda getPythonBinary
 listCorePackages <- function() {
-    installMiniconda()
+    installConda()
     out <- .basilisk_freeze(getPythonBinary(getBasiliskDir()))
     data.frame(full=out, package=.full2pkg(out), stringsAsFactors=FALSE)
 }
