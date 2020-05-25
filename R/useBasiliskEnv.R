@@ -23,14 +23,16 @@
 #' setupBasiliskEnv(tmploc, c('pandas==0.25.1',
 #'     "python-dateutil=2.8.0", "pytz=2019.3"))
 #'
-#' # This may or may not work, depending on whether Python
+#' # This may or may not work, depending on whether a Python instance
 #' # has already been loaded into this R session.
 #' try(useBasiliskEnv(tmploc))
 #'
 #' # This will definitely not work, as the available Python is already set.
 #' baseloc <- basilisk.utils::getBasiliskDir()
 #' status <- try(useBasiliskEnv(baseloc))
-#' stopifnot(is(status, "try-error"))
+#'
+#' # ... except on Windows, which somehow avoids tripping the error.
+#' stopifnot(is(status, "try-error") || basilisk.utils::isWindows())
 #'
 #' @seealso
 #' \code{\link{basiliskStart}}, for how these \pkg{basilisk} environments should be used.
