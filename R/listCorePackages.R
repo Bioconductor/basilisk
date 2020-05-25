@@ -1,34 +1,42 @@
-#' List core packages
+#' List packages
 #'
-#' List the set of core Python packages (and their version numbers) that are provided by \pkg{basilisk}.
+#' List the set of Python packages (and their version numbers) that are installed in an conda environment.
+#'
+#' @inheritParams basiliskStart
 #'
 #' @details
 #' This is provided for informational purposes only;
 #' developers should not expect the same core packages to be present across operating systems.
-#' \code{?\link{installConda}} has some more comments on the version of the conda installer used for each OS.
+#' \code{?\link{installConda}} has some more comments on the version of the conda installer used for each operating system.
 #'
 #' @author Aaron Lun
 #'
 #' @return A data.frame containing the \code{full}, a versioned package string, and \code{package}, the package name.
 #' 
 #' @examples
-#' listCorePackages()
+#' listPackages()
 #' 
 #' @export
-#' @importFrom basilisk.utils getBasiliskDir installConda getPythonBinary
-listCorePackages <- function() {
-    installConda()
-    out <- .basilisk_freeze(getPythonBinary(getBasiliskDir()))
+listPackages <- function(env=NULL) {
+    envpath <- .obtain_env_path(env)
+    out <- .basilisk_freeze(envpath)
     data.frame(full=out, package=.full2pkg(out), stringsAsFactors=FALSE)
 }
 
-.basilisk_freeze <- function(py.cmd) {
-    previous <- .coerce_env_vars()
-    on.exit(.restore_env_vars(previous))
-    system2(py.cmd, c("-m", "pip", "freeze"), stdout=TRUE)
+#' @importFrom basilisk.utils activateEnvironment deactivateEnvironment getPythonBinary
+.basilisk_freeze <- function(envpath) {
+    previous <- activateEnvironment(envpath)
+    on.exit(deactivateEnvironment(previous))
+    system2(getPythonBinary(envpath), c("-m", "pip", "freeze"), stdout=TRUE)
 }
-
 
 .full2pkg <- function(packages) {
     sub("[><=]+.*", "", packages)
+}
+
+#' @export
+#' @rdname listPackages
+listCorePackages <- function() {
+    .Deprecated(new="listPackages")
+    listPackages()
 }
