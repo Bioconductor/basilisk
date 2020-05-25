@@ -4,25 +4,15 @@
 \alias{useBasiliskEnv}
 \title{Use \pkg{basilisk} environments}
 \usage{
-useBasiliskEnv(envpath, dry = FALSE, required = TRUE)
+useBasiliskEnv(envpath)
 }
 \arguments{
 \item{envpath}{String containing the path to the \pkg{basilisk} environment to use.}
-
-\item{dry}{Logical scalar indicating whether only the directory should be returned without loading the environment.}
-
-\item{required}{Logical scalar indicating whether an error should be raised if the requested environment cannot be found.}
 }
 \value{
 The function will attempt to load the specified \pkg{basilisk} environment into the R session,
 possibly with the modification of some environment variables (see Details).
-
-It returns a list containing:
-\itemize{
-\item \code{loaded}, a logical scalar indicating whether the Python version in \code{envpath} was correctly loaded.
-\item \code{previous}, a list of environment variables with their values prior to running this function.
-}
-If \code{dry=TRUE}, only the logical scalar in \code{loaded} is returned directly.
+A \code{NULL} is invisibly returned.
 }
 \description{
 Use \pkg{basilisk} environments for isolated execution of Python code with appropriate versions of all Python packages.
@@ -31,30 +21,22 @@ Use \pkg{basilisk} environments for isolated execution of Python code with appro
 It is unlikely that developers should ever need to call \code{\link{useBasiliskEnv}} directly.
 Rather, this interaction should be automatically handled by \code{\link{basiliskStart}}.
 
-Direct use of this function with \code{dry=FALSE} will modify some environment variables for the current R session:
-\itemize{
-\item The \code{"PYTHONPATH"} environment variable is unset.
-This is a deliberate choice to avoid compromising the version guarantees if \code{\link{import}} is allowed to search other locations beyond the specified \pkg{basilisk} environment.
-\item The \code{"RETICULATE_PYTHON"} environment variable is unset.
-This would otherwise override any choice of Python, including explicit specification via \code{\link{use_condaenv}}!
-\item Certain conda-related variables are modified to mimic activation of the desired conda environment in \code{envpath}.
-Actual activation seems to require modification of various files (e.g., \code{.bashrc}) which is undesirable.
-}
-
-If \code{dry=TRUE}, no environment variables are modified.
-Similarly, if the loading of the environment in \code{envpath} was not successful (i.e., \code{loaded} is \code{FALSE}), no environment variables are modified and \code{previous} is an empty list.
-Further note that \code{\link{basiliskStop}} will restore these environment variables to their state prior to running \code{\link{basiliskStart}}.
+By default, this function will modify a suite of environment variables as a side effect
+- see \code{\link{activateEnvironment}} for details.
 }
 \examples{
-# This may return TRUE or FALSE, depending on the available Python.
 tmploc <- file.path(tempdir(), "my_package_B")
 setupBasiliskEnv(tmploc, c('pandas==0.25.1',
     "python-dateutil=2.8.0", "pytz=2019.3"))
-useBasiliskEnv(tmploc, required=FALSE) 
 
-# This will return FALSE, as the available Python is already set.
+# This may or may not work, depending on whether Python
+# has already been loaded into this R session.
+try(useBasiliskEnv(tmploc))
+
+# This will definitely not work, as the available Python is already set.
 baseloc <- basilisk.utils::getBasiliskDir()
-useBasiliskEnv(baseloc, required=FALSE)
+status <- try(useBasiliskEnv(baseloc))
+stopifnot(is(status, "try-error"))
 
 }
 \seealso{
