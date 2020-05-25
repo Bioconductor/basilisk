@@ -76,8 +76,8 @@ setupBasiliskEnv <- function(envpath, packages, pip=NULL) {
 
     installConda() # no-ops if it's already there.
 
-    previous <- .coerce_env_vars()
-    on.exit(.restore_env_vars(previous), add=TRUE)
+    previous <- activateEnvironment()
+    on.exit(deactivateEnvironment(previous), add=TRUE)
 
     base.dir <- getBasiliskDir()
     conda.cmd <- getCondaBinary(base.dir)

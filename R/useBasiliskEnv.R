@@ -3,37 +3,25 @@
 #' Use \pkg{basilisk} environments for isolated execution of Python code with appropriate versions of all Python packages.
 #' 
 #' @param envpath String containing the path to the \pkg{basilisk} environment to use. 
-#' @param dry Logical scalar indicating whether only the directory should be returned without loading the environment.
 #' @param required Logical scalar indicating whether an error should be raised if the requested environment cannot be found.
 #' 
 #' @return 
 #' The function will attempt to load the specified \pkg{basilisk} environment into the R session,
 #' possibly with the modification of some environment variables (see Details).
-#'
-#' It returns a list containing:
-#' \itemize{
-#' \item \code{loaded}, a logical scalar indicating whether the Python version in \code{envpath} was correctly loaded.
-#' \item \code{previous}, a list of environment variables with their values prior to running this function.
-#' }
-#' If \code{dry=TRUE}, only the logical scalar in \code{loaded} is returned directly.
+#' It returns a logical scalar indicating whether the Python version in \code{envpath} was correctly loaded.
 #'
 #' @details
 #' It is unlikely that developers should ever need to call \code{\link{useBasiliskEnv}} directly.
 #' Rather, this interaction should be automatically handled by \code{\link{basiliskStart}}.
 #' 
-#' Direct use of this function with \code{dry=FALSE} will modify some environment variables for the current R session:
+#' By default, this function will modify a suite of environment variables as a side effect
+#' - see \code{\link{activateEnvironment}} for details.
+#' Exceptions are:
 #' \itemize{
-#' \item The \code{"PYTHONPATH"} environment variable is unset.
-#' This is a deliberate choice to avoid compromising the version guarantees if \code{\link{import}} is allowed to search other locations beyond the specified \pkg{basilisk} environment.
-#' \item The \code{"RETICULATE_PYTHON"} environment variable is unset.
-#' This would otherwise override any choice of Python, including explicit specification via \code{\link{use_condaenv}}!
-#' \item Certain conda-related variables are modified to mimic activation of the desired conda environment in \code{envpath}.
-#' Actual activation seems to require modification of various files (e.g., \code{.bashrc}) which is undesirable.
+#' \item \code{required=FALSE} and any Python instance is already loaded into the current R session.
+#' \item the loading of the environment in \code{envpath} was not successful (i.e., \code{loaded} is \code{FALSE}).
 #' }
-#' 
-#' If \code{dry=TRUE}, no environment variables are modified.
-#' Similarly, if the loading of the environment in \code{envpath} was not successful (i.e., \code{loaded} is \code{FALSE}), no environment variables are modified and \code{previous} is an empty list.
-#' Further note that \code{\link{basiliskStop}} will restore these environment variables to their state prior to running \code{\link{basiliskStart}}.
+#' In these cases, no modification of environment variables is performed.
 #'
 #' @author Aaron Lun
 #' 
@@ -54,7 +42,8 @@
 #' @export
 #' @importFrom reticulate py_available use_condaenv 
 #' @importFrom basilisk.utils getBasiliskDir getPythonBinary 
-useBasiliskEnv <- function(envpath, dry=FALSE, required=TRUE) {
+#' activateEnvironment deactivateEnvironment
+useBasiliskEnv <- function(envpath, required=TRUE) {
     envpath <- normalizePath(envpath, mustWork=TRUE)
     if (dry) {
         if (!py_available()) {
@@ -65,21 +54,20 @@ useBasiliskEnv <- function(envpath, dry=FALSE, required=TRUE) {
     }
 
     if (!required && py_available()) {
-        return(list(loaded=.same_as_loaded(envpath), previous=list()))
+        return(.same_as_loaded(envpath))
     }
 
-    previous <- .coerce_env_vars(envpath)
+    previous <- activateEnvironment(envpath)
     use_condaenv(envpath, required=TRUE)
     same <- .same_as_loaded(envpath)
 
     # Make life a bit easier and restore old environment variables
     # if the current version was not successfully loaded.
     if (!same) {
-        .restore_env_vars(previous)
-        previous <- list()
+        deactivateEnvironment(previous)
     }
 
-    list(loaded=same, previous=previous)
+    same
 }
 
 #' @importFrom reticulate py_config 
