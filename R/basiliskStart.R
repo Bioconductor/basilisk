@@ -162,16 +162,29 @@
 basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared()) {
     envpath <- .obtain_env_path(env)
 
-    if (shared && useBasiliskEnv(envpath, required=FALSE)) { # Seeing if we can just load it successfully.
-        proc <- new.env()
-    } else {
-        if (fork && !isWindows() && (!py_available() || .same_as_loaded(envpath))) {
-            proc <- makeForkCluster(1)
+    if (shared) {
+        ok <- FALSE
+        if (py_available()) {
+            if (.same_as_loaded(envpath)) {
+                ok <- TRUE
+            }
         } else {
-            proc <- makePSOCKcluster(1)
+            useBasiliskEnv(envpath) 
+            ok <- TRUE
         }
-        clusterCall(proc, useBasiliskEnv, envpath=envpath)
+
+        if (ok) {
+            return(new.env())
+        }
+    } 
+
+    # Falling back to creation of a separate R process if the shared instance doesn't work.
+    if (fork && !isWindows() && (!py_available() || .same_as_loaded(envpath))) {
+        proc <- makeForkCluster(1)
+    } else {
+        proc <- makePSOCKcluster(1)
     }
+    clusterCall(proc, useBasiliskEnv, envpath=envpath)
 
     proc
 }

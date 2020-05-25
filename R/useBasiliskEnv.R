@@ -3,12 +3,11 @@
 #' Use \pkg{basilisk} environments for isolated execution of Python code with appropriate versions of all Python packages.
 #' 
 #' @param envpath String containing the path to the \pkg{basilisk} environment to use. 
-#' @param required Logical scalar indicating whether an error should be raised if the requested environment cannot be found.
 #' 
 #' @return 
 #' The function will attempt to load the specified \pkg{basilisk} environment into the R session,
 #' possibly with the modification of some environment variables (see Details).
-#' It returns a logical scalar indicating whether the Python version in \code{envpath} was correctly loaded.
+#' A \code{NULL} is invisibly returned.
 #'
 #' @details
 #' It is unlikely that developers should ever need to call \code{\link{useBasiliskEnv}} directly.
@@ -16,50 +15,41 @@
 #' 
 #' By default, this function will modify a suite of environment variables as a side effect
 #' - see \code{\link{activateEnvironment}} for details.
-#' Exceptions are:
-#' \itemize{
-#' \item \code{required=FALSE} and any Python instance is already loaded into the current R session.
-#' \item the loading of the environment in \code{envpath} was not successful (i.e., \code{loaded} is \code{FALSE}).
-#' }
-#' In these cases, no modification of environment variables is performed.
 #'
 #' @author Aaron Lun
 #' 
 #' @examples
-#' # This may return TRUE or FALSE, depending on the available Python.
 #' tmploc <- file.path(tempdir(), "my_package_B")
 #' setupBasiliskEnv(tmploc, c('pandas==0.25.1',
 #'     "python-dateutil=2.8.0", "pytz=2019.3"))
-#' useBasiliskEnv(tmploc, required=FALSE) 
 #'
-#' # This will return FALSE, as the available Python is already set.
+#' # This may or may not work, depending on whether Python
+#' # has already been loaded into this R session.
+#' try(useBasiliskEnv(tmploc))
+#'
+#' # This will definitely not work, as the available Python is already set.
 #' baseloc <- basilisk.utils::getBasiliskDir()
-#' useBasiliskEnv(baseloc, required=FALSE)
+#' status <- try(useBasiliskEnv(baseloc))
+#' stopifnot(is(status, "try-error"))
 #'
 #' @seealso
 #' \code{\link{basiliskStart}}, for how these \pkg{basilisk} environments should be used.
 #'
 #' @export
-#' @importFrom reticulate use_condaenv 
+#' @importFrom reticulate use_condaenv py_config
 #' @importFrom basilisk.utils getBasiliskDir getPythonBinary 
 #' activateEnvironment deactivateEnvironment
-useBasiliskEnv <- function(envpath, required=TRUE) {
+useBasiliskEnv <- function(envpath) {
     envpath <- normalizePath(envpath, mustWork=TRUE)
-    if (!required && py_available()) {
-        return(.same_as_loaded(envpath))
-    }
 
-    previous <- activateEnvironment(envpath)
+    activateEnvironment(envpath)
     use_condaenv(envpath, required=TRUE)
-    same <- .same_as_loaded(envpath)
 
-    # Make life a bit easier and restore old environment variables
-    # if the current version was not successfully loaded.
-    if (!same) {
-        deactivateEnvironment(previous)
-    }
+    # use_condaenv doesn't actually cause Python to be loaded immediately, 
+    # so we force the issue to seal the deal.
+    py_config() 
 
-    same
+    invisible(NULL)
 }
 
 #' @importFrom reticulate py_config 
