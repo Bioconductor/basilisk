@@ -113,13 +113,15 @@ my_example_function <- function(ARG_VALUE_1, ARG_VALUE_2) {
 }
 ```
 
+**The return value of `basiliskRun()` must be a pure R object.**
+Developers should NOT return `r CRANpkg("reticulate")` bindings to Python objects or any other pointers to external memory (e.g., file handles).
+This is because `basiliskRun()` may execute in a different process such that any pointers are no longer valid when they are transferred back to the parent process.
+Both the arguments to the function passed to `basiliskRun()` and its return value MUST be amenable to serialization.
+Developers are encouraged to check that their function behaves correctly in a different process by setting `setBasiliskShared(FALSE)` and `setBasiliskFork(FALSE)` prior to testing.
+
 Note that `basiliskStart()` will lazily install conda and the required environments if they are not already present.
 This can result in some delays on the first time that any function using `r Biocpkg("basilisk")` is called;
 after that, the installed content will simply be re-used.
-
-If the base conda instance is sufficient, we recommend calling  `basiliskStart(NULL)` instead.
-This avoids the hassle of setting up an environment and pinning versions.
-It also improves run-time efficiency by allowing re-use of a shared Python instance across different client packages.
 
 It is probably unwise to use `proc` across user-visible functions, i.e., the end-user should never have an opportunity to interact with `proc`.
 

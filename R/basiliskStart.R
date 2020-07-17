@@ -15,13 +15,14 @@
 #' @param shared Logical scalar indicating whether \code{basiliskStart} is allowed 
 #' to load a shared Python instance into the current R process, see \code{\link{getBasiliskShared}}.
 #' @param fun A function to be executed in the \pkg{basilisk} process.
+#' This should return a \dQuote{pure R} object, see details.
 #' @param ... Further arguments to be passed to \code{fun}.
 #'
 #' @return 
 #' \code{basiliskStart} returns a process object, the exact nature of which depends on \code{fork} and \code{shared}.
 #' This object should only be used in \code{basiliskRun} and \code{basiliskStop}.
 #'
-#' \code{basiliskRun} returns the output of \code{fun(...)} when executed inside the separate process.
+#' \code{basiliskRun} returns the output of \code{fun(...)}, possibly executed inside the separate process.
 #'
 #' \code{basiliskStop} stops the process in \code{proc}.
 #' 
@@ -78,9 +79,10 @@
 #' or the package itself should be reloaded inside \code{fun}.
 #' \item Any other variables used inside \code{fun} should be explicitly passed as an argument.
 #' Developers should not rely on closures to capture variables in the calling environment of \code{basiliskRun}.
-#' \item Relevant global variables should be reset inside \code{fun}.
+#' \item Relevant global variables from the calling environment should be explicitly reset inside \code{fun}.
 #' \item Developers should \emph{not} attempt to pass complex objects to memory in or out of \code{fun}.
 #' This mostly refers to objects that contain custom pointers to memory, e.g., file handles, pointers to \pkg{reticulate} objects.
+#' Both arguments and return values should instead be pure R objects.
 #' }
 #'
 #' @section Use of lazy installation:
