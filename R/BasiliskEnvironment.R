@@ -83,7 +83,8 @@ setMethod(".getEnvName", "character", identity)
 
 setMethod(".getPkgName", "character", function(x) NULL) 
 
-.getChannels <- function(x) x@channels
+# Until all dependencies bump their version numbers to trigger a rebuild.
+.getChannels <- function(x) tryCatch(x@channels, error=function(e) "conda-forge")
 
 .getPackages <- function(x) x@packages
 
