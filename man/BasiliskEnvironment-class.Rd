@@ -19,6 +19,7 @@ Environment names starting with an underscore are reserved for internal use.
 \item \code{pkgname}, string containing the name of the package that owns the environment.
 \item \code{packages}, character vector containing the names of the required Python packages from conda,
 see \code{\link{setupBasiliskEnv}} for requirements.
+\item \code{channels}, character vector specifying the Conda channels to search.
 \item \code{pip}, character vector containing names of additional Python packages from PyPi,
 see \code{\link{setupBasiliskEnv}} for requirements.
 }

@@ -5,6 +5,8 @@
 #' @param envpath String containing the path to the environment to use. 
 #' @param packages Character vector containing the names of conda packages to install into the environment.
 #' Version numbers must be included.
+#' @param channels Character vector containing the names of additional conda channels to search.
+#' Defaults to the Conda Forge repository.
 #' @param pip Character vector containing the names of additional packages to install from PyPi using pip.
 #' Version numbers must be included.
 #' 
@@ -58,7 +60,7 @@
 #' @importFrom basilisk.utils getBasiliskDir installConda getCondaBinary 
 #' getPythonBinary isWindows getLockFile unlink2 dir.create2
 #' @importFrom reticulate conda_install
-setupBasiliskEnv <- function(envpath, packages, pip=NULL) {
+setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL) {
     lock.file <- getLockFile(envpath)
 
     if (file.exists(envpath)) {
@@ -94,7 +96,7 @@ setupBasiliskEnv <- function(envpath, packages, pip=NULL) {
     write(file=lock.file, x=character(0))
     
     conda_install(envname=normalizePath(envpath), conda=conda.cmd, 
-        python_version=version, packages=packages)
+        python_version=version, packages=packages, channel=channels)
 
     if (length(pip)) {
         .check_versions(pip, "==")

@@ -14,6 +14,7 @@
 #' \item \code{pkgname}, string containing the name of the package that owns the environment.
 #' \item \code{packages}, character vector containing the names of the required Python packages from conda,
 #' see \code{\link{setupBasiliskEnv}} for requirements.
+#' \item \code{channels}, character vector specifying the Conda channels to search.
 #' \item \code{pip}, character vector containing names of additional Python packages from PyPi,
 #' see \code{\link{setupBasiliskEnv}} for requirements.
 #' }
@@ -28,12 +29,13 @@
 NULL
 
 #' @export
-setClass("BasiliskEnvironment", slots=c(envname="character", pkgname="character", packages="character", pip="character"))
+setClass("BasiliskEnvironment", slots=c(envname="character", pkgname="character", 
+    packages="character", channels="character", pip="character"))
 
 #' @export
 #' @import methods 
-BasiliskEnvironment <- function(envname, pkgname, packages, pip=character(0)) {
-    new("BasiliskEnvironment", envname=envname, pkgname=pkgname, packages=packages, pip=pip)
+BasiliskEnvironment <- function(envname, pkgname, packages, channels="conda-forge", pip=character(0)) {
+    new("BasiliskEnvironment", envname=envname, pkgname=pkgname, packages=packages, channels=channels, pip=pip)
 }
 
 setValidity("BasiliskEnvironment", function(object) {
@@ -48,6 +50,10 @@ setValidity("BasiliskEnvironment", function(object) {
 
     if (length(val <- .getPkgName(object))!=1 || is.na(val) || !is.character(val)){ 
         msg <- c(msg, "'pkgname' should be a non-NA string")
+    }
+
+    if (any(is.na(.getChannels(object)))) {
+        msg <- c(msg, "'channels' should not contain NA strings")
     }
 
     if (any(is.na(.getPackages(object)))) {
@@ -76,6 +82,8 @@ setMethod(".getPkgName", "BasiliskEnvironment", function(x) x@pkgname)
 setMethod(".getEnvName", "character", identity)
 
 setMethod(".getPkgName", "character", function(x) NULL) 
+
+.getChannels <- function(x) x@channels
 
 .getPackages <- function(x) x@packages
 

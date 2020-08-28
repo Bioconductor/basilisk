@@ -4,13 +4,16 @@
 \alias{setupBasiliskEnv}
 \title{Set up a \pkg{basilisk} environments}
 \usage{
-setupBasiliskEnv(envpath, packages, pip = NULL)
+setupBasiliskEnv(envpath, packages, channels = "conda-forge", pip = NULL)
 }
 \arguments{
 \item{envpath}{String containing the path to the environment to use.}
 
 \item{packages}{Character vector containing the names of conda packages to install into the environment.
 Version numbers must be included.}
+
+\item{channels}{Character vector containing the names of additional conda channels to search.
+Defaults to the Conda Forge repository.}
 
 \item{pip}{Character vector containing the names of additional packages to install from PyPi using pip.
 Version numbers must be included.}

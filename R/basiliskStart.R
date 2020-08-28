@@ -218,6 +218,7 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
 
             setupBasiliskEnv(envpath, 
                 packages=.getPackages(env), 
+                channels=.getChannels(env),
                 pip=.getPipPackages(env))
         }
     }
