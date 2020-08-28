@@ -39,10 +39,15 @@
 #' However, some caution is required when mixing packages from conda and pip,
 #' see \url{https://www.anaconda.com/using-pip-in-a-conda-environment} for more details.
 #'
-#' It is also good practice to explicitly list the versions of the dependencies of all desired packages.
-#' This protects against future changes in the behavior of your code if conda's dependency resolver defaults to a different version of a required package.
-#' We suggest using \code{conda env export} to identify relevant dependencies and include them in \code{packages};
-#' the only reason that pinned dependencies are not mandatory is because some dependencies are OS-specific,
+#' It is also good practice to explicitly list the versions of the \emph{dependencies} of all desired packages.
+#' This protects against future changes in the behavior of your code if Conda's solver decides to use a different version of a dependency.
+#' To identify appropriate versions, we suggest:
+#' \enumerate{
+#' \item Creating a fresh conda environment with the desired packages, using \code{packages=} in \code{setupBasiliskEnv}.
+#' \item Using \code{conda env export} to identify any relevant dependencies and their versions.
+#' \item Including them in the \code{packages=} argument for future use.
+#' }
+#' The only reason that pinned dependencies are not mandatory is because some dependencies are OS-specific,
 #' requiring some manual pruning of the output of \code{conda env export}.
 #'
 #' It is possible to specify a different version of Python in \code{packages} by supplying, e.g., \code{"python=2.7.10"}.

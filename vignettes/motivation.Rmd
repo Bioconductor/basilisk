@@ -70,8 +70,10 @@ second_env <- BasiliskEnvironment(envname="second_env_name",
 ```
 
 As shown above, all listed Python packages should have valid version numbers that can be obtained by `conda`.
-It is also good practice to explicitly list the versions of any dependencies so as to future-proof the installation process.
-We suggest using `conda env export` to identify a set of compatible Python packages that provides an operational environment.
+It is strongly recommended to explicitly list the versions of any dependencies so as to future-proof the installation process.
+We suggest using `conda env export` to identify the appropriate versions, see `?setupBasiliskEnv` for details.
+It is also possible to install packages from PyPi via the `pip=` argument,
+but this should be done with [much caution](https://www.anaconda.com/blog/using-pip-in-a-conda-environment).
 
 An executable `configure` file should be created in the top level of the client package, containing the command shown below.
 This enables creation of environments during `r Biocpkg("basilisk")` installation if `BASILISK_USE_SYSTEM_DIR` is set.
