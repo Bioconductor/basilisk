@@ -63,30 +63,30 @@
 #'
 #' @export
 #' @importFrom basilisk.utils getBasiliskDir installConda getCondaBinary 
-#' getPythonBinary isWindows getLockFile unlink2 dir.create2
+#' getPythonBinary unlink2 dir.create2 lockInstallation unlockInstallation
 #' @importFrom reticulate conda_install
 setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL) {
-    lock.file <- getLockFile(envpath)
+    installConda() # no-ops if it's already there.
 
+    # Locking the installation, exclusively if we think we need to create the
+    # environment (because it doesn't yet exist).
+    loc <- lockInstallation(exclusive=!file.exists(envpath))
+    on.exit(unlockInstallation(loc))
+
+    # Re-checking the envpath status, in case it was created while we were
+    # waiting for the lock to be released.
     if (file.exists(envpath)) {
-        if (!file.exists(lock.file)) {
-            return(FALSE)
-        }
-
-        warning(sprintf("replacing incomplete conda environment at '%s'", envpath))
-        unlink2(envpath)
-        unlink2(lock.file)
+        return(FALSE)
     }
 
     packages <- sub("==", "=", packages)
     .check_versions(packages, "=")
 
-    installConda() # no-ops if it's already there.
-
     previous <- activateEnvironment()
     on.exit(deactivateEnvironment(previous), add=TRUE)
 
     base.dir <- getBasiliskDir()
+
     conda.cmd <- getCondaBinary(base.dir)
     py.cmd <- getPythonBinary(base.dir)
 
@@ -97,8 +97,9 @@ setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL
         version <- sub("^Python ", "", system2(py.cmd, "--version", stdout=TRUE))
     }
 
+    success <- FALSE
     dir.create2(envpath)
-    write(file=lock.file, x=character(0))
+    on.exit(if (!success) unlink2(envpath), add=TRUE, after=FALSE)
     
     conda_install(envname=normalizePath(envpath), conda=conda.cmd, 
         python_version=version, packages=packages, channel=channels)
@@ -112,7 +113,7 @@ setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL
         }
     }
 
-    unlink2(lock.file)
+    success <- TRUE
     TRUE 
 }
 
