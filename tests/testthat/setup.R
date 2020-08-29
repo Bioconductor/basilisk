@@ -9,3 +9,13 @@ old.pandas.deps <- c("python-dateutil==2.7.1", "pytz==2018.7")
 client.dir <- "install-test-client"
 unlink(client.dir, recursive=TRUE)
 dir.create(client.dir)
+
+reset_env <- function(var, val) {
+    if (is.na(val)) {
+        Sys.unsetenv(var)
+    } else {
+        X <- list(val)
+        names(X) <- var
+        do.call(Sys.setenv, X)
+    }     
+}

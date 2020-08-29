@@ -61,8 +61,12 @@ configureBasiliskEnv <- function(src="R/basilisk.R") {
 
     # Setting this so that conda doesn't try to dump the requested packages
     # into the (conceptually, if not actually, read-only) base installation.
-    old <- Sys.getenv("CONDA_PKGS_DIRS")
-    on.exit(Sys.setenv(CONDA_PKGS_DIRS=old))
+    old <- Sys.getenv("CONDA_PKGS_DIRS", NA)
+    if (is.na(old)) {
+        on.exit(Sys.unsetenv("CONDA_PKGS_DIRS"))
+    } else {
+        on.exit(Sys.setenv(CONDA_PKGS_DIRS=old))
+    }
 
     new.pkg.dir <- file.path(envdir, "_pkgs")
     dir.create2(new.pkg.dir)
