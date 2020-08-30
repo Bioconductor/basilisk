@@ -72,7 +72,7 @@ setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL
     # Locking to avoid race conditions from parallel lazy installs;
     # this ensures we wait for any running installs to finish.
     if (!useSystemDir()) {
-        locfile <- paste(sub("/+$", "", envpath), "-00LOCK")
+        locfile <- paste0(sub("/+$", "", envpath), "-00LOCK")
         loc <- lock(locfile)
         on.exit(unlock(loc))
     }
