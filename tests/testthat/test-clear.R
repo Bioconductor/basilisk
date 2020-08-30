@@ -18,15 +18,14 @@ test_that("clearing out the external directory works as expected", {
     dir.create(placeholder2, showWarnings=FALSE)
     expect_true(file.exists(placeholder2))
 
-    old <- Sys.getenv("BASILISK_EXTERNAL_DIR", NA)
-    Sys.setenv(BASILISK_EXTERNAL_DIR=tmp)
+    old <- basilisk.utils::setVariable("BASILISK_EXTERNAL_DIR", tmp)
     expect_identical(basilisk.utils::getExternalDir(), file.path(tmp, version))
 
     basilisk.utils::clearExternalDir()
     expect_false(file.exists(placeholder))
     expect_true(file.exists(placeholder2))
 
-    reset_env("BASILISK_EXTERNAL_DIR", old)
+    basilisk.utils::setVariable("BASILISK_EXTERNAL_DIR", old)
 })
 
 test_that("clearing out only obsolete versions works as expected", {
@@ -43,13 +42,12 @@ test_that("clearing out only obsolete versions works as expected", {
     dir.create(placeholder2, showWarnings=FALSE)
     expect_true(file.exists(placeholder2))
 
-    old <- Sys.getenv("BASILISK_EXTERNAL_DIR", NA)
-    Sys.setenv(BASILISK_EXTERNAL_DIR=tmp)
+    old <- basilisk.utils::setVariable("BASILISK_EXTERNAL_DIR", tmp)
     expect_identical(basilisk.utils::getExternalDir(), file.path(tmp, version))
 
     basilisk.utils::clearObsoleteDir()
     expect_true(file.exists(placeholder))
     expect_false(file.exists(placeholder2))
 
-    reset_env("BASILISK_EXTERNAL_DIR", old)
+    basilisk.utils::setVariable("BASILISK_EXTERNAL_DIR", old)
 })

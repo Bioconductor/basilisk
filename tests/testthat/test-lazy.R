@@ -7,10 +7,8 @@ test_that("lazy conda installation works as expected", {
     tmp <- tempfile()
     dir.create(tmp)
 
-    old <- Sys.getenv("BASILISK_USE_SYSTEM_DIR", NA)
-    Sys.unsetenv("BASILISK_USE_SYSTEM_DIR")
-    old.2 <- Sys.getenv("BASILISK_EXTERNAL_DIR", NA)
-    Sys.setenv(BASILISK_EXTERNAL_DIR=tmp)
+    old <- basilisk.utils::setVariable("BASILISK_USE_SYSTEM_DIR", NA)
+    old.2 <- basilisk.utils::setVariable("BASILISK_EXTERNAL_DIR", tmp)
 
     version <- as.character(packageVersion("basilisk"))
     placeholder <- file.path(tmp, paste0(version, "000"))
@@ -26,7 +24,7 @@ test_that("lazy conda installation works as expected", {
     expect_false(basilisk.utils::installConda())
     expect_true(file.exists(target))
 
-    reset_env("BASILISK_USE_SYSTEM_DIR", old)
-    reset_env("BASILISK_EXTERNAL_DIR", old.2)
+    basilisk.utils::setVariable("BASILISK_USE_SYSTEM_DIR", old)
+    basilisk.utils::setVariable("BASILISK_EXTERNAL_DIR", old.2)
 })
 
