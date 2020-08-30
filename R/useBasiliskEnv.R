@@ -28,7 +28,7 @@
 #' try(useBasiliskEnv(tmploc))
 #'
 #' # This will definitely not work, as the available Python is already set.
-#' baseloc <- basilisk.utils::getBasiliskDir()
+#' baseloc <- basilisk.utils::getCondaDir()
 #' status <- try(useBasiliskEnv(baseloc))
 #'
 #' # ... except on Windows, which somehow avoids tripping the error.
@@ -39,8 +39,7 @@
 #'
 #' @export
 #' @importFrom reticulate use_condaenv py_config
-#' @importFrom basilisk.utils getBasiliskDir getPythonBinary 
-#' activateEnvironment deactivateEnvironment
+#' @importFrom basilisk.utils getPythonBinary 
 useBasiliskEnv <- function(envpath) {
     envpath <- normalizePath(envpath, mustWork=TRUE)
 

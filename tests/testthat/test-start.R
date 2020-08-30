@@ -81,7 +81,7 @@ preloaded_check <- function(version, envir, ...) {
     # Checking what happens when Python is already loaded.
     library(basilisk)
     library(testthat)
-    useBasiliskEnv(basilisk.utils::getBasiliskDir())
+    useBasiliskEnv(basilisk.utils::getCondaDir())
 
     proc <- basiliskStart(envir, ...)
     test.version <- basiliskRun(proc, fun=function() {

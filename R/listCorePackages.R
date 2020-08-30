@@ -23,7 +23,7 @@ listPackages <- function(env=NULL) {
     data.frame(full=out, package=.full2pkg(out), stringsAsFactors=FALSE)
 }
 
-#' @importFrom basilisk.utils activateEnvironment deactivateEnvironment getPythonBinary
+#' @importFrom basilisk.utils getPythonBinary
 .basilisk_freeze <- function(envpath) {
     previous <- activateEnvironment(envpath)
     on.exit(deactivateEnvironment(previous))

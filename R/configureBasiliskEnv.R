@@ -34,7 +34,7 @@
 #'
 #' @export
 #' @importFrom methods is
-#' @importFrom basilisk.utils useSystemDir getEnvironmentDir dir.create2
+#' @importFrom basilisk.utils useSystemDir dir.create2
 configureBasiliskEnv <- function(src="R/basilisk.R") {
     if (!useSystemDir()) {
         return(invisible(NULL))

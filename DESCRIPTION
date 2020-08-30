@@ -10,6 +10,7 @@ Imports:
     methods,
     parallel,
     reticulate,
+    filelock,
     basilisk.utils
 Suggests:
     knitr,

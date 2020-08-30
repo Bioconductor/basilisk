@@ -34,7 +34,7 @@ setupBasiliskEnv(tmploc, c('pandas==0.25.1',
 try(useBasiliskEnv(tmploc))
 
 # This will definitely not work, as the available Python is already set.
-baseloc <- basilisk.utils::getBasiliskDir()
+baseloc <- basilisk.utils::getCondaDir()
 status <- try(useBasiliskEnv(baseloc))
 
 # ... except on Windows, which somehow avoids tripping the error.

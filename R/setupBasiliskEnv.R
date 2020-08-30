@@ -62,19 +62,21 @@
 #' \code{\link{listCorePackages}}, for a list of core Python packages with pinned versions.
 #'
 #' @export
-#' @importFrom basilisk.utils getBasiliskDir installConda getCondaBinary 
-#' getPythonBinary unlink2 dir.create2 lockInstallation unlockInstallation
+#' @importFrom basilisk.utils getCondaDir installConda getCondaBinary 
+#' getPythonBinary unlink2 dir.create2 
 #' @importFrom reticulate conda_install
+#' @importFrom filelock lock unlock
 setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL) {
     installConda() # no-ops if it's already there.
 
-    # Locking the installation, exclusively if we think we need to create the
-    # environment (because it doesn't yet exist).
-    loc <- lockInstallation(exclusive=!file.exists(envpath))
-    on.exit(unlockInstallation(loc))
+    # Locking to avoid race conditions from parallel lazy installs;
+    # this ensures we wait for any running installs to finish.
+    if (!useSystemDir()) {
+        locfile <- paste(sub("/+$", "", envpath), "-00LOCK")
+        loc <- lock(locfile)
+        on.exit(unlock(loc))
+    }
 
-    # Re-checking the envpath status, in case it was created while we were
-    # waiting for the lock to be released.
     if (file.exists(envpath)) {
         return(FALSE)
     }
@@ -85,7 +87,7 @@ setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL
     previous <- activateEnvironment()
     on.exit(deactivateEnvironment(previous), add=TRUE)
 
-    base.dir <- getBasiliskDir()
+    base.dir <- getCondaDir()
 
     conda.cmd <- getCondaBinary(base.dir)
     py.cmd <- getPythonBinary(base.dir)

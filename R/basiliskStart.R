@@ -191,11 +191,11 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
     proc
 }
 
-#' @importFrom basilisk.utils getBasiliskDir installConda getEnvironmentDir clearObsoleteDir destroyOldVersions
+#' @importFrom basilisk.utils getCondaDir installConda clearObsoleteDir destroyOldVersions
 .obtain_env_path <- function(env) {
     if (is.null(env)) {
         installConda()
-        return(getBasiliskDir())
+        return(getCondaDir())
     }
 
     envname <- .getEnvName(env)
