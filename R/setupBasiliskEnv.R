@@ -69,11 +69,11 @@
 setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL) {
     installConda() # no-ops if it's already there.
 
-    # Locking to avoid race conditions from parallel lazy installs;
-    # this ensures we wait for any running installs to finish.
+    # See ?lockExternalDir and the installConda code
+    # for the rationale behind 'exclusive='.
     if (!useSystemDir()) {
         locfile <- paste0(sub("/+$", "", envpath), "-00LOCK")
-        loc <- lock(locfile)
+        loc <- lock(locfile, exclusive=!file.exists(envpath))
         on.exit(unlock(loc))
     }
 
