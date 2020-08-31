@@ -15,6 +15,9 @@
 #' The function will return a logical scalar indicating whether creation was performed,
 #' which will be \code{FALSE} if the environment already exists.
 #'
+#' Old versions of the environment in \code{dirname(envpath)} are destroyed unless \code{BASILISK_NO_DESTROY=1},
+#' see \code{?destroyOldVersions} for more details.
+#'
 #' @details
 #' \pkg{basilisk} environments are simply Python conda environments that are created and managed by \pkg{basilisk}.
 #' Each \pkg{basilisk} environment can contain different Python packages with different versions,
@@ -62,8 +65,8 @@
 #' \code{\link{listCorePackages}}, for a list of core Python packages with pinned versions.
 #'
 #' @export
-#' @importFrom basilisk.utils getCondaDir installConda getCondaBinary 
-#' getPythonBinary unlink2 dir.create2 
+#' @importFrom basilisk.utils getCondaDir installConda getCondaBinary getPythonBinary 
+#' unlink2 dir.create2 useSystemDir destroyOldVersions clearObsoleteDir
 #' @importFrom reticulate conda_install
 #' @importFrom filelock lock unlock
 setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL) {
@@ -72,13 +75,19 @@ setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL
     # See ?lockExternalDir and the installConda code
     # for the rationale behind 'exclusive='.
     if (!useSystemDir()) {
+        dir.create(dirname(envpath), recursive=TRUE, showWarnings=FALSE)
         locfile <- paste0(sub("/+$", "", envpath), "-00LOCK")
         loc <- lock(locfile, exclusive=!file.exists(envpath))
         on.exit(unlock(loc))
+
     }
 
     if (file.exists(envpath)) {
         return(FALSE)
+    }
+
+    if (useSystemDir() && !isTRUE(globals$get("installing"))) {
+        stop(sprintf("environment at '%s' should have been created during package installation", envpath))
     }
 
     packages <- sub("==", "=", packages)
@@ -88,7 +97,6 @@ setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL
     on.exit(deactivateEnvironment(previous), add=TRUE)
 
     base.dir <- getCondaDir()
-
     conda.cmd <- getCondaBinary(base.dir)
     py.cmd <- getPythonBinary(base.dir)
 
@@ -99,7 +107,12 @@ setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL
         version <- sub("^Python ", "", system2(py.cmd, "--version", stdout=TRUE))
     }
 
+    if (destroyOldVersions()) {
+        clearObsoleteDir(dirname(envpath))
+    }
+
     success <- FALSE
+    unlink2(envpath)
     dir.create2(envpath)
     on.exit(if (!success) unlink2(envpath), add=TRUE, after=FALSE)
     

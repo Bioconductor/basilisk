@@ -34,7 +34,7 @@
 #'
 #' @export
 #' @importFrom methods is
-#' @importFrom basilisk.utils useSystemDir dir.create2
+#' @importFrom basilisk.utils useSystemDir dir.create2 setVariable
 configureBasiliskEnv <- function(src="R/basilisk.R") {
     if (!useSystemDir()) {
         return(invisible(NULL))
@@ -61,16 +61,15 @@ configureBasiliskEnv <- function(src="R/basilisk.R") {
 
     # Setting this so that conda doesn't try to dump the requested packages
     # into the (conceptually, if not actually, read-only) base installation.
-    old <- Sys.getenv("CONDA_PKGS_DIRS", NA)
-    if (is.na(old)) {
-        on.exit(Sys.unsetenv("CONDA_PKGS_DIRS"))
-    } else {
-        on.exit(Sys.setenv(CONDA_PKGS_DIRS=old))
-    }
+    old <- setVariable("CONDA_PKGS_DIRS", NA)
+    on.exit(setVariable("CONDA_PKGS_DIRS", old))
 
     new.pkg.dir <- file.path(envdir, "_pkgs")
     dir.create2(new.pkg.dir)
     Sys.setenv(CONDA_PKGS_DIRS=normalizePath(new.pkg.dir))
+
+    globals$set(installing=TRUE)
+    on.exit(globals$set(installing=FALSE), add=TRUE)
 
     # Actually creating the environments.
     for (nm in env.vars) {

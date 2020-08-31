@@ -191,38 +191,25 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
     proc
 }
 
-#' @importFrom basilisk.utils getCondaDir installConda clearObsoleteDir destroyOldVersions
+#' @importFrom basilisk.utils getCondaDir installConda 
 .obtain_env_path <- function(env) {
     if (is.null(env)) {
         installConda()
-        return(getCondaDir())
-    }
-
-    envname <- .getEnvName(env)
-    pkgname <- .getPkgName(env)
-
-    if (is.null(pkgname)) {
-        envpath <- envname
+        envpath <- getCondaDir()
     } else {
-        envdir <- getEnvironmentDir(pkgname)
-        envpath <- file.path(envdir, envname)
-
-        if (!file.exists(envpath)) {
-            if (useSystemDir()) {
-                stop(sprintf("environment '%s' should have been created during %s installation", envname, pkgname))
-            } 
-
-            if (destroyOldVersions()) {
-                clearObsoleteDir(envdir)
-            }
-
+        envname <- .getEnvName(env)
+        pkgname <- .getPkgName(env)
+        if (is.null(pkgname)) {
+            envpath <- envname
+        } else {
+            envdir <- getEnvironmentDir(pkgname)
+            envpath <- file.path(envdir, envname)
             setupBasiliskEnv(envpath, 
                 packages=.getPackages(env), 
                 channels=.getChannels(env),
                 pip=.getPipPackages(env))
         }
     }
-
     envpath
 }
 
