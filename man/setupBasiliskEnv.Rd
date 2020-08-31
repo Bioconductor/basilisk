@@ -22,6 +22,9 @@ Version numbers must be included.}
 A conda environment is created at \code{envpath} containing the specified \code{packages}.
 The function will return a logical scalar indicating whether creation was performed,
 which will be \code{FALSE} if the environment already exists.
+
+Old versions of the environment in \code{dirname(envpath)} are destroyed unless \code{BASILISK_NO_DESTROY=1},
+see \code{?destroyOldVersions} for more details.
 }
 \description{
 Set up a Python conda environment for isolated execution of Python code with appropriate versions of all Python packages.
