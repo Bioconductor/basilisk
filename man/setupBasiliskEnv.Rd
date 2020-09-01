@@ -2,7 +2,7 @@
 % Please edit documentation in R/setupBasiliskEnv.R
 \name{setupBasiliskEnv}
 \alias{setupBasiliskEnv}
-\title{Set up a \pkg{basilisk} environments}
+\title{Set up \pkg{basilisk}-managed environments}
 \usage{
 setupBasiliskEnv(envpath, packages, channels = "conda-forge", pip = NULL)
 }
@@ -20,29 +20,16 @@ Version numbers must be included.}
 }
 \value{
 A conda environment is created at \code{envpath} containing the specified \code{packages}.
-The function will return a logical scalar indicating whether creation was performed,
-which will be \code{FALSE} if the environment already exists.
-
-Old versions of the environment in \code{dirname(envpath)} are destroyed unless \code{BASILISK_NO_DESTROY=1},
-see \code{?destroyOldVersions} for more details.
+A \code{NULL} is invisibly returned.
 }
 \description{
-Set up a Python conda environment for isolated execution of Python code with appropriate versions of all Python packages.
+Set up a Conda environment for isolated execution of Python code with appropriate versions of all Python packages.
 }
 \details{
-\pkg{basilisk} environments are simply Python conda environments that are created and managed by \pkg{basilisk}.
-Each \pkg{basilisk} environment can contain different Python packages with different versions,
-allowing us to avoid version conflicts within an R session when different Bioconductor packages (or even different functions within a single package) require incompatible versions of Python packages.
-
 Developers of client packages should never need to call this function directly.
 For typical usage, \code{setupBasiliskEnv} is automatically called by \code{\link{basiliskStart}} to perform lazy installation.
 Developers should also create \code{configure(.win)} files to call \code{\link{configureBasiliskEnv}},
-which will call \code{setupBasiliskEnv} during R package installation when \code{BASILISK_USE_SYSTEM_DIR} is set.
-
-If a \pkg{basilisk} environment is already present at \code{envpath}, \code{setupBasiliskEnv} is a no-op.
-This ensures that the function only installs the packages once.
-}
-\section{Versioning}{
+which will call \code{setupBasiliskEnv} during R package installation when \code{BASILISK_USE_SYSTEM_DIR=1}.
 
 Pinned version numbers must be present for all requested conda packages in \code{packages}.
 This improved predictability makes debugging much easier when the R package is installed and executed on different systems.
@@ -68,7 +55,6 @@ requiring some manual pruning of the output of \code{conda env export}.
 It is possible to specify a different version of Python in \code{packages} by supplying, e.g., \code{"python=2.7.10"}.
 If no Python version is listed, the version in the base conda installation is used by default.
 }
-
 \examples{
 tmploc <- file.path(tempdir(), "my_package_A")
 setupBasiliskEnv(tmploc, c('pandas=0.25.3',
@@ -76,5 +62,5 @@ setupBasiliskEnv(tmploc, c('pandas=0.25.3',
 
 }
 \seealso{
-\code{\link{listCorePackages}}, for a list of core Python packages with pinned versions.
+\code{\link{listPackages}}, to list the packages in the Conda environment.
 }

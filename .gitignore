@@ -1,3 +1,4 @@
 tests/testthat/install-*
 *.html
 inst/miniconda
+man/INTERNAL_*
