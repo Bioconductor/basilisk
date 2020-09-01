@@ -34,7 +34,7 @@
             envpath <- envname
 
         } else if (useSystemDir()) {
-            envpath <- .get_env_system_dir(pkgname, installed=TRUE)
+            envpath <- file.path(.get_env_system_dir(pkgname, installed=TRUE), envname)
             if (!file.exists(envpath)) {
                 stop(sprintf("environment '%s' should have been created during '%s' installation", envname, pkgname))
             }
