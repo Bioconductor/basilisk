@@ -10,19 +10,16 @@ test_that("setupBasiliskEnv refuses to work without all specified versions", {
 
 test_that("setupBasiliskEnv obtains the correct version of the packages", {
     unlink(target, recursive=TRUE, force=TRUE)
-    expect_true(setupBasiliskEnv(target, c(test.pandas, test.pandas.deps)))
+    setupBasiliskEnv(target, c(test.pandas, test.pandas.deps))
     incoming <- basilisk:::.basilisk_freeze(target)
     expect_true(test.pandas %in% incoming)
     expect_true(all(test.pandas.deps %in% incoming))
 
     unlink(target, recursive=TRUE, force=TRUE)
-    expect_true(setupBasiliskEnv(target, c(old.pandas, old.pandas.deps)))
+    setupBasiliskEnv(target, c(old.pandas, old.pandas.deps))
     incoming <- basilisk:::.basilisk_freeze(target)
     expect_true(old.pandas %in% incoming)
     expect_true(all(old.pandas.deps %in% incoming))
-    
-    # Trying it again is a no-op.
-    expect_false(setupBasiliskEnv(target, c(old.pandas, old.pandas.deps)))
 })
 
 test_that("setupBasiliskEnv will install Python 2.7 if requested", {
@@ -35,9 +32,15 @@ test_that("setupBasiliskEnv will install Python 2.7 if requested", {
 
 test_that("setupBasiliskEnv works with pip-hosted packages", {
     unlink(target, recursive=TRUE, force=TRUE)
-    expect_true(setupBasiliskEnv(target, old.pandas.deps, pip=old.pandas))
+    setupBasiliskEnv(target, old.pandas.deps, pip=old.pandas)
 
     incoming <- basilisk:::.basilisk_freeze(target)
     expect_true(old.pandas %in% incoming)
     expect_true(all(old.pandas.deps %in% incoming))
+})
+
+test_that("setupBasiliskEnv destroys directory on error", {
+    basilisk.utils::unlink2(target)
+    expect_error(setupBasiliskEnv(target, package="WHHEEEEEEEEEEEEEEEEEE==0.0.1"), 'failed to install')
+    expect_false(file.exists(target))
 })
