@@ -162,7 +162,7 @@
 #' @importFrom reticulate py_config py_available
 #' @importFrom basilisk.utils isWindows
 basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared()) {
-    envpath <- .obtain_env_path(env)
+    envpath <- .obtainEnvironmentPath(env)
 
     if (shared) {
         ok <- FALSE
@@ -189,28 +189,6 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
     clusterCall(proc, useBasiliskEnv, envpath=envpath)
 
     proc
-}
-
-#' @importFrom basilisk.utils getCondaDir installConda 
-.obtain_env_path <- function(env) {
-    if (is.null(env)) {
-        installConda()
-        envpath <- getCondaDir()
-    } else {
-        envname <- .getEnvName(env)
-        pkgname <- .getPkgName(env)
-        if (is.null(pkgname)) {
-            envpath <- envname
-        } else {
-            envdir <- getEnvironmentDir(pkgname)
-            envpath <- file.path(envdir, envname)
-            setupBasiliskEnv(envpath, 
-                packages=.getPackages(env), 
-                channels=.getChannels(env),
-                pip=.getPipPackages(env))
-        }
-    }
-    envpath
 }
 
 #' @export

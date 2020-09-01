@@ -1,6 +1,6 @@
-#' Set up a \pkg{basilisk} environments
+#' Set up \pkg{basilisk}-managed environments
 #'
-#' Set up a Python conda environment for isolated execution of Python code with appropriate versions of all Python packages.
+#' Set up a Conda environment for isolated execution of Python code with appropriate versions of all Python packages.
 #' 
 #' @param envpath String containing the path to the environment to use. 
 #' @param packages Character vector containing the names of conda packages to install into the environment.
@@ -12,26 +12,14 @@
 #' 
 #' @return 
 #' A conda environment is created at \code{envpath} containing the specified \code{packages}.
-#' The function will return a logical scalar indicating whether creation was performed,
-#' which will be \code{FALSE} if the environment already exists.
-#'
-#' Old versions of the environment in \code{dirname(envpath)} are destroyed unless \code{BASILISK_NO_DESTROY=1},
-#' see \code{?destroyOldVersions} for more details.
+#' A \code{NULL} is invisibly returned.
 #'
 #' @details
-#' \pkg{basilisk} environments are simply Python conda environments that are created and managed by \pkg{basilisk}.
-#' Each \pkg{basilisk} environment can contain different Python packages with different versions,
-#' allowing us to avoid version conflicts within an R session when different Bioconductor packages (or even different functions within a single package) require incompatible versions of Python packages.
-#' 
 #' Developers of client packages should never need to call this function directly.
 #' For typical usage, \code{setupBasiliskEnv} is automatically called by \code{\link{basiliskStart}} to perform lazy installation.
 #' Developers should also create \code{configure(.win)} files to call \code{\link{configureBasiliskEnv}},
-#' which will call \code{setupBasiliskEnv} during R package installation when \code{BASILISK_USE_SYSTEM_DIR} is set.
+#' which will call \code{setupBasiliskEnv} during R package installation when \code{BASILISK_USE_SYSTEM_DIR=1}.
 #'
-#' If a \pkg{basilisk} environment is already present at \code{envpath}, \code{setupBasiliskEnv} is a no-op.
-#' This ensures that the function only installs the packages once.
-#'
-#' @section Versioning:
 #' Pinned version numbers must be present for all requested conda packages in \code{packages}.
 #' This improved predictability makes debugging much easier when the R package is installed and executed on different systems.
 #' Note that this refers to conda packages, not Python packages, where the version notation for the former uses a single \code{=};
@@ -62,39 +50,17 @@
 #'     "python-dateutil=2.8.1", "pytz=2019.3"))
 #'
 #' @seealso
-#' \code{\link{listCorePackages}}, for a list of core Python packages with pinned versions.
+#' \code{\link{listPackages}}, to list the packages in the Conda environment.
 #'
 #' @export
-#' @importFrom basilisk.utils getCondaDir installConda getCondaBinary getPythonBinary 
-#' unlink2 dir.create2 useSystemDir destroyOldVersions clearObsoleteDir
+#' @importFrom basilisk.utils getCondaDir getCondaBinary getPythonBinary unlink2 dir.create2 
 #' @importFrom reticulate conda_install
-#' @importFrom filelock lock unlock
 setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL) {
-    installConda() # no-ops if it's already there.
-
-    # See ?lockExternalDir and the installConda code
-    # for the rationale behind 'exclusive='.
-    if (!useSystemDir()) {
-        dir.create(dirname(envpath), recursive=TRUE, showWarnings=FALSE)
-        locfile <- paste0(sub("/+$", "", envpath), "-00LOCK")
-        loc <- lock(locfile, exclusive=!file.exists(envpath))
-        on.exit(unlock(loc))
-
-    }
-
-    if (file.exists(envpath)) {
-        return(FALSE)
-    }
-
-    if (useSystemDir() && !isTRUE(globals$get("installing"))) {
-        stop(sprintf("environment at '%s' should have been created during package installation", envpath))
-    }
-
     packages <- sub("==", "=", packages)
     .check_versions(packages, "=")
 
     previous <- activateEnvironment()
-    on.exit(deactivateEnvironment(previous), add=TRUE)
+    on.exit(deactivateEnvironment(previous))
 
     base.dir <- getCondaDir()
     conda.cmd <- getCondaBinary(base.dir)
@@ -105,10 +71,6 @@ setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL
         version <- sub("^python=+", "", packages[is.py][1])
     } else {
         version <- sub("^Python ", "", system2(py.cmd, "--version", stdout=TRUE))
-    }
-
-    if (destroyOldVersions()) {
-        clearObsoleteDir(dirname(envpath))
     }
 
     success <- FALSE
@@ -129,7 +91,7 @@ setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL
     }
 
     success <- TRUE
-    TRUE 
+    invisible(NULL)
 }
 
 .check_versions <- function(packages, pattern) {
