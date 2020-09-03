@@ -22,7 +22,7 @@ It is unlikely that developers should ever need to call \code{\link{useBasiliskE
 Rather, this interaction should be automatically handled by \code{\link{basiliskStart}}.
 
 By default, this function will modify a suite of environment variables as a side effect
-- see \code{\link{activateEnvironment}} for details.
+- see \code{\link{.activateEnvironment}} for details.
 }
 \examples{
 \dontshow{basilisk.utils::installConda()}

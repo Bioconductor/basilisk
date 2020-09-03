@@ -63,8 +63,8 @@ setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL
     packages <- sub("==", "=", packages)
     .check_versions(packages, "=")
 
-    previous <- activateEnvironment()
-    on.exit(deactivateEnvironment(previous))
+    previous <- .activateEnvironment()
+    on.exit(.deactivateEnvironment(previous))
 
     base.dir <- getCondaDir()
     conda.cmd <- getCondaBinary(base.dir)

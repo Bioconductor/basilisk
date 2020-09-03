@@ -14,7 +14,7 @@
 #' Rather, this interaction should be automatically handled by \code{\link{basiliskStart}}.
 #' 
 #' By default, this function will modify a suite of environment variables as a side effect
-#' - see \code{\link{activateEnvironment}} for details.
+#' - see \code{\link{.activateEnvironment}} for details.
 #'
 #' @author Aaron Lun
 #' 
@@ -47,7 +47,7 @@
 useBasiliskEnv <- function(envpath) {
     envpath <- normalizePath(envpath, mustWork=TRUE)
 
-    activateEnvironment(envpath)
+    .activateEnvironment(envpath)
     use_condaenv(envpath, required=TRUE)
 
     # use_condaenv doesn't actually cause Python to be loaded immediately, 

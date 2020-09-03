@@ -9,11 +9,11 @@
 #' @details
 #' Conda environments generally need to be activated to function properly.
 #' This is especially relevant on Windows where the \code{"PATH"} variable needs to be modified for the DLL search.
-#' The \code{activateEnvironment} function mimics the effect of activation
+#' The \code{.activateEnvironment} function mimics the effect of activation
 #' by modifying environment variables in the current R session.
-#' This can be reversed by \code{deactivateEnvironment} once the conda environment is no longer in use.
+#' This can be reversed by \code{.deactivateEnvironment} once the conda environment is no longer in use.
 #'
-#' The \code{activateEnvironment} function will also unset a few bothersome environment variables:
+#' The \code{.activateEnvironment} function will also unset a few bothersome environment variables:
 #' \itemize{
 #' \item \code{"PYTHONPATH"}: to avoid compromising the version guarantees 
 #' if \pkg{reticulate}'s \code{import} is allowed to search other locations beyond the specified conda environment.
@@ -23,16 +23,16 @@
 #' }
 #'
 #' @return
-#' \code{activateEnvironment} will modify environment variables to mimic activation of the conda environment.
+#' \code{.activateEnvironment} will modify environment variables to mimic activation of the conda environment.
 #' It returns a named list of the previous values of all variables modified in this manner.
 #' (\code{NA} values indicate that the corresponding variable was not previously set.)
 #'
-#' \code{deactivateEnvironment} restores the environment variables to their pre-activation state.
+#' \code{.deactivateEnvironment} restores the environment variables to their pre-activation state.
 #' It returns \code{NULL} invisibly.
 #' 
 #' @author Aaron Lun
-#' @export
-activateEnvironment <- function(envpath=NULL) {
+#' @rdname INTERNAL_activateEnvironment
+.activateEnvironment <- function(envpath=NULL) {
     ADD <- function(listing, var) {
         previous <- Sys.getenv(var, unset=NA)
         if (!is.na(previous)) {
@@ -134,9 +134,8 @@ activateEnvironment <- function(envpath=NULL) {
     listing
 }
 
-#' @export
-#' @rdname activateEnvironment
-deactivateEnvironment <- function(listing) {
+#' @rdname INTERNAL_activateEnvironment
+.deactivateEnvironment <- function(listing) {
     for (x in names(listing)) {
         if (is.na(listing[[x]])) {
             Sys.unsetenv(x)
