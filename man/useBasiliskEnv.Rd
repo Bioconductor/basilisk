@@ -25,9 +25,13 @@ By default, this function will modify a suite of environment variables as a side
 - see \code{\link{activateEnvironment}} for details.
 }
 \examples{
+\dontshow{basilisk.utils::installConda()}
+
 tmploc <- file.path(tempdir(), "my_package_B")
-setupBasiliskEnv(tmploc, c('pandas==0.25.1',
-    "python-dateutil=2.8.0", "pytz=2019.3"))
+if (!file.exists(tmploc)) {
+    setupBasiliskEnv(tmploc, c('pandas==0.25.1',
+        "python-dateutil=2.8.0", "pytz=2019.3"))
+}
 
 # This may or may not work, depending on whether a Python instance
 # has already been loaded into this R session.

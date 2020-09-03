@@ -9,6 +9,7 @@ library(callr)
 
 new.version <- sub(".*==", "", test.pandas)
 old.version <- sub(".*==", "", old.pandas)
+basilisk.utils::installConda()
 
 tA <- file.path(client.dir, "my_package_A") 
 setupBasiliskEnv(tA, c(test.pandas, test.pandas.deps))

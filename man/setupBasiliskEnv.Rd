@@ -56,9 +56,13 @@ It is possible to specify a different version of Python in \code{packages} by su
 If no Python version is listed, the version in the base conda installation is used by default.
 }
 \examples{
+\dontshow{basilisk.utils::installConda()}
+
 tmploc <- file.path(tempdir(), "my_package_A")
-setupBasiliskEnv(tmploc, c('pandas=0.25.3',
-    "python-dateutil=2.8.1", "pytz=2019.3"))
+if (!file.exists(tmploc)) {
+    setupBasiliskEnv(tmploc, c('pandas=0.25.3',
+        "python-dateutil=2.8.1", "pytz=2019.3"))
+}
 
 }
 \seealso{

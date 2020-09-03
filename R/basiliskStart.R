@@ -125,21 +125,29 @@
 #' \code{\link{getBasiliskFork}} and \code{\link{getBasiliskShared}}, to control various global options.
 #' 
 #' @examples
-#' # Loading one environment:
-#' tmploc <- file.path(tempdir(), "my_package_B")
-#' setupBasiliskEnv(tmploc, c('pandas=0.25.1',
-#'     "python-dateutil=2.8.0", "pytz=2019.3"))
+#' \dontshow{basilisk.utils::installConda()}
 #'
+#' # Creating an environment (note, this is not necessary
+#' # when supplying a BasiliskEnvironment to basiliskStart):
+#' tmploc <- file.path(tempdir(), "my_package_B")
+#' if (!file.exists(tmploc)) {
+#'     setupBasiliskEnv(tmploc, c('pandas=0.25.1',
+#'         "python-dateutil=2.8.0", "pytz=2019.3"))
+#' }
+#'
+#' # Pulling out the pandas version, as a demonstration:
 #' cl <- basiliskStart(tmploc)
 #' basiliskRun(proc=cl, function() { 
 #'     X <- reticulate::import("pandas"); X$`__version__` 
 #' })
 #' basiliskStop(cl)
 #'
-#' # Co-exists with our other environment:
+#' # This happily co-exists with our other environment:
 #' tmploc2 <- file.path(tempdir(), "my_package_C")
-#' setupBasiliskEnv(tmploc2, c('pandas=0.24.1',
-#'     "python-dateutil=2.7.1", "pytz=2018.7"))
+#' if (!file.exists(tmploc2)) {
+#'     setupBasiliskEnv(tmploc2, c('pandas=0.24.1',
+#'         "python-dateutil=2.7.1", "pytz=2018.7"))
+#' }
 #' 
 #' cl2 <- basiliskStart(tmploc2)
 #' basiliskRun(proc=cl2, function() { 

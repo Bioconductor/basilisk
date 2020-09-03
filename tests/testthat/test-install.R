@@ -1,6 +1,7 @@
 # This checks that the version-controlling behavior of setupBasiliskEnv is correct.
 # library(testthat); library(basilisk); source("setup.R"); source("test-install.R"); 
 
+basilisk.utils::installConda()
 target <- file.path(client.dir, "thingo")
 
 test_that("setupBasiliskEnv refuses to work without all specified versions", {

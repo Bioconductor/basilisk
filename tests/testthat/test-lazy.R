@@ -26,6 +26,8 @@ test_that("lazy conda installation works as expected", {
 })
 
 test_that(".obtainEnvironmentPath works as expected", {
+    skip_on_os("windows") # see above.
+
     testpkg <- "basilisk.utils"
     env <- BasiliskEnvironment(envname="test", pkgname=testpkg, packages=test.pandas)
     dummy <- file.path(basilisk.utils::getExternalDir(), paste0(testpkg, "-", packageVersion(testpkg), "0"))
