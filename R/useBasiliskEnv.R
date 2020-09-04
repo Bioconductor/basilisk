@@ -13,8 +13,8 @@
 #' It is unlikely that developers should ever need to call \code{\link{useBasiliskEnv}} directly.
 #' Rather, this interaction should be automatically handled by \code{\link{basiliskStart}}.
 #' 
-#' By default, this function will modify a suite of environment variables as a side effect
-#' - see \code{\link{.activateEnvironment}} for details.
+#' This function will modify a suite of environment variables as a side effect
+#' - see \dQuote{Persistence of environment variables} in \code{?\link{basiliskStart}} for the rationale.
 #'
 #' @author Aaron Lun
 #' 

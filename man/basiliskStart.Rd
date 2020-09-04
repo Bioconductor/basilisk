@@ -136,19 +136,17 @@ This simplifies permission management and avoids duplication in enterprise setti
 
 \section{Persistence of environment variables}{
 
-When \code{shared=TRUE} and if no Python instance has already been loaded into the current R session,
-a side-effect of \code{basiliskStart} is that it will modify a number of environment variables 
-to mimic activation of the conda environment - see \code{\link{useBasiliskEnv}} for more details.
+When \code{shared=TRUE} and if no Python instance has already been loaded into the current R session, 
+a side-effect of \code{basiliskStart} is that it will modify a number of environment variables.
+This is done to mimic activation of the Conda environment located at \code{env}.
 Importantly, old values for these variables will \emph{not} be restored upon \code{basiliskStop}.
 
-This behavior is intentional as (i) the use of the conda-derived Python 
-generally depends on the activation of the conda environment,
+This behavior is intentional as (i) the correct use of the Conda-derived Python depends on activation 
 and (ii) the loaded Python persists for the entire R session.
-It is unlikely to be safe to reset the environment variables and \dQuote{deactivate} the environment
-while the conda-derived Python instance is effectively still in use.
+It may not be safe to reset the environment variables and \dQuote{deactivate} the environment 
+while the Conda-derived Python instance is effectively still in use.
 
-If modifications to the environment variables are not desirable,
-users should set \code{shared=FALSE} via \code{\link{setBasiliskShared}}.
+If modifications to the environment variables are not desirable, users should set \code{shared=FALSE} via \code{\link{setBasiliskShared}}.
 }
 
 \examples{
