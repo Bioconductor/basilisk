@@ -35,11 +35,12 @@
 #' To identify appropriate versions, we suggest:
 #' \enumerate{
 #' \item Creating a fresh conda environment with the desired packages, using \code{packages=} in \code{setupBasiliskEnv}.
-#' \item Using \code{conda env export} to identify any relevant dependencies and their versions.
-#' \item Including them in the \code{packages=} argument for future use.
+#' \item Calling \code{\link{listPackages}} on the environment to identify any relevant dependencies and their versions.
+#' \item Including those dependencies in the \code{packages=} argument for future use.
+#' (It is helpful to mark dependencies in some manner, e.g., with comments, to distinguish them from the actual desired packages.)
 #' }
 #' The only reason that pinned dependencies are not mandatory is because some dependencies are OS-specific,
-#' requiring some manual pruning of the output of \code{conda env export}.
+#' requiring some manual pruning of the output of \code{\link{listPackages}}.
 #'
 #' It is possible to specify a different version of Python in \code{packages} by supplying, e.g., \code{"python=2.7.10"}.
 #' If no Python version is listed, the version in the base conda installation is used by default.

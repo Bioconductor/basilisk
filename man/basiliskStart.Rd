@@ -24,7 +24,7 @@ basiliskRun(
 
 Alternatively, a string specifying the path to an environment, though this should only be used for testing purposes.
 
-Alternatively, \code{NULL} to indicate that the base conda installation should be used as the environment.}
+Alternatively, \code{NULL} to indicate that the base Conda installation should be used as the environment.}
 
 \item{fork}{Logical scalar indicating whether forking should be performed on non-Windows systems, 
 see \code{\link{getBasiliskFork}}.
@@ -70,6 +70,8 @@ Similarly, it would be unwise to interact with \code{proc} via any function othe
 If \code{proc=NULL} in \code{basiliskRun}, a process will be created and closed automatically.
 This may be convenient in functions where persistence is not required.
 Note that doing so requires specification of \code{pkgname} and \code{envname}.
+
+If the base Conda installation provided with \pkg{basilisk} satisfies the requirements of the client package, developers can set \code{env=NULL} in this function to use that base installation rather than constructing a separate environment.
 }
 \section{Choice of process type}{
 
@@ -79,7 +81,7 @@ Note that doing so requires specification of \code{pkgname} and \code{envname}.
 Similarly, if the existing environment is the same as the requested environment, \code{basiliskStart} will use that directly.
 This mode is most efficient as it avoids creating any new processes, 
 but the use of a shared Python configuration may prevent non-\pkg{basilisk} packages from working correctly in the same session.
-\item Otherwise, if \code{fork=TRUE}, no Python version has already been loaded and we are not on Windows, 
+\item If \code{fork=TRUE}, no Python version has already been loaded and we are not on Windows, 
 \code{basiliskStart} will create a new process by forking.
 In the forked process, \code{basiliskStart} will load the specified environment for operations in Python.
 This is less efficient as it needs to create a new process 
@@ -91,17 +93,11 @@ This is the least efficient as it needs to transfer data over sockets but is gua
 
 Developers can control these choices directly by explicitly specifying \code{shared} and \code{fork},
 while users can control them indirectly with \code{\link{setBasiliskFork}} and related functions.
-
-If the base conda installation provided with \pkg{basilisk} satisfies the requirements of the client package,
-it is strongly recommended to set \code{env=NULL} rather than constructing a separate environment.
-This is obviously easier but it is also more efficient as it increases the chance of 
-multiple \pkg{basilisk} clients being able to share a common Python instance within the same R session.
 }
 
 \section{Constraints on user-defined functions}{
 
-In \code{basiliskRun}, there is no guarantee that \code{fun} 
-has access to the environment in which \code{basiliskRun} is called.
+In \code{basiliskRun}, there is no guarantee that \code{fun} has access to \code{basiliskRun}'s calling environment.
 This has a number of consequences for the type of code that can be written inside \code{fun}:
 \itemize{
 \item Functions or variables from non-base R packages used inside \code{fun} should be prefixed with the package namespace, 
@@ -111,27 +107,22 @@ Developers should not rely on closures to capture variables in the calling envir
 \item Relevant global variables from the calling environment should be explicitly reset inside \code{fun}.
 \item Developers should \emph{not} attempt to pass complex objects to memory in or out of \code{fun}.
 This mostly refers to objects that contain custom pointers to memory, e.g., file handles, pointers to \pkg{reticulate} objects.
-Both arguments and return values should instead be pure R objects.
+Both the arguments and return values of \code{fun} should be pure R objects.
 }
 }
 
 \section{Use of lazy installation}{
 
-If the specified \pkg{basilisk} environment is not present and \code{env} is a \linkS4class{BasiliskEnvironment} object,
-the environment will be created upon first use of \code{basiliskStart}.
-If the base conda installation is not present, it will also be installed upon first use of \code{basiliskStart}.
-The motivation for this is to avoid portability problems with hard-coded paths when \pkg{basilisk} is provided as a binary.
+If the specified \pkg{basilisk} environment is not present and \code{env} is a \linkS4class{BasiliskEnvironment} object, the environment will be created upon first use of \code{basiliskStart}.
+If the base Conda installation is not present, it will also be installed upon first use of \code{basiliskStart}.
+We do not provide Conda with the \pkg{basilisk} package binaries to avoid portability problems with hard-coded paths (as well as potential licensing issues from redistribution).
 
-By default, both the base conda installation and the environments will be placed in an external user-writable directory.
-The location of this directory can be changed by setting 
-the \code{"BASILISK_EXTERNAL_DIR"} environment variable to the desired path.
-This may occasionally be necessary if the file path to the default location is too long for Windows,
-or if the default path has spaces that break the Miniconda/Anaconda installer.
+By default, both the base conda installation and the environments will be placed in an external user-writable directory defined by \pkg{rappdirs} via \code{\link{getExternalDir}}.
+The location of this directory can be changed by setting the \code{BASILISK_EXTERNAL_DIR} environment variable to the desired path.
+This may occasionally be necessary if the file path to the default location is too long for Windows, or if the default path has spaces that break the Miniconda/Anaconda installer.
 
-Advanced users may consider setting the environment variable \code{"BASILISK_USE_SYSTEM_DIR"} to 1 
-when installing \pkg{basilisk} and its client packages from source.
-which will place both the base installation and the environments in the R system directory. 
-This simplifies permission management and avoids duplication in enterprise settings.
+Advanced users may consider setting the environment variable \code{BASILISK_USE_SYSTEM_DIR} to 1 when installing \pkg{basilisk} and its client packages from source.
+This will place both the base installation and the environments in the R system directory, which simplifies permission management and avoids duplication in enterprise settings.
 }
 
 \section{Persistence of environment variables}{
@@ -141,12 +132,12 @@ a side-effect of \code{basiliskStart} is that it will modify a number of environ
 This is done to mimic activation of the Conda environment located at \code{env}.
 Importantly, old values for these variables will \emph{not} be restored upon \code{basiliskStop}.
 
-This behavior is intentional as (i) the correct use of the Conda-derived Python depends on activation 
-and (ii) the loaded Python persists for the entire R session.
-It may not be safe to reset the environment variables and \dQuote{deactivate} the environment 
-while the Conda-derived Python instance is effectively still in use.
+This behavior is intentional as (i) the correct use of the Conda-derived Python depends on activation and (ii) the loaded Python persists for the entire R session.
+It may not be safe to reset the environment variables and \dQuote{deactivate} the environment while the Conda-derived Python instance is effectively still in use.
+(In practice, lack of activation is most problematic on Windows due to its dependence on correct \code{PATH} specification for dynamic linking.)
 
-If modifications to the environment variables are not desirable, users should set \code{shared=FALSE} via \code{\link{setBasiliskShared}}.
+If persistence is not desirable, users should set \code{shared=FALSE} via \code{\link{setBasiliskShared}}.
+This will limit any modifications to the environment variables to a separate R process.
 }
 
 \examples{

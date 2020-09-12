@@ -14,7 +14,7 @@ listCorePackages()
 
 Alternatively, a string specifying the path to an environment, though this should only be used for testing purposes.
 
-Alternatively, \code{NULL} to indicate that the base conda installation should be used as the environment.}
+Alternatively, \code{NULL} to indicate that the base Conda installation should be used as the environment.}
 }
 \value{
 A data.frame containing the \code{full}, a versioned package string, and \code{package}, the package name.
