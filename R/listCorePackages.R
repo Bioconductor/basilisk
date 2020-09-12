@@ -27,7 +27,7 @@ listPackages <- function(env=NULL) {
 .basilisk_freeze <- function(envpath) {
     previous <- .activateEnvironment(envpath)
     on.exit(.deactivateEnvironment(previous))
-    system2(getPythonBinary(envpath), c("-m", "pip", "freeze"), stdout=TRUE)
+    system2(getPythonBinary(envpath), c("-m", "pip", "list", "--format", "freeze"), stdout=TRUE)
 }
 
 .full2pkg <- function(packages) {
