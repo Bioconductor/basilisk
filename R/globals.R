@@ -2,7 +2,8 @@
     current <- list(
         envir=NULL,
         fork=TRUE,
-        shared=TRUE
+        shared=TRUE,
+        no.version=FALSE
     )
 
     list(
