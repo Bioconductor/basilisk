@@ -135,6 +135,8 @@ It is probably unwise to use `proc` across user-visible functions, i.e., the end
 - Windows has a limit of 260 characters on its file paths;
 this can be exceeded due to deeply nested directories for some packages, causing the installation to be incomplete or fail outright.
 - Builds for 32-bit Windows are not supported due to a lack of demand relative to the difficulty of setting it up.
+- **IMPORTANT!** the automatic installation brokered by `r Biocpkg("basilisk")` assumes that the user accepts the [Anaconda terms of service](https://www.anaconda.com/terms-of-service).
+This mostly boils down to "don't hammer the Anaconda repository with requests", see the commentary [here](https://www.anaconda.com/blog/sustaining-our-stewardship-of-the-open-source-data-science-community).
 
 ## Modifying environment variables 
 
