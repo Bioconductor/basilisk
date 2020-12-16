@@ -7,7 +7,6 @@ date: "Revised: January 25, 2019"
 output:
   BiocStyle::html_document
 package: basilisk
-bibliography: 
 vignette: >
   %\VignetteIndexEntry{Motivation}
   %\VignetteEngine{knitr::rmarkdown}
