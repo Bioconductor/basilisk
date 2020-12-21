@@ -9,3 +9,6 @@ old.pandas.deps <- c("python-dateutil==2.7.1", "pytz==2018.7")
 client.dir <- "install-test-client"
 unlink(client.dir, recursive=TRUE)
 dir.create(client.dir)
+
+# See reticulate:::check_forbidden_install().
+Sys.setenv(`_RETICULATE_I_KNOW_WHAT_IM_DOING_`="true")
