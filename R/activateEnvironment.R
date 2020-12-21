@@ -54,6 +54,10 @@
     output <- ADD(output, "RETICULATE_PYTHON_ENV")
     Sys.unsetenv("RETICULATE_PYTHON_ENV")
 
+    # Isolating from any user-specific site-packages, see conda/conda#394.
+    output <- ADD(output, "PYTHONNOUSERSITE")
+    Sys.setenv(PYTHONNOUSERSITE=1)
+
     # Activating the conda environment.
     output <- .activate_condaenv(output, envpath)
 
