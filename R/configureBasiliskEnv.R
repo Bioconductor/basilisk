@@ -34,7 +34,7 @@
 #'
 #' @export
 #' @importFrom methods is
-#' @importFrom basilisk.utils useSystemDir dir.create2 setVariable
+#' @importFrom basilisk.utils useSystemDir getSystemDir dir.create2 setVariable
 configureBasiliskEnv <- function(src="R/basilisk.R") {
     if (!useSystemDir()) {
         return(invisible(NULL))
@@ -57,7 +57,8 @@ configureBasiliskEnv <- function(src="R/basilisk.R") {
 
     env.vars <- env.vars[keep]
     tmp <- get(env.vars[1], envir=envir, inherits=FALSE)
-    envdir <- .get_env_system_dir(.getPkgName(tmp))
+    pkgname <- .getPkgName(tmp)
+    envdir <- .get_env_system_dir(pkgname)
 
     # Setting this so that conda doesn't try to dump the requested packages
     # into the (conceptually, if not actually, read-only) base installation.
@@ -75,7 +76,8 @@ configureBasiliskEnv <- function(src="R/basilisk.R") {
             envpath=file.path(envdir, .getEnvName(current)),
             packages=.getPackages(current),
             channels=.getChannels(current),
-            pip=.getPipPackages(current)
+            pip=.getPipPackages(current),
+            paths=file.path(getSystemDir(pkgname, installed=FALSE), .getPipPaths(current))
         )
     }
 

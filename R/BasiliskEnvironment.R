@@ -17,6 +17,8 @@
 #' \item \code{channels}, character vector specifying the Conda channels to search.
 #' \item \code{pip}, character vector containing names of additional Python packages from PyPi,
 #' see \code{\link{setupBasiliskEnv}} for requirements.
+#' \item \code{paths}, character vector containing relative paths to Python packages to be installed via \code{pip}.
+#' These paths are interpreted relative to the system directory of \code{pkgname}, i.e., they are appended to the output of \code{\link{system.file}}.
 #' }
 #' 
 #' @examples
@@ -30,12 +32,12 @@ NULL
 
 #' @export
 setClass("BasiliskEnvironment", slots=c(envname="character", pkgname="character", 
-    packages="character", channels="character", pip="character"))
+    packages="character", channels="character", pip="character", paths="character"))
 
 #' @export
 #' @import methods 
-BasiliskEnvironment <- function(envname, pkgname, packages, channels="conda-forge", pip=character(0)) {
-    new("BasiliskEnvironment", envname=envname, pkgname=pkgname, packages=packages, channels=channels, pip=pip)
+BasiliskEnvironment <- function(envname, pkgname, packages, channels="conda-forge", pip=character(0), paths=character(0)) {
+    new("BasiliskEnvironment", envname=envname, pkgname=pkgname, packages=packages, channels=channels, pip=pip, paths=paths)
 }
 
 setValidity("BasiliskEnvironment", function(object) {
@@ -64,6 +66,10 @@ setValidity("BasiliskEnvironment", function(object) {
         msg <- c(msg, "'pip' should not contain NA strings")
     }
 
+    if (any(is.na(.getPipPaths(object)))) {
+        msg <- c(msg, "'paths' should not contain NA strings")
+    }
+
     if (length(msg)) {
         msg
     } else {
@@ -89,3 +95,5 @@ setMethod(".getPkgName", "character", function(x) NULL)
 .getPackages <- function(x) x@packages
 
 .getPipPackages <- function(x) x@pip
+
+.getPipPaths <- function(x) x@paths

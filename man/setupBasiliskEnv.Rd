@@ -4,7 +4,13 @@
 \alias{setupBasiliskEnv}
 \title{Set up \pkg{basilisk}-managed environments}
 \usage{
-setupBasiliskEnv(envpath, packages, channels = "conda-forge", pip = NULL)
+setupBasiliskEnv(
+  envpath,
+  packages,
+  channels = "conda-forge",
+  pip = NULL,
+  paths = NULL
+)
 }
 \arguments{
 \item{envpath}{String containing the path to the environment to use.}
@@ -15,8 +21,10 @@ Version numbers must be included.}
 \item{channels}{Character vector containing the names of additional conda channels to search.
 Defaults to the Conda Forge repository.}
 
-\item{pip}{Character vector containing the names of additional packages to install from PyPi using pip.
+\item{pip}{Character vector containing the names of additional packages to install from PyPi using \code{pip}.
 Version numbers must be included.}
+
+\item{paths}{Character vector containing absolute paths to Python package directories, to be installed by \code{pip}.}
 }
 \value{
 A conda environment is created at \code{envpath} containing the specified \code{packages}.
@@ -39,6 +47,10 @@ It is possible to use the \code{pip} argument to install additional packages fro
 All packages listed here are also expected to have pinned versions, this time using the \code{==} notation.
 However, some caution is required when mixing packages from conda and pip,
 see \url{https://www.anaconda.com/using-pip-in-a-conda-environment} for more details.
+
+It is further possible to install Python packages from directories.
+In the package development context, this typically assumes that the Python directories are included in the \code{inst} subdirectory of the R package.
+\code{\link{basiliskStart}} will then convert the relative path to an absolute path before calling this function - see \code{\link{BasiliskEnvironment}} for details.
 
 It is also good practice to explicitly list the versions of the \emph{dependencies} of all desired packages.
 This protects against future changes in the behavior of your code if Conda's solver decides to use a different version of a dependency.

@@ -7,8 +7,9 @@
 #' Version numbers must be included.
 #' @param channels Character vector containing the names of additional conda channels to search.
 #' Defaults to the Conda Forge repository.
-#' @param pip Character vector containing the names of additional packages to install from PyPi using pip.
+#' @param pip Character vector containing the names of additional packages to install from PyPi using \code{pip}.
 #' Version numbers must be included.
+#' @param paths Character vector containing absolute paths to Python package directories, to be installed by \code{pip}.
 #' 
 #' @return 
 #' A conda environment is created at \code{envpath} containing the specified \code{packages}.
@@ -28,6 +29,10 @@
 #' All packages listed here are also expected to have pinned versions, this time using the \code{==} notation.
 #' However, some caution is required when mixing packages from conda and pip,
 #' see \url{https://www.anaconda.com/using-pip-in-a-conda-environment} for more details.
+#'
+#' It is further possible to install Python packages from directories.
+#' In the package development context, this typically assumes that the Python directories are included in the \code{inst} subdirectory of the R package.
+#' \code{\link{basiliskStart}} will then convert the relative path to an absolute path before calling this function - see \code{\link{BasiliskEnvironment}} for details.
 #'
 #' It is also good practice to explicitly list the versions of the \emph{dependencies} of all desired packages.
 #' This protects against future changes in the behavior of your code if Conda's solver decides to use a different version of a dependency.
@@ -63,7 +68,7 @@
 #' @export
 #' @importFrom basilisk.utils getCondaDir getCondaBinary getPythonBinary unlink2 dir.create2 
 #' @importFrom reticulate conda_install
-setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL) {
+setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL, paths=NULL) {
     packages <- sub("==", "=", packages)
     .check_versions(packages, "=")
 
@@ -95,6 +100,13 @@ setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL
         result <- system2(env.py, c("-m", "pip", "install", pip))
         if (result!=0L) {
             stop("failed to install additional packages via pip")
+        }
+    }
+
+    if (length(paths)) {
+        env.py <- getPythonBinary(envpath)
+        for (p in paths) {
+            result <- system2(env.py, c("-m", "pip", "install", p))
         }
     }
 

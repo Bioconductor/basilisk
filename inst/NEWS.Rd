@@ -8,6 +8,8 @@
 \item Added locking to \code{setupBasiliskEnv()} for safe parallel construction of environments. 
 
 \item Ensure that environments are always activated before use in \code{useBasiliskEnv()}.
+
+\item Support installation from Python package directories on the file system.
 }}
 
 \section{Version 1.0.0}{\itemize{

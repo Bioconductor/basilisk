@@ -25,5 +25,12 @@ test <- function() {
     })
     basiliskStop(cl)
 
-    list(pandas=pandas.names, sklearn=sklearn.names)
+    cl <- basiliskStart(env3)
+    dummy <- basiliskRun(cl, function() { 
+        X <- reticulate::import("test_dummy")
+        X$whoami()
+    })
+    basiliskStop(cl)
+
+    list(pandas=pandas.names, sklearn=sklearn.names, dummy=dummy)
 }

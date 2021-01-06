@@ -13,4 +13,6 @@ test_that("internal test package installs correctly", {
 
     expect_type(output$sklearn, "character")
     expect_true(length(output$sklearn) > 0L)
+
+    expect_identical(output$dummy, "My name is Aaron")
 })

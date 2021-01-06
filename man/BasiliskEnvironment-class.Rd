@@ -22,6 +22,8 @@ see \code{\link{setupBasiliskEnv}} for requirements.
 \item \code{channels}, character vector specifying the Conda channels to search.
 \item \code{pip}, character vector containing names of additional Python packages from PyPi,
 see \code{\link{setupBasiliskEnv}} for requirements.
+\item \code{paths}, character vector containing relative paths to Python packages to be installed via \code{pip}.
+These paths are interpreted relative to the system directory of \code{pkgname}, i.e., they are appended to the output of \code{\link{system.file}}.
 }
 }
 
