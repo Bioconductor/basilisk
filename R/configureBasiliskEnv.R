@@ -61,12 +61,10 @@ configureBasiliskEnv <- function(src="R/basilisk.R") {
 
     # Setting this so that conda doesn't try to dump the requested packages
     # into the (conceptually, if not actually, read-only) base installation.
-    old <- setVariable("CONDA_PKGS_DIRS", NA)
-    on.exit(setVariable("CONDA_PKGS_DIRS", old))
-
     new.pkg.dir <- file.path(envdir, "_pkgs")
     dir.create2(new.pkg.dir)
-    Sys.setenv(CONDA_PKGS_DIRS=normalizePath(new.pkg.dir))
+    old <- setCondaPackageDir(new.pkg.dir)
+    on.exit(setCondaPackageDir(old))
 
     # Actually creating the environments.
     for (nm in env.vars) {
@@ -80,7 +78,9 @@ configureBasiliskEnv <- function(src="R/basilisk.R") {
         )
     }
 
-    unlink2(new.pkg.dir)
+    # This cleaning happens on the currently set CondaPackageDir.
+    cleanConda()
+
     invisible(NULL)
 }
 
