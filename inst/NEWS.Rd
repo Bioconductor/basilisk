@@ -10,6 +10,8 @@
 \item Ensure that environments are always activated before use in \code{useBasiliskEnv()}.
 
 \item Support installation from Python package directories on the file system.
+
+\item Clean Conda package directories during a system installation to reduce disk usage.
 }}
 
 \section{Version 1.0.0}{\itemize{
