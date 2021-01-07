@@ -77,7 +77,7 @@ configureBasiliskEnv <- function(src="R/basilisk.R") {
             packages=.getPackages(current),
             channels=.getChannels(current),
             pip=.getPipPackages(current),
-            paths=file.path(getSystemDir(pkgname, installed=FALSE), .getPipPaths(current))
+            paths=file.path("inst", .getPipPaths(current))
         )
     }
 
