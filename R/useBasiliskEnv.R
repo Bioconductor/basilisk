@@ -42,12 +42,12 @@
 #' \code{\link{basiliskStart}}, for how these \pkg{basilisk} environments should be used.
 #'
 #' @export
+#' @import basilisk.utils
 #' @importFrom reticulate use_condaenv py_config
-#' @importFrom basilisk.utils getPythonBinary 
 useBasiliskEnv <- function(envpath) {
     envpath <- normalizePath(envpath, mustWork=TRUE)
 
-    .activateEnvironment(envpath)
+    activateEnvironment(envpath)
     use_condaenv(envpath, required=TRUE)
 
     # use_condaenv doesn't actually cause Python to be loaded immediately, 
@@ -58,7 +58,6 @@ useBasiliskEnv <- function(envpath) {
 }
 
 #' @importFrom reticulate py_config 
-#' @importFrom basilisk.utils getPythonBinary 
 .same_as_loaded <- function(envpath) 
 # Checking whether we're the same as the existing python instance,
 # which would indicate that we correctly loaded `envpath`.

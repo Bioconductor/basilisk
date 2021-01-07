@@ -16,8 +16,6 @@
 #' 
 #' @author Aaron Lun
 #'
-#' @importFrom basilisk.utils getCondaDir installConda getExternalDir useSystemDir 
-#' destroyOldVersions clearObsoleteDir
 #' @importFrom filelock lock unlock
 #' @importFrom utils packageVersion
 #' @rdname INTERNAL_obtainEnvironmentPath

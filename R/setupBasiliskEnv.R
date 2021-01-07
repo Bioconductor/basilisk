@@ -66,14 +66,13 @@
 #' \code{\link{listPackages}}, to list the packages in the Conda environment.
 #'
 #' @export
-#' @importFrom basilisk.utils getCondaDir getCondaBinary getPythonBinary unlink2 dir.create2 
 #' @importFrom reticulate conda_install
 setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL, paths=NULL) {
     packages <- sub("==", "=", packages)
     .check_versions(packages, "=")
 
-    previous <- .activateEnvironment()
-    on.exit(.deactivateEnvironment(previous))
+    previous <- activateEnvironment()
+    on.exit(deactivateEnvironment(previous))
 
     base.dir <- getCondaDir()
     conda.cmd <- getCondaBinary(base.dir)
