@@ -130,11 +130,21 @@ It is probably unwise to use `proc` across user-visible functions, i.e., the end
 
 ## Important restrictions  
 
-- The Miniconda/Anaconda installers do not work if the installation directory contains spaces.
-- Windows has a limit of 260 characters on its file paths;
+The Miniconda/Anaconda installers do not work if the installation directory contains spaces.
+If this is the case, consider setting the `BASILISK_EXTERNAL_DIR` environment variable (see below).
+
+Windows has a limit of 260 characters on its file paths;
 this can be exceeded due to deeply nested directories for some packages, causing the installation to be incomplete or fail outright.
-- Builds for 32-bit Windows are not supported due to a lack of demand relative to the difficulty of setting it up.
-- **IMPORTANT!** the automatic installation brokered by `r Biocpkg("basilisk")` assumes that the user accepts the [Anaconda terms of service](https://www.anaconda.com/terms-of-service).
+Builds for 32-bit Windows are not supported due to a lack of demand relative to the difficulty of setting it up.
+
+Older versions of Rstudio on MacOSX have some difficulties with the generation of separate processes (see [here](https://github.com/rstudio/rstudio/issues/6692#issuecomment-619645114)).
+As a workaround in such cases, users should set:
+
+```{r, eval=FALSE}
+parallel:::setDefaultClusterOptions(setup_strategy = "sequential")
+```
+
+**IMPORTANT!** the automatic installation brokered by `r Biocpkg("basilisk")` assumes that the user accepts the [Anaconda terms of service](https://www.anaconda.com/terms-of-service).
 This mostly boils down to "don't hammer the Anaconda repository with requests", see the commentary [here](https://www.anaconda.com/blog/sustaining-our-stewardship-of-the-open-source-data-science-community).
 
 ## Modifying environment variables 
@@ -168,7 +178,7 @@ It is possible to manually set up the desired environment with, e.g., Python 2.7
 This allows users to continue to take advantage of `r Biocpkg("basilisk")`'s graceful handling of Python collisions in more complex applications. 
 However, it can be quite difficult to guarantee portability so one should try to avoid doing this.
 
-# Session information
+# Session information {-}
 
 ```{r}
 sessionInfo()
