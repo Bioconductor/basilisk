@@ -16,7 +16,7 @@
 #' 
 #' @author Aaron Lun
 #'
-#' @importFrom filelock lock unlock
+#' @importFrom dir.expiry lockDirectory unlockDirectory touchDirectory
 #' @importFrom utils packageVersion
 #' @rdname INTERNAL_obtainEnvironmentPath
 .obtainEnvironmentPath <- function(env) {
@@ -38,20 +38,30 @@
             }
 
         } else {
-            # This step must be done before establishing the lock on the
-            # 'locfile' below, as it will clearExternalDir() and destroy all
-            # files for the current major version.
-            installConda() 
+            # Make sure that conda is installed - do this first. This also
+            # applies a lock to ensure that we wait for any concurrently
+            # running Conda installations to finish.
+            installConda()
 
-            envdir <- file.path(getExternalDir(), paste0(pkgname, "-", packageVersion(pkgname)))
+            # Decide whether we want to destroy things.
+            do.destroy <- destroyOldVersions()
+
+            # Applying a new shared lock to protect the current use-case from
+            # deletion by other processes clearing out stale installations.
+            exdir <- getExternalDir()
+            exlck <- lockExternalDir(exdir, exclusive=FALSE)
+            on.exit(unlockExternalDir(exlck, clear=do.destroy))
+
+            envdir <- file.path(exdir, pkgname, packageVersion(pkgname))
             envpath <- file.path(envdir, envname)
 
-            # See ?lockExternalDir and the installConda code
-            # for the rationale behind 'exclusive='.
-            dir.create(envdir, recursive=TRUE, showWarnings=FALSE)
-            locfile <- paste0(sub("/+$", "", envpath), "-00LOCK")
-            loc <- lock(locfile, exclusive=!file.exists(envpath))
-            on.exit(unlock(loc))
+            # Locking the environment directory; this ensures we will wait for
+            # any concurrently running installations to finish. Do NOT assign
+            # the existence of envpath to a variable for re-use in the
+            # conditional below. We want to recheck existance just in case the
+            # directory was created after waiting to acquire the lock.
+            lck <- lockDirectory(envdir, exclusive=!file.exists(envpath))
+            on.exit(unlockDirectory(lck, clear=do.destroy), add=TRUE, after=FALSE)
 
             if (!file.exists(envpath)) {
                 setupBasiliskEnv(envpath, 
@@ -59,11 +69,12 @@
                     channels=.getChannels(env),
                     pip=.getPipPackages(env),
                     paths=file.path(getSystemDir(pkgname, installed=TRUE), .getPipPaths(env))) # package must already be installed to get to this point.
-
-                if (destroyOldVersions()) {
-                    clearObsoleteDir(envdir)
-                }
             }
+
+            # Touching both the individual package directory _and_ the conda
+            # directory on successful acquisition of the path.
+            touchDirectory(envdir)
+            touchDirectory(exdir)
         }
     }
 
