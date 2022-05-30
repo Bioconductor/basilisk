@@ -7,6 +7,8 @@ target <- file.path(client.dir, "thingo")
 test_that("setupBasiliskEnv refuses to work without all specified versions", {
     basilisk.utils::unlink2(target)
     expect_error(setupBasiliskEnv(target, "numpy"), "versions must be explicitly specified")
+    expect_error(setupBasiliskEnv(target, "numpy>=10"), "versions must be explicitly specified")
+    expect_error(setupBasiliskEnv(target, "numpy<=10"), "versions must be explicitly specified")
 })
 
 test_that("setupBasiliskEnv obtains the correct version of the packages", {

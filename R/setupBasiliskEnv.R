@@ -69,7 +69,7 @@
 #' @importFrom reticulate conda_install
 setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL, paths=NULL) {
     packages <- sub("==", "=", packages)
-    .check_versions(packages, "=")
+    .check_versions(packages, "[^=<>]=[0-9]")
 
     previous <- activateEnvironment()
     on.exit(deactivateEnvironment(previous))
