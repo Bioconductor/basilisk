@@ -91,6 +91,10 @@ For completeness, `configure.win` should also be created:
 ${R_HOME}/bin${R_ARCH_BIN}/Rscript.exe -e "basilisk::configureBasiliskEnv()"
 ```
 
+Note that `basilisk.R` should be executable as a standalone file and create all `BasiliskEnvironment`s as named variables in the current environment.
+This is because the file will be directly `source`d by `configureBasiliskEnv()` for system installation of the environments.
+As such, the file should not assume that the rest of the client package has been installed or that the client's various dependencies have been loaded.
+
 ## Using the environments
 
 Any R functions that use Python code should do so via `basiliskRun()`, which ensures that different Bioconductor packages play nice when their dependencies clash.
