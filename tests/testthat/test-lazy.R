@@ -26,7 +26,7 @@ test_that("lazy conda installation works as expected", {
     expect_true(file.exists(target))
 })
 
-test_that(".obtainEnvironmentPath works as expected", {
+test_that("obtainEnvironmentPath works as expected", {
     skip_on_os("windows") # see above.
 
     testpkg <- "basilisk.utils"
@@ -37,14 +37,14 @@ test_that(".obtainEnvironmentPath works as expected", {
 
     # Omits destruction with NO_DESTROY=1.
     old.d <- basilisk.utils::setVariable("BASILISK_NO_DESTROY", "1")
-    out <- basilisk:::.obtainEnvironmentPath(env)
+    out <- obtainEnvironmentPath(env)
     expect_true(file.exists(out))
     expect_true(file.exists(dummy))
     basilisk.utils::setVariable("BASILISK_NO_DESTROY", old.d)
 
     # Otherwise, destruction of older versions works properly.
     old.d <- basilisk.utils::setVariable("BASILISK_NO_DESTROY", NA)
-    out <- basilisk:::.obtainEnvironmentPath(env)
+    out <- obtainEnvironmentPath(env)
     expect_true(file.exists(out))
     expect_false(file.exists(dummy))
     basilisk.utils::setVariable("BASILISK_NO_DESTROY", old.d)

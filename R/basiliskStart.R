@@ -158,7 +158,7 @@
 #' @importFrom parallel makePSOCKcluster clusterCall makeForkCluster
 #' @importFrom reticulate py_config py_available
 basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared()) {
-    envpath <- .obtainEnvironmentPath(env)
+    envpath <- obtainEnvironmentPath(env)
 
     if (shared) {
         ok <- FALSE

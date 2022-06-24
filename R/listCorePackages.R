@@ -18,7 +18,7 @@
 #' 
 #' @export
 listPackages <- function(env=NULL) {
-    envpath <- .obtainEnvironmentPath(env)
+    envpath <- obtainEnvironmentPath(env)
     out <- .basilisk_freeze(envpath)
     data.frame(full=out, package=.full2pkg(out), stringsAsFactors=FALSE)
 }

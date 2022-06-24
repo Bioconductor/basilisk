@@ -8,18 +8,12 @@
 #' It will also lazily create the environment if \code{useSystemDir()} returns \code{FALSE}
 #' and the environment does not already exist.
 #'
-#' @details
-#' A lot of this function used to belong to \code{\link{setupBasiliskEnv}}.
-#' I rolled it out into a separate entity so that \code{\link{setupBasiliskEnv}} only needs to focus on creating the environment.
-#' It should not worry about whether or not the environment needs to be created, which is rather context-dependent anyway.
-#' Indeed, such decisions only really need to be made during lazy installation and not in other contexts.
-#' 
 #' @author Aaron Lun
 #'
+#' @export
 #' @importFrom dir.expiry lockDirectory unlockDirectory touchDirectory
 #' @importFrom utils packageVersion
-#' @rdname INTERNAL_obtainEnvironmentPath
-.obtainEnvironmentPath <- function(env) {
+obtainEnvironmentPath <- function(env) {
     if (is.null(env)) {
         installConda()
         envpath <- getCondaDir()

@@ -1,6 +1,6 @@
 Package: basilisk
-Version: 1.9.1
-Date: 2022-05-29
+Version: 1.9.2
+Date: 2022-06-23
 Title: Freezing Python Dependencies Inside Bioconductor Packages
 Authors@R: c(person("Aaron", "Lun", role=c("aut", "cre", "cph"),
         email="infinite.monkeys.with.keyboards@gmail.com"),
@@ -24,6 +24,6 @@ Description:
     This aims to provide a consistent Python environment that can be used reliably by Bioconductor packages.
     Functions are also provided to enable smooth interoperability of multiple Python environments in a single R session.
 License: GPL-3
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.0
 StagedInstall: false
 VignetteBuilder: knitr
