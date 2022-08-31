@@ -145,10 +145,9 @@ This will limit any modifications to the environment variables to a separate R p
 
 # Creating an environment (note, this is not necessary
 # when supplying a BasiliskEnvironment to basiliskStart):
-tmploc <- file.path(tempdir(), "my_package_B")
+tmploc <- file.path(tempdir(), "my_package_A")
 if (!file.exists(tmploc)) {
-    setupBasiliskEnv(tmploc, c('pandas=0.25.1',
-        "python-dateutil=2.8.0", "pytz=2019.3"))
+    setupBasiliskEnv(tmploc, c('pandas=1.4.3'))
 }
 
 # Pulling out the pandas version, as a demonstration:
@@ -159,10 +158,9 @@ basiliskRun(proc=cl, function() {
 basiliskStop(cl)
 
 # This happily co-exists with our other environment:
-tmploc2 <- file.path(tempdir(), "my_package_C")
+tmploc2 <- file.path(tempdir(), "my_package_B")
 if (!file.exists(tmploc2)) {
-    setupBasiliskEnv(tmploc2, c('pandas=0.24.1',
-        "python-dateutil=2.7.1", "pytz=2018.7"))
+    setupBasiliskEnv(tmploc2, c('pandas=1.4.2'))
 }
 
 cl2 <- basiliskStart(tmploc2)

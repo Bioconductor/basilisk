@@ -58,8 +58,7 @@
 #'
 #' tmploc <- file.path(tempdir(), "my_package_A")
 #' if (!file.exists(tmploc)) {
-#'     setupBasiliskEnv(tmploc, c('pandas=0.25.3',
-#'         "python-dateutil=2.8.1", "pytz=2019.3"))
+#'     setupBasiliskEnv(tmploc, c('pandas=1.4.3'))
 #' }
 #'
 #' @seealso

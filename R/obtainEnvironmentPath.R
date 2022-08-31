@@ -2,14 +2,26 @@
 #'
 #' Obtain a path to a Conda environment, lazily installing it if necessary.
 #'
-#' @param env A string or \linkS4class{BasiliskEnvironment} object specifying the environment.
+#' @param env A \linkS4class{BasiliskEnvironment} object specifying the environment.
+#' Alternatively a string containing a path to an existing environment.
 #'
 #' @return String containing the path to an instantiated Conda environment.
-#' It will also lazily create the environment if \code{useSystemDir()} returns \code{FALSE}
+#' 
+#' For a BasiliskEnvironment \code{env}, the function will also lazily create the environment if \code{useSystemDir()} returns \code{FALSE}
 #' and the environment does not already exist.
 #'
 #' @author Aaron Lun
 #'
+#' @examples
+#' tmploc <- file.path(tempdir(), "my_package_A")
+#' if (!file.exists(tmploc)) {
+#'     setupBasiliskEnv(tmploc, c('pandas=1.4.3'))
+#' }
+#' obtainEnvironmentPath(tmploc)
+#'
+#' env <- BasiliskEnvironment("test_env", "basilisk", 
+#'     packages=c("scikit-learn=1.1.1", "pandas=1.43.1"))
+#' \dontrun{obtainEnvironmentPath(env)}
 #' @export
 #' @importFrom dir.expiry lockDirectory unlockDirectory touchDirectory
 #' @importFrom utils packageVersion
