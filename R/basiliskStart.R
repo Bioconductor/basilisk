@@ -175,7 +175,7 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
     envpath <- obtainEnvironmentPath(env)
 
     if (isTRUE(glibcxx_failed$failures[[envpath]])) {
-        rscript <- file.path(getCondaDir(), "bin", "Rscript")
+        rscript <- file.path(getCondaDir(), "envs", "mini-R", "bin", "Rscript")
         proc <- makePSOCKcluster(1, rscript=rscript) # can't suppress the warning, oh well.
 
         # Transmit internals required for useBasiliskEnv to work properly inside the mini-R.
