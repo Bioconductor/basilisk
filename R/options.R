@@ -1,11 +1,12 @@
 #' Options for \pkg{basilisk}
 #'
-#' Options controlling the efficiency and friendliness of starting up a Python instance via \pkg{basilisk}.
+#' Options controlling the efficiency and friendliness of starting up a Python instance via \code{\link{basiliskStart}}.
 #'
 #' @param value Logical scalar:
 #' \itemize{
 #' \item For \code{setBasiliskFork}, whether forking should be used when available.
 #' \item For \code{setBasiliskShared}, whether the shared Python instance can be set in the R session.
+#' \item For \code{setBasiliskForceFallback}, whether to force the use of the last resort fallback.
 #' }
 #'
 #' @return
@@ -27,6 +28,10 @@
 #' This allows each package to fork to create a new process as no Python has been loaded in the parent R process (see \code{?\link{basiliskStart}}).
 #' In contrast, if any package loads Python sharedly, the others are forced to use parallel socket processes.
 #' This results in a tragedy of the commons where the efficiency of all other packages is reduced.
+#'
+#' Developers may wish to set \code{setBasiliskShared(FALSE)} and \code{setBasiliskFork(FALSE)} during unit testing,
+#' to ensure that their functions do not make incorrect assumptions about the calling environment used in \code{\link{basiliskRun}}.
+#' Similarly, setting \code{setBasiliskForceFallback(TRUE)} is useful for testing that \code{\link{basiliskRun}} works inside a minimalistic R installation. 
 #' 
 #' @author Aaron Lun
 #' @examples
@@ -60,6 +65,20 @@ getBasiliskShared <- function() {
 setBasiliskShared <- function(value) {
     .check_logical(value)
     globals$set(shared=value)
+    value
+}
+
+#' @export
+#' @rdname basiliskOptions
+getBasiliskForceFallback <- function() {
+    globals$get("force.fallback")
+}
+
+#' @export
+#' @rdname basiliskOptions
+setBasiliskForceFallback <- function(value) {
+    .check_logical(value)
+    globals$set(force.fallback=value)
     value
 }
 

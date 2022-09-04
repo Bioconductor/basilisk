@@ -118,11 +118,24 @@ my_example_function <- function(ARG_VALUE_1, ARG_VALUE_2) {
 }
 ```
 
-**The return value of `basiliskRun()` must be a pure R object.**
+Developers should respect several constraints when defining a function for use in `basiliskRun()`:
+
+- ⚠️  **The arguments to and return value of the function must be pure R objects.**
 Developers should NOT return `r CRANpkg("reticulate")` bindings to Python objects or any other pointers to external memory (e.g., file handles).
 This is because `basiliskRun()` may execute in a different process such that any pointers are no longer valid when they are transferred back to the parent process.
 Both the arguments to the function passed to `basiliskRun()` and its return value MUST be amenable to serialization.
-Developers are encouraged to check that their function behaves correctly in a different process by setting `setBasiliskShared(FALSE)` and `setBasiliskFork(FALSE)` prior to testing.
+- ⚠️  **Variables should be explicitly passed as arguments to the function.**
+Developers should not rely on closures capturing the environment in which the function was defined.
+If the function is executed in a different process, any references to objects in its previous environment will no longer be valid.
+Rather, the necessary objects should be explicitly passed as arguments to the function.
+- ⚠️  **Non-base functions should be explicitly imported via their namespace.**
+When using functions (or variables) exported from non-base packages, they should be referenced using the `::` operator.
+This ensures that the relevant package will be loaded during function execution in a separate process.
+Note that certain "problematic" Python packages may preclude the use of all non-base functions altogether, see comments on the "last-resort fallback" in `?basiliskStart`.
+
+More details on acceptable function definitions are provided in `?basiliskRun`.
+Developers can check that their function behaves correctly in a different process 
+by setting `setBasiliskShared(FALSE)` and `setBasiliskFork(FALSE)` prior to running `basiliskRun()` in their unit tests.
 
 Note that `basiliskStart()` will lazily install conda and the required environments if they are not already present.
 This can result in some delays on the first time that any function using `r Biocpkg("basilisk")` is called;

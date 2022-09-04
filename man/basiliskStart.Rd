@@ -115,7 +115,7 @@ R's version takes precedence when \pkg{reticulate} attempts to load the Python p
 By checking the specified \code{testload}, \code{basiliskStart} can check for loading failures in potentially problematic packages.
 Upon any failure, \code{basiliskStart} will fall back to a separate socket process running a conda-supplied R installation.
 The idea is that, if both Python and R are sourced from conda, they will be using the same version of \code{libstdc++}.
-Use of this fallback overrides any choice of process type from \code{fork} and \code{shared}.
+Use of this "last resort fallback" overrides any choice of process type from \code{fork} and \code{shared}.
 On the other hand, if no failures are encountered, a process will be created using the current R installation.
 
 Note that the conda-supplied R installation is very minimalistic; only \pkg{reticulate} is guaranteed to be available.
@@ -132,8 +132,13 @@ Developers should not rely on closures to capture variables in the calling envir
 This mostly refers to objects that contain custom pointers to memory, e.g., file handles, pointers to \pkg{reticulate} objects.
 Both the arguments and return values of \code{fun} should be pure R objects.
 \item Functions or variables from non-base R packages should be prefixed with the package name via \code{::}, or those packages should be reloaded inside \code{fun}.
-However, if \code{fun} loads Python packages that might trigger the \code{libstdc++}-error fallback, no functions or variables should be used from non-base R packages.
+However, if \code{fun} loads Python packages that might trigger the last resort fallback, no functions or variables should be used from non-base R packages.
 }
+
+Developers can test that their function behaves correctly in \code{basiliskRun} by setting \code{\link{setBasiliskShared}} and \code{\link{setBasiliskFork}} to \code{FALSE}.
+This forces the execution of \code{fun} in a new process; any incorrect assumption of shared environments will cause errors.
+If \code{fun} involves fallback-inducing Python packages, developers can further set \code{\link{setBasiliskForceFallback}} before running \code{basiliskRun}.
+This tests that \code{fun} works with the minimal conda-supplied R installation.
 }
 
 \section{Use of lazy installation}{
