@@ -206,9 +206,12 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
             useBasiliskEnv(envpath) 
             ok <- TRUE
         }
+        proc <- new.env()
 
         if (ok) {
-            return(new.env())
+            proc <- new.env()
+            proc <- .activate_fallback(proc, testload, env=env, envpath=envpath)
+            return(proc)
         }
     } 
 
@@ -220,10 +223,14 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
     }
 
     clusterCall(proc, useBasiliskEnv, envpath=envpath)
+    proc <- .activate_fallback(proc, testload, env=env, envpath=envpath)
+    proc
+}
 
+.activate_fallback <- function(proc, testload, env, envpath) {
     if (!is.null(testload)) {
         test <- try({
-            clusterCall(proc, function(pkgs) {
+            basiliskRun(proc, function(pkgs) {
                 for (pkg in pkgs) {
                     reticulate::import(pkg)
                 }
