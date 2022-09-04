@@ -20,6 +20,8 @@ and the environment does not already exist.
 Obtain a path to a Conda environment, lazily installing it if necessary.
 }
 \examples{
+\dontshow{basilisk.utils::installConda()}
+
 tmploc <- file.path(tempdir(), "my_package_A")
 if (!file.exists(tmploc)) {
     setupBasiliskEnv(tmploc, c('pandas=1.4.3'))
