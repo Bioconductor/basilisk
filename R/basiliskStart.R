@@ -71,29 +71,30 @@
 #' while users can control them indirectly with \code{\link{setBasiliskFork}} and related functions.
 #'
 #' @section Testing package loads:
-#' If \code{testload} is provided, \code{basiliskStart} will attempt to load those Python packages into the process.
+#' If \code{testload} is provided, \code{basiliskStart} will attempt to load those Python packages into the newly created process.
 #' This is used to detect loading failures due to differences in the versions of the shared libraries.
-#' Most typically, a conda-supplied Python package (often \pkg{scipy} submodules) will have been compiled against a certain version of \code{libstdc++},
-#' but R is compiled against an older version, and R's version takes precedence when the package is loaded via \pkg{reticulate}.
+#' Most typically, a conda-supplied Python package (often \pkg{scipy} submodules) will have been compiled against a certain version of \code{libstdc++} but R is compiled against an older version.
+#' R's version takes precedence when \pkg{reticulate} attempts to load the Python package, causing cryptic \dQuote{GLIBCXX version not found} errors.
 #' 
-#' If loading failures are encountered, \code{basiliskStart} will fall back to a separate socket process running a Conda-supplied R installation.
-#' The hope is that, if both Python and R are sourced from conda, they will be using the same version of \code{libstdc++}. 
-#' When used, this fallback overrides any choice of process type  from \code{fork} and \code{shared}.
+#' By checking the specified \code{testload}, \code{basiliskStart} can check for loading failures in potentially problematic packages.
+#' Upon any failure, \code{basiliskStart} will fall back to a separate socket process running a conda-supplied R installation.
+#' The idea is that, if both Python and R are sourced from conda, they will be using the same version of \code{libstdc++}.
+#' Use of this fallback overrides any choice of process type from \code{fork} and \code{shared}.
+#' On the other hand, if no failures are encountered, a process will be created using the current R installation.
+#'
+#' Note that the conda-supplied R installation is very minimalistic; only \pkg{reticulate} is guaranteed to be available.
 #'
 #' @section Constraints on user-defined functions:
 #' In \code{basiliskRun}, there is no guarantee that \code{fun} has access to \code{basiliskRun}'s calling environment.
-#' This has a number of consequences for the type of code that can be written inside \code{fun}:
+#' This has several consequences for code in the body of \code{fun}:
 #' \itemize{
-#' \item Any other variables used inside \code{fun} should be explicitly passed as an argument.
+#' \item Variables used inside \code{fun} should be explicitly passed as an argument to \code{fun}.
 #' Developers should not rely on closures to capture variables in the calling environment of \code{basiliskRun}.
-#' \item Relevant global variables from the calling environment should be explicitly reset inside \code{fun}.
 #' \item Developers should \emph{not} attempt to pass complex objects to memory in or out of \code{fun}.
 #' This mostly refers to objects that contain custom pointers to memory, e.g., file handles, pointers to \pkg{reticulate} objects.
 #' Both the arguments and return values of \code{fun} should be pure R objects.
-#' \item Functions or variables from non-base R packages used inside \code{fun} should be prefixed with the package namespace, 
-#' or those packages should be reloaded inside \code{fun}.
-#' If \code{fun} loads Python packages that might trigger the \code{libstdc++}-error fallback,
-#' no functions or variables should be used from non-base R packages.
+#' \item Functions or variables from non-base R packages should be prefixed with the package name via \code{::}, or those packages should be reloaded inside \code{fun}.
+#' However, if \code{fun} loads Python packages that might trigger the \code{libstdc++}-error fallback, no functions or variables should be used from non-base R packages.
 #' }
 #'
 #' @section Use of lazy installation:
