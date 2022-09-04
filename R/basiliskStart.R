@@ -176,12 +176,13 @@
 #' @export
 #' @importFrom parallel makePSOCKcluster clusterCall makeForkCluster
 #' @importFrom reticulate py_config py_available
-#' @importFrom basilisk.utils activateEnvironment
+#' @importFrom basilisk.utils activateEnvironment getFallbackREnv
 basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(), testload=NULL) {
     envpath <- obtainEnvironmentPath(env)
 
+    # Last-resort fallback uses the internal conda-supplied R.
     if (getBasiliskForceFallback() || isTRUE(glibcxx_failed$failures[[envpath]])) {
-        rscript <- file.path(getCondaDir(), "envs", "mini-R", "bin", "Rscript")
+        rscript <- file.path(getFallbackREnv(), "bin", "Rscript")
         proc <- makePSOCKcluster(1, rscript=rscript) # can't suppress the warning, oh well.
 
         # Transmit internals required for useBasiliskEnv to work properly inside the mini-R.
@@ -211,7 +212,7 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
         }
     } 
 
-    # Falling back to creation of a separate R process if the shared instance doesn't work.
+    # Create a separate R process if the shared instance doesn't work.
     if (fork && !isWindows() && (!py_available() || .same_as_loaded(envpath))) {
         proc <- makeForkCluster(1)
     } else {
@@ -230,6 +231,7 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
         })
 
         if (is(test, "try-error")) {
+            # Switching to the last-resort fallback upon detecting GLIBCXX errors.
             if (grepl("GLIBCXX", attr(test, "condition")$message)) {
                 glibcxx_failed$failures[[envpath]] <- TRUE
                 basiliskStop(proc)
