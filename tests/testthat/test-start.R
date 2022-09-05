@@ -152,13 +152,27 @@ test_that("basilisk forks when possible", { # ... though on windows, this just u
 
 ###########################################################
 
-test_that("basilisk uses sockets as a fallback", {
+test_that("basilisk uses sockets correctly", {
     expect_true(r(process_check, args=list(version=new.version, envir=tA, fork=FALSE)))
     expect_true(r(process_check, args=list(version=old.version, envir=tB, fork=FALSE)))
 
     # Forcing basilisk to use sockets by loading another virtual environment in advance.
     expect_true(r(preloaded_check, args=list(version=new.version, envir=tA, fork=FALSE)))
     expect_true(r(preloaded_check, args=list(version=old.version, envir=tB, fork=FALSE)))
+
+    # Respects persistence of variables.
+    expect_true(r(persistence_check, args=list(version=new.version, envir=tA, shared=FALSE, fork=FALSE)))
+    expect_true(r(persistence_check, args=list(version=old.version, envir=tB, shared=FALSE, fork=FALSE)))
+})
+
+###########################################################
+
+test_that("basilisk hits the fallback R", {
+    setBasiliskForceFallback(TRUE)
+    on.exit(setBasiliskForceFallback(FALSE))
+
+    expect_true(r(process_check, args=list(version=new.version, envir=tA, fork=FALSE)))
+    expect_true(r(process_check, args=list(version=old.version, envir=tB, fork=FALSE)))
 
     # Respects persistence of variables.
     expect_true(r(persistence_check, args=list(version=new.version, envir=tA, shared=FALSE, fork=FALSE)))

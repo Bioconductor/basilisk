@@ -202,8 +202,8 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
         clusterCall(proc, assigner, name=".activate_condaenv", value=basilisk.utils:::.activate_condaenv)
         clusterCall(proc, assigner, name="isWindows", value=isWindows)
         clusterCall(proc, activateEnvironment, envpath=envpath, loc=getCondaDir())
-        clusterCall(proc, assigner, name="activateEnvironment", value=function(...) {})
-        clusterCall(proc, function() { require("reticulate") })
+        clusterCall(proc, assigner, name="activateEnvironment", value=function(...) {}) # no-op as we already ran it.
+        clusterCall(proc, attachNamespace, ns="reticulate")
 
         clusterCall(proc, useBasiliskEnv, envpath=envpath)
         clusterCall(proc, .instantiate_store)
@@ -255,12 +255,13 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
 
         if (is(test, "try-error")) {
             # Switching to the last-resort fallback upon detecting GLIBCXX errors.
-            if (grepl("GLIBCXX", attr(test, "condition")$message)) {
+            msg <- attr(test, "condition")$message
+            if (grepl("GLIBCXX", msg)) {
                 glibcxx_failed$failures[[envpath]] <- TRUE
                 basiliskStop(proc)
                 proc <- basiliskStart(env)
             } else {
-                stop(e)
+                stop(msg)
             }
         } else {
             glibcxx_failed$failures[[envpath]] <- FALSE        
