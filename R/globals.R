@@ -3,6 +3,7 @@
         envir=NULL,
         fork=TRUE,
         shared=TRUE,
+        force.fallback=FALSE,
         no.version=FALSE
     )
 

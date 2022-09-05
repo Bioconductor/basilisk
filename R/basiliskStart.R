@@ -16,6 +16,8 @@
 #' to load a shared Python instance into the current R process, see \code{\link{getBasiliskShared}}.
 #' @param fun A function to be executed in the \pkg{basilisk} process.
 #' This should return a \dQuote{pure R} object, see details.
+#' @param testload Character vector specifying the Python packages to load into the process during set-up.
+#' This is used to check that packages can be correctly loaded, switching to a fallback on \code{GLIBCXX} dynamic linking failures. 
 #' @param ... Further arguments to be passed to \code{fun}.
 #'
 #' @return 
@@ -45,7 +47,8 @@
 #' This may be convenient in functions where persistence is not required.
 #' Note that doing so requires specification of \code{pkgname} and \code{envname}.
 #' 
-#' If the base Conda installation provided with \pkg{basilisk} satisfies the requirements of the client package, developers can set \code{env=NULL} in this function to use that base installation rather than constructing a separate environment.
+#' If the base Conda installation provided with \pkg{basilisk} satisfies the requirements of the client package, 
+#' developers can set \code{env=NULL} in this function to use that base installation rather than constructing a separate environment.
 #'
 #' @section Choice of process type:
 #' \itemize{
@@ -67,19 +70,40 @@
 #' Developers can control these choices directly by explicitly specifying \code{shared} and \code{fork},
 #' while users can control them indirectly with \code{\link{setBasiliskFork}} and related functions.
 #'
+#' @section Testing package loads:
+#' If \code{testload} is provided, \code{basiliskStart} will attempt to load those Python packages into the newly created process.
+#' This is used to detect loading failures due to differences in the versions of the shared libraries.
+#' Most typically, a conda-supplied Python package (often \pkg{scipy} submodules) will have been compiled against a certain version of \code{libstdc++} but R is compiled against an older version.
+#' R's version takes precedence when \pkg{reticulate} attempts to load the Python package, causing cryptic \dQuote{GLIBCXX version not found} errors.
+#' 
+#' By checking the specified \code{testload}, \code{basiliskStart} can check for loading failures in potentially problematic packages.
+#' Upon any failure, \code{basiliskStart} will fall back to a separate socket process running a conda-supplied R installation.
+#' The idea is that, if both Python and R are sourced from conda, they will be using the same version of \code{libstdc++} and other libraries.
+#' This avoids loading errors and/or segmentation faults due to version mismatches.
+#'
+#' Use of this "last resort fallback" overrides any choice of process type from \code{fork} and \code{shared}.
+#' If no failures are encountered, a process will be created using the current R installation.
+#'
+#' Note that the fallback R installation is very minimalistic; only \pkg{reticulate} is guaranteed to be available.
+#' This places some limitations on the code that can be executed inside \code{fun} for \pkg{basilisk} environments that might trigger use of the fallback.
+#'
 #' @section Constraints on user-defined functions:
 #' In \code{basiliskRun}, there is no guarantee that \code{fun} has access to \code{basiliskRun}'s calling environment.
-#' This has a number of consequences for the type of code that can be written inside \code{fun}:
+#' This has several consequences for code in the body of \code{fun}:
 #' \itemize{
-#' \item Functions or variables from non-base R packages used inside \code{fun} should be prefixed with the package namespace, 
-#' or the package itself should be reloaded inside \code{fun}.
-#' \item Any other variables used inside \code{fun} should be explicitly passed as an argument.
+#' \item Variables used inside \code{fun} should be explicitly passed as an argument to \code{fun}.
 #' Developers should not rely on closures to capture variables in the calling environment of \code{basiliskRun}.
-#' \item Relevant global variables from the calling environment should be explicitly reset inside \code{fun}.
 #' \item Developers should \emph{not} attempt to pass complex objects to memory in or out of \code{fun}.
 #' This mostly refers to objects that contain custom pointers to memory, e.g., file handles, pointers to \pkg{reticulate} objects.
 #' Both the arguments and return values of \code{fun} should be pure R objects.
+#' \item Functions or variables from non-base R packages should be prefixed with the package name via \code{::}, or those packages should be reloaded inside \code{fun}.
+#' However, if \code{fun} loads Python packages that might trigger the last resort fallback, no functions or variables should be used from non-base R packages.
 #' }
+#'
+#' Developers can test that their function behaves correctly in \code{basiliskRun} by setting \code{\link{setBasiliskShared}} and \code{\link{setBasiliskFork}} to \code{FALSE}.
+#' This forces the execution of \code{fun} in a new process; any incorrect assumption of shared environments will cause errors.
+#' If \code{fun} involves fallback-inducing Python packages, developers can further set \code{\link{setBasiliskForceFallback}} before running \code{basiliskRun}.
+#' This tests that \code{fun} works with the minimal conda-supplied R installation.
 #'
 #' @section Use of lazy installation:
 #' If the specified \pkg{basilisk} environment is not present and \code{env} is a \linkS4class{BasiliskEnvironment} object, the environment will be created upon first use of \code{basiliskStart}.
@@ -155,8 +179,25 @@
 #' @export
 #' @importFrom parallel makePSOCKcluster clusterCall makeForkCluster
 #' @importFrom reticulate py_config py_available
-basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared()) {
+#' @importFrom basilisk.utils activateEnvironment getFallbackREnv
+basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(), testload=NULL) {
     envpath <- obtainEnvironmentPath(env)
+
+    # Last-resort fallback uses the internal conda-supplied R.
+    if (getBasiliskForceFallback() || isTRUE(glibcxx_failed$failures[[envpath]])) {
+        rscript <- file.path(getFallbackREnv(), "bin", "Rscript")
+        proc <- makePSOCKcluster(1, rscript=rscript) # can't suppress the warning, oh well.
+
+        # Transmit internals required for useBasiliskEnv to work properly inside the mini-R.
+        assigner <- function(name, value) assign(name, value, envir=.GlobalEnv)
+        clusterCall(proc, assigner, name=".activate_condaenv", value=basilisk.utils:::.activate_condaenv)
+        clusterCall(proc, assigner, name="isWindows", value=isWindows)
+        clusterCall(proc, activateEnvironment, envpath=envpath, loc=getCondaDir())
+        clusterCall(proc, assigner, name="activateEnvironment", value=function(...) {})
+        clusterCall(proc, function() { require("reticulate") })
+        clusterCall(proc, useBasiliskEnv, envpath=envpath)
+        return(proc)
+    }
 
     if (shared) {
         ok <- FALSE
@@ -168,19 +209,50 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
             useBasiliskEnv(envpath) 
             ok <- TRUE
         }
+        proc <- new.env()
 
         if (ok) {
-            return(new.env())
+            proc <- new.env()
+            proc <- .activate_fallback(proc, testload, env=env, envpath=envpath)
+            return(proc)
         }
     } 
 
-    # Falling back to creation of a separate R process if the shared instance doesn't work.
+    # Create a separate R process if the shared instance doesn't work.
     if (fork && !isWindows() && (!py_available() || .same_as_loaded(envpath))) {
         proc <- makeForkCluster(1)
     } else {
         proc <- makePSOCKcluster(1)
     }
+
     clusterCall(proc, useBasiliskEnv, envpath=envpath)
+    proc <- .activate_fallback(proc, testload, env=env, envpath=envpath)
+    proc
+}
+
+.activate_fallback <- function(proc, testload, env, envpath) {
+    if (!is.null(testload)) {
+        test <- try({
+            basiliskRun(proc, function(pkgs) {
+                for (pkg in pkgs) {
+                    reticulate::import(pkg)
+                }
+            }, pkgs=testload)
+        })
+
+        if (is(test, "try-error")) {
+            # Switching to the last-resort fallback upon detecting GLIBCXX errors.
+            if (grepl("GLIBCXX", attr(test, "condition")$message)) {
+                glibcxx_failed$failures[[envpath]] <- TRUE
+                basiliskStop(proc)
+                proc <- basiliskStart(env)
+            } else {
+                stop(e)
+            }
+        } else {
+            glibcxx_failed$failures[[envpath]] <- FALSE        
+        }
+    }
 
     proc
 }
@@ -197,9 +269,9 @@ basiliskStop <- function(proc) {
 #' @export
 #' @rdname basiliskStart
 #' @importFrom parallel clusterCall
-basiliskRun <- function(proc=NULL, fun, ..., env, fork=getBasiliskFork(), shared=getBasiliskShared()) {
+basiliskRun <- function(proc=NULL, fun, ..., env, fork=getBasiliskFork(), shared=getBasiliskShared(), testload=NULL) {
     if (is.null(proc)) {
-        proc <- basiliskStart(env, fork=fork, shared=shared)
+        proc <- basiliskStart(env, fork=fork, shared=shared, testload=testload)
         on.exit(basiliskStop(proc), add=TRUE)
     }
 
@@ -221,3 +293,6 @@ basiliskRun <- function(proc=NULL, fun, ..., env, fork=getBasiliskFork(), shared
 
     output
 }
+
+glibcxx_failed <- new.env()
+glibcxx_failed$failures <- list()

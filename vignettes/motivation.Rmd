@@ -118,11 +118,24 @@ my_example_function <- function(ARG_VALUE_1, ARG_VALUE_2) {
 }
 ```
 
-**The return value of `basiliskRun()` must be a pure R object.**
+Developers should respect several constraints when defining a function for use in `basiliskRun()`:
+
+- ⚠️  **The arguments to and return value of the function must be pure R objects.**
 Developers should NOT return `r CRANpkg("reticulate")` bindings to Python objects or any other pointers to external memory (e.g., file handles).
 This is because `basiliskRun()` may execute in a different process such that any pointers are no longer valid when they are transferred back to the parent process.
 Both the arguments to the function passed to `basiliskRun()` and its return value MUST be amenable to serialization.
-Developers are encouraged to check that their function behaves correctly in a different process by setting `setBasiliskShared(FALSE)` and `setBasiliskFork(FALSE)` prior to testing.
+- ⚠️  **Variables should be explicitly passed as arguments to the function.**
+Developers should not rely on closures capturing the environment in which the function was defined.
+If the function is executed in a different process, any references to objects in its previous environment will no longer be valid.
+Rather, the necessary objects should be explicitly passed as arguments to the function.
+- ⚠️  **Non-base functions should be explicitly imported via their namespace.**
+When using functions (or variables) exported from non-base packages, they should be referenced using the `::` operator.
+This ensures that the relevant package will be loaded during function execution in a separate process.
+Note that certain "problematic" Python packages may preclude the use of all non-base functions altogether, see comments on the "last-resort fallback" in `?basiliskStart`.
+
+More details on acceptable function definitions are provided in `?basiliskRun`.
+Developers can check that their function behaves correctly in a different process 
+by setting `setBasiliskShared(FALSE)` and `setBasiliskFork(FALSE)` prior to running `basiliskRun()` in their unit tests.
 
 Note that `basiliskStart()` will lazily install conda and the required environments if they are not already present.
 This can result in some delays on the first time that any function using `r Biocpkg("basilisk")` is called;
@@ -174,6 +187,11 @@ This destruction is done by default to avoid accumulating many large obsolete co
 However, it is not desirable if there are multiple R instances running different versions of `r Biocpkg("basilisk")` from the same Bioconductor release, as installation by one R instance would delete the installed content for the other.
 (Multiple R instances running different Bioconductor releases are not affected.)
 This option has no effect if `BASILISK_USE_SYSTEM_DIR` is set.
+
+Setting `BASILISK_NO_FALLBACK_R` to `1` will instruct `r Biocpkg("basilisk")` to _not_ create an conda-based R installation as a last-resort fallback (see comments in `?basiliskStart`).
+This avoids the overhead of an internal R installation if it is known that shared library version conflicts will not occur.
+It is most useful for streamlining applications where developers can (i) test that no conflicts occur in the subset of `r Biocpkg("basilisk")` clients and/or (ii) control the versions of system libraries used by R.
+This option only has an effect if `BASILISK_USE_SYSTEM_DIR` is set, as otherwise the fallback R installation is only created upon encountering version conflicts.
 
 ## Custom environment creation
 
