@@ -188,9 +188,10 @@ However, it is not desirable if there are multiple R instances running different
 (Multiple R instances running different Bioconductor releases are not affected.)
 This option has no effect if `BASILISK_USE_SYSTEM_DIR` is set.
 
-Setting `BASILISK_NO_CONDA_R` to `1` will instruct `r Biocpkg("basilisk")` to _not_ create an internal conda-based R installation for the last-resort fallback (see comments in `?basiliskStart`).
+Setting `BASILISK_NO_FALLBACK_R` to `1` will instruct `r Biocpkg("basilisk")` to _not_ create an conda-based R installation as a last-resort fallback (see comments in `?basiliskStart`).
 This avoids the overhead of an internal R installation if it is known that shared library version conflicts will not occur.
-It is most useful for streamlining applications where developers can (i) test that no conflicts occur in the subset of `r Biocpkg("basilisk")` clients and/or (ii) control the versions of system libraries used by R. 
+It is most useful for streamlining applications where developers can (i) test that no conflicts occur in the subset of `r Biocpkg("basilisk")` clients and/or (ii) control the versions of system libraries used by R.
+This option only has an effect if `BASILISK_USE_SYSTEM_DIR` is set, as otherwise the fallback R installation is only created upon encountering version conflicts.
 
 ## Custom environment creation
 

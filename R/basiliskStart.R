@@ -78,11 +78,14 @@
 #' 
 #' By checking the specified \code{testload}, \code{basiliskStart} can check for loading failures in potentially problematic packages.
 #' Upon any failure, \code{basiliskStart} will fall back to a separate socket process running a conda-supplied R installation.
-#' The idea is that, if both Python and R are sourced from conda, they will be using the same version of \code{libstdc++}.
-#' Use of this "last resort fallback" overrides any choice of process type from \code{fork} and \code{shared}.
-#' On the other hand, if no failures are encountered, a process will be created using the current R installation.
+#' The idea is that, if both Python and R are sourced from conda, they will be using the same version of \code{libstdc++} and other libraries.
+#' This avoids loading errors and/or segmentation faults due to version mismatches.
 #'
-#' Note that the conda-supplied R installation is very minimalistic; only \pkg{reticulate} is guaranteed to be available.
+#' Use of this "last resort fallback" overrides any choice of process type from \code{fork} and \code{shared}.
+#' If no failures are encountered, a process will be created using the current R installation.
+#'
+#' Note that the fallback R installation is very minimalistic; only \pkg{reticulate} is guaranteed to be available.
+#' This places some limitations on the code that can be executed inside \code{fun} for \pkg{basilisk} environments that might trigger use of the fallback.
 #'
 #' @section Constraints on user-defined functions:
 #' In \code{basiliskRun}, there is no guarantee that \code{fun} has access to \code{basiliskRun}'s calling environment.
