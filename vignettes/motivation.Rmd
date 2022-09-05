@@ -97,6 +97,8 @@ As such, the file should not assume that the rest of the client package has been
 
 ## Using the environments
 
+### Basics
+
 Any R functions that use Python code should do so via `basiliskRun()`, which ensures that different Bioconductor packages play nice when their dependencies clash.
 To use methods from the `my_env` environment that we previously defined, the functions in our hypothetical _ClientPackage_ package should define functions like:
 
@@ -105,7 +107,7 @@ my_example_function <- function(ARG_VALUE_1, ARG_VALUE_2) {
     proc <- basiliskStart(my_env)
     on.exit(basiliskStop(proc))
 
-    some_useful_thing <- basiliskRun(proc, function(arg1, arg2) {
+    some_useful_thing <- basiliskRun(proc, fun=function(arg1, arg2) {
         mod <- reticulate::import("scikit-learn")
         output <- mod$some_calculation(arg1, arg2)
 
@@ -117,6 +119,16 @@ my_example_function <- function(ARG_VALUE_1, ARG_VALUE_2) {
     some_useful_thing
 }
 ```
+
+In the above chunk, a developer-defined function `fun` is passed to `basiliskRun()` for execution inside the `proc` context where the specified conda environment is loaded.
+Developers should not make any assumptions about the nature of `proc`, which is dependent on the state of the R session.
+For example, `r Biocpkg("basilisk")` may choose to run `fun` in the current R session, or in another process with the same R installation, or even in another process with a different R installation.
+
+`basiliskStart()` will lazily install conda and the Python packages in `my_env` if they are not already present.
+This can result in some delays when any function using `r Biocpkg("basilisk")` is first called;
+afterwards, the installed environments will simply be re-used.
+
+### Function constraints
 
 Developers should respect several constraints when defining a function for use in `basiliskRun()`:
 
@@ -137,11 +149,31 @@ More details on acceptable function definitions are provided in `?basiliskRun`.
 Developers can check that their function behaves correctly in a different process 
 by setting `setBasiliskShared(FALSE)` and `setBasiliskFork(FALSE)` prior to running `basiliskRun()` in their unit tests.
 
-Note that `basiliskStart()` will lazily install conda and the required environments if they are not already present.
-This can result in some delays on the first time that any function using `r Biocpkg("basilisk")` is called;
-after that, the installed content will simply be re-used.
+### Persisting variables across calls
 
-It is probably unwise to use `proc` across user-visible functions, i.e., the end-user should never have an opportunity to interact with `proc`.
+Developers can persist variables across multiple calls to `basiliskRun()` by setting `persist=TRUE`.
+This instructs `basiliskRun()` to pass along an environment to `fun` as the `store=` argument,
+which can be used inside `fun` to set or get variables if `basiliskRun()` is called with the same `proc`. 
+Stored variables are not subject to the restrictions on the arguments/return value of `fun`, but they are strictly internal to any instance of `proc`. 
+
+```r
+my_example_function <- function() { 
+    proc <- basiliskStart(my_env)
+    on.exit(basiliskStop(proc))
+
+    basiliskRun(proc, fun=function(store) {
+        store$something <- rand(1)
+        invisible(NULL) 
+    }, persist=TRUE)
+
+    basiliskRun(proc, fun=function(store) {
+        store$something
+    }, persist=TRUE)
+}
+```
+
+This capability allows developers to modularize complex Python workflows by splitting up steps across multiple calls to `basiliskRun()`. 
+However, it is probably unwise to re-use `proc` across user-visible functions, i.e., the end-user should never have an opportunity to interact with `proc`.
 
 # Additional notes
 

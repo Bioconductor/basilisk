@@ -1,6 +1,5 @@
 .make_globals <- function () {
     current <- list(
-        envir=NULL,
         fork=TRUE,
         shared=TRUE,
         force.fallback=FALSE,

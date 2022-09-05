@@ -26,24 +26,24 @@ persistence_check <- function(version, envir, ...) {
 
     cl <- basiliskStart(envir, ...)
 
-    basiliskRun(proc=cl, function() {
+    basiliskRun(proc=cl, function(store) {
         # For R:
         X <- reticulate::import("pandas")
-        assign(x="snake.in.my.shoes", X$`__version__`, envir=basilisk::findPersistentEnv())
+        assign(x="snake.in.my.shoes", X$`__version__`, envir=store)
 
         # For Python:
         reticulate::py_run_string(sprintf("greeting = 'howdy, %s'", X$`__version__`))
 
         NULL
-    })
+    }, persist=TRUE)
 
     # Doesn't contaminate the parent session.
     expect_false(exists("snake.in.my.shoes"))
 
     # Variable persists to the next call.
-    out <- basiliskRun(proc=cl, function() {
-        get("snake.in.my.shoes", envir=basilisk::findPersistentEnv())
-    })
+    out <- basiliskRun(proc=cl, function(store) {
+        get("snake.in.my.shoes", envir=store)
+    }, persist=TRUE)
     expect_identical(out, version)
 
     out <- basiliskRun(proc=cl, function() {

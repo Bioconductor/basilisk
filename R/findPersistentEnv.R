@@ -2,6 +2,8 @@
 #'
 #' Find the persistent environment inside a \code{\link{basiliskRun}} call,
 #' to allow variables to be passed across calls.
+#' This is deprecated in favor of directly assigning variables to the \code{.basilisk.store} environment,
+#' which avoids the need to load \pkg{basilisk} into the target process (e.g., for the minimalistic fallback).
 #'
 #' @details
 #' The persistent environment is where variables can be stored across \code{\link{basiliskRun}} calls.
@@ -24,18 +26,15 @@
 #' # Using the base environment for brevity.
 #' cl <- basiliskStart(NULL)
 #' basiliskRun(proc=cl, function() {
-#'     assign(x="snake.in.my.shoes", 1, envir=basilisk::findPersistentEnv())
+#'     assign(x="snake.in.my.shoes", 1, envir=.basilisk.store)
 #' })
 #' basiliskRun(proc=cl, function() {
-#'     get("snake.in.my.shoes", envir=basilisk::findPersistentEnv())
+#'     get("snake.in.my.shoes", envir=.basilisk.store)
 #' })
 #' basiliskStop(cl)
 #' 
 #' @export
 findPersistentEnv <- function() {
-    if (!is.null(env <- globals$get("envir"))) {
-        env
-    } else {
-        .GlobalEnv 
-    }
+    .Deprecated(new=".basilisk.store")
+    get(".basilisk.store")
 }
