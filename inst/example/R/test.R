@@ -18,7 +18,7 @@ test <- function() {
     })
     basiliskStop(cl)
 
-    cl <- basiliskStart(env2, testload="scipy.linalg")
+    cl <- basiliskStart(env2, testload="scipy.optimize")
     sklearn.names <- basiliskRun(cl, function() { 
         X <- reticulate::import("sklearn.ensemble")
         names(X)
