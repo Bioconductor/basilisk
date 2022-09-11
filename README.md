@@ -12,12 +12,13 @@ We integrate with **reticulate** to allow intuitive calling of Python code withi
 with additional protection to ensure that multiple Python environments can be called within the same R session.
 
 Most "users" of this package are expected to be Bioconductor package developers;
-end-users should not need to interact with the **basilisk** machinery, all going well.
-Users can follow the typical installation process for BioC packages, i.e.
+end users should not need to interact with the **basilisk** machinery, all going well.
+Users can follow the typical installation process for Bioconductor packages:
 
 ```r
 install.packages("BiocManager") # if not already installed
 BiocManager::install("basilisk")
+# or BiocManager::install("basilisk", version="devel") for the devel version
 ```
 
 The [vignette](https://bioconductor.org/packages/release/bioc/vignettes/basilisk/inst/doc/motivation.html) provides instructions on how to adapt a client package to use **basilisk**.
