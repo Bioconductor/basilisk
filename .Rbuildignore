@@ -3,3 +3,4 @@
 ^tests/testthat/install-.*$
 ^tests/testthat/whee$
 ^vignettes/basilisk-vignette-test.*$
+^LICENSE$
