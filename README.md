@@ -18,7 +18,9 @@ Users can follow the typical installation process for Bioconductor packages:
 ```r
 install.packages("BiocManager") # if not already installed
 BiocManager::install("basilisk")
-# or BiocManager::install("basilisk", version="devel") for the devel version
+
+# Bioconductor package developers may prefer to use the devel version:
+BiocManager::install("basilisk", version="devel") 
 ```
 
 The [vignette](https://bioconductor.org/packages/release/bioc/vignettes/basilisk/inst/doc/motivation.html) provides instructions on how to adapt a client package to use **basilisk**.

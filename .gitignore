@@ -2,3 +2,6 @@ tests/testthat/install-*
 *.html
 inst/miniconda
 man/INTERNAL_*
+*.rds
+*.swp
+vignettes/basilisk-vignette-test*
