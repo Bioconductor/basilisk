@@ -252,7 +252,7 @@ basiliskRun(env=tmp, fun=function(mat) {
     runner <- module$TruncatedSVD()
     output <- runner$fit(mat) 
     output$singular_values_
-}, mat = x, testload="scipy.linalg")
+}, mat = x, testload="scipy.optimize")
 ```
 
 `basiliskRun()` can also be used with conda environments constructed outside of **basilisk**.
@@ -278,7 +278,7 @@ basiliskRun(env=tmp2, fun=function(mat) {
     module <- reticulate::import("scipy.stats")
     norm <- module$norm
     norm$cdf(c(-1, 0, 1))
-}, mat = x, testload="scipy.linalg")
+}, mat = x, testload="scipy.optimize")
 ```
 
 It is worth highlighting the fact that we were able to call `basiliskRun()` successfully on two different environments within the same R session.
