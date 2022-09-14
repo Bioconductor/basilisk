@@ -46,10 +46,17 @@ persistence_check <- function(version, envir, ...) {
     }, persist=TRUE)
     expect_identical(out, version)
 
+    # You can still call other stuff without persist=.
     out <- basiliskRun(proc=cl, function() {
         reticulate::py_run_string("greeting")$greeting
     })
     expect_identical(out, sprintf("howdy, %s", version))
+
+    # Check that extra arguments are passed along correctly to another process.
+    test.version <- basiliskRun(cl, fun=function(str, store) {
+        paste0(str, "_", get("snake.in.my.shoes", envir=store))
+    }, str="FOO", persist=TRUE)
+    expect_identical(paste0("FOO_", version), test.version)
 
     basiliskStop(cl)
 
@@ -69,6 +76,12 @@ process_check <- function(version, envir, ...) {
         reticulate::import("pandas")$`__version__`
     })
     expect_identical(version, test.version)
+
+    # Check that extra arguments are passed along correctly to another process.
+    test.version <- basiliskRun(proc, fun=function(str) {
+        paste0(str, "_", reticulate::import("pandas")$`__version__`)
+    }, str="FOO")
+    expect_identical(paste0("FOO_", version), test.version)
 
     expect_false(is.environment(proc))
     expect_false(reticulate::py_available())
@@ -111,6 +124,12 @@ test_that("basilisk directly loads Python when possible", {
             reticulate::import("pandas")$`__version__`
         })
         expect_identical(version, test.version)
+
+        # Check that extra arguments are passed along correctly to the env.
+        test.version <- basiliskRun(proc, fun=function(str) {
+            paste0(str, "_", reticulate::import("pandas")$`__version__`)
+        }, str="FOO")
+        expect_identical(paste0("FOO_", version), test.version)
 
         basiliskStop(proc)
 

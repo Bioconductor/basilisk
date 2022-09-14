@@ -304,7 +304,7 @@ basiliskRun <- function(proc=NULL, fun, ..., env, persist=FALSE, fork=getBasilis
         }
     } else {
         if (persist) {
-            wrapper <- function(.fun) .fun(..., store=get(".basilisk.store", envir=.GlobalEnv)) 
+            wrapper <- function(.fun, ...) .fun(..., store=get(".basilisk.store", envir=.GlobalEnv)) 
             output <- clusterCall(proc, fun=wrapper, .fun=fun, ...)[[1]]
         } else {
             output <- clusterCall(proc, fun=fun, ...)[[1]]
