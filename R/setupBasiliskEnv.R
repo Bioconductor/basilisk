@@ -1,12 +1,12 @@
 #' Set up \pkg{basilisk}-managed environments
 #'
-#' Set up a Conda environment for isolated execution of Python code with appropriate versions of all Python packages.
+#' Set up a conda environment for isolated execution of Python code with appropriate versions of all Python packages.
 #' 
 #' @param envpath String containing the path to the environment to use. 
 #' @param packages Character vector containing the names of conda packages to install into the environment.
 #' Version numbers must be included.
 #' @param channels Character vector containing the names of additional conda channels to search.
-#' Defaults to the Conda Forge repository.
+#' Defaults to the conda-forge repository.
 #' @param pip Character vector containing the names of additional packages to install from PyPi using \code{pip}.
 #' Version numbers must be included.
 #' @param paths Character vector containing absolute paths to Python package directories, to be installed by \code{pip}.
@@ -21,10 +21,9 @@
 #' Developers should also create \code{configure(.win)} files to call \code{\link{configureBasiliskEnv}},
 #' which will call \code{setupBasiliskEnv} during R package installation when \code{BASILISK_USE_SYSTEM_DIR=1}.
 #'
-#' Pinned version numbers must be present for all desired Conda packages in \code{packages}.
+#' Pinned version numbers must be present for all desired conda packages in \code{packages}.
 #' This improves predictability and simplifies debugging across different systems.
-#' Note that the version notation for Conda packages uses a single \code{=}, while the notation for Python packages uses \code{==}; any instances of the latter will be coerced to the former automatically.
-#' If versions are not known beforehand, developers may use \code{\link{setBasiliskCheckVersions}(FALSE)} to allow conda to select appropriate versions, which should then be inserted into \code{packages}.
+#' Note that the version notation for conda packages uses a single \code{=}, while the notation for Python packages uses \code{==}; any instances of the latter will be coerced to the former automatically.
 #'
 #' It is possible to use the \code{pip} argument to install additional packages from PyPi after all the conda packages are installed.
 #' All packages listed here are also expected to have pinned versions, this time using the \code{==} notation.
@@ -36,7 +35,7 @@
 #' \code{\link{basiliskStart}} will then convert the relative path to an absolute path before calling this function - see \code{\link{BasiliskEnvironment}} for details.
 #'
 #' It is also good practice to explicitly list the versions of the \emph{dependencies} of all desired packages.
-#' This protects against future changes in the behavior of your code if Conda's solver decides to use a different version of a dependency.
+#' This protects against future changes in the behavior of your code if conda's solver decides to use a different version of a dependency.
 #' To identify appropriate versions of dependencies, we suggest:
 #' \enumerate{
 #' \item Creating a fresh conda environment with the desired packages, using \code{packages=} in \code{setupBasiliskEnv}.
@@ -47,12 +46,15 @@
 #' The only reason that pinned dependencies are not mandatory is because some dependencies are OS-specific,
 #' requiring some manual pruning of the output of \code{\link{listPackages}}.
 #'
-#' If the version numbers for the desired Conda packages are unknown, developers can set \code{basilisk:::globals$set(no.version=TRUE)} to allow \code{setupBasiliskEnv} to work without version numbers.
-#' This instructs Conda to create an environment with the latest version of all unpinned packages, which can then be read out via \code{\link{listPackages}} for insertion in the \code{packages=} argument as described above.
+#' If versions for the desired conda packages are not known beforehand, developers may use \code{\link{setBasiliskCheckVersions}(FALSE)} before running \code{setupBasiliskEnv}.
+#' This instructs conda to create an environment with appropriate versions of all unpinned packages, 
+#' which can then be read out via \code{\link{listPackages}} for insertion in the \code{packages=} argument as described above.
 #' We stress that this option should \emph{not} be used in any release of the R package, it is a development-phase-only utility.
 #'
-#' It is possible to specify a different version of Python in \code{packages} by supplying, e.g., \code{"python=2.7.10"}.
 #' If no Python version is listed, the version in the base conda installation is used by default - check \code{\link{listPythonVersion}} for the version number.
+#' However, it is often prudent to explicitly list the desired version of Python in \code{packages}, even if this is already version-compatible with the default (e.g., \code{"python=3.8"}).
+#' This protects against changes to the Python version in the base installation, e.g., if administrators override the choice of conda installation with certain environment variables.
+#' Of course, it is possible to specify an entirely different version of Python in \code{packages} by supplying, e.g., \code{"python=2.7.10"}.
 #'
 #' @examples
 #' \dontshow{basilisk.utils::installConda()}
@@ -63,7 +65,7 @@
 #' }
 #'
 #' @seealso
-#' \code{\link{listPackages}}, to list the packages in the Conda environment.
+#' \code{\link{listPackages}}, to list the packages in the conda environment.
 #'
 #' @export
 #' @importFrom reticulate conda_install
