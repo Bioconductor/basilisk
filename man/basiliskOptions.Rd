@@ -7,6 +7,8 @@
 \alias{setBasiliskShared}
 \alias{getBasiliskForceFallback}
 \alias{setBasiliskForceFallback}
+\alias{setBasiliskCheckVersions}
+\alias{getBasiliskCheckVersions}
 \title{Options for \pkg{basilisk}}
 \usage{
 getBasiliskFork()
@@ -20,6 +22,10 @@ setBasiliskShared(value)
 getBasiliskForceFallback()
 
 setBasiliskForceFallback(value)
+
+setBasiliskCheckVersions(value)
+
+getBasiliskCheckVersions()
 }
 \arguments{
 \item{value}{Logical scalar:
@@ -27,15 +33,18 @@ setBasiliskForceFallback(value)
 \item For \code{setBasiliskFork}, whether forking should be used when available.
 \item For \code{setBasiliskShared}, whether the shared Python instance can be set in the R session.
 \item For \code{setBasiliskForceFallback}, whether to force the use of the last resort fallback.
+\item For \code{setBasiliskCheckVersions}, whether to check for properly versioned package strings in \code{\link{setupBasiliskEnv}}.
 }}
 }
 \value{
 All functions return a logical scalar indicating whether the specified option is enabled.
 }
 \description{
-Options controlling the efficiency and friendliness of starting up a Python instance via \code{\link{basiliskStart}}.
+Options controlling run-time behavior of \pkg{basilisk}.
+Unlike the various environment variables, these options can be turned on or off by users without requiring reinstallation of the \pkg{basilisk} ecosystem.
 }
-\details{
+\section{Controlling process creation}{
+
 By default, \code{\link{basiliskStart}} will attempt to load a shared Python instance into the R session.
 This avoids the overhead of setting up a new process but will potentially break any \pkg{reticulate}-dependent code outside of \pkg{basilisk}.
 To guarantee that non-\pkg{basilisk} code can continue to execute, users can set \code{setBasiliskShared(FALSE)}.
@@ -56,6 +65,19 @@ Developers may wish to set \code{setBasiliskShared(FALSE)} and \code{setBasilisk
 to ensure that their functions do not make incorrect assumptions about the calling environment used in \code{\link{basiliskRun}}.
 Similarly, setting \code{setBasiliskForceFallback(TRUE)} is useful for testing that \code{\link{basiliskRun}} works inside a minimalistic R installation.
 }
+
+\section{Disabling package version checks}{
+
+By default, \code{\link{setupBasiliskEnv}} requires versions for all requested Python packages.
+However, in some cases, the exact version of the packages may not be known beforehand.
+Developers can set \code{setBasiliskCheckVersions(FALSE)} to disable all version checks, instead allowing conda to choose appropriate versions for the initial installation.
+The resulting environment can then be queried using \code{\link{listPackages}} to obtain the explicit versions of all Python packages.
+
+Needless to say, this option should only be used during the initial phases of developing a \pkg{basilisk} client.
+Once a suitable environment is created by conda, Python package versions should be pinned in \code{\link{setupBasiliskEnv}}.
+This ensures that all users are creating the intended environment for greater reproducibility (and easier debugging).
+}
+
 \examples{
 getBasiliskFork()
 getBasiliskShared()

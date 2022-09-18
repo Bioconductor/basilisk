@@ -26,3 +26,16 @@ test_that("global fork option setting/getting works as expected", {
 
     setBasiliskFork(out)
 })
+
+test_that("check version setting/getting works as expected", {
+    out <- getBasiliskCheckVersions()
+    expect_true(out)
+
+    setBasiliskCheckVersions(FALSE)
+    expect_false(getBasiliskCheckVersions())
+
+    setBasiliskCheckVersions(TRUE)
+    expect_true(getBasiliskCheckVersions())
+
+    setBasiliskCheckVersions(out)
+})

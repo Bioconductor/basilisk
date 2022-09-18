@@ -22,8 +22,9 @@
 #' which will call \code{setupBasiliskEnv} during R package installation when \code{BASILISK_USE_SYSTEM_DIR=1}.
 #'
 #' Pinned version numbers must be present for all desired Conda packages in \code{packages}.
-#' This improved predictability makes debugging much easier when the R package is installed and executed on different systems.
+#' This improves predictability and simplifies debugging across different systems.
 #' Note that the version notation for Conda packages uses a single \code{=}, while the notation for Python packages uses \code{==}; any instances of the latter will be coerced to the former automatically.
+#' If versions are not known beforehand, developers may use \code{\link{setBasiliskCheckVersions}(FALSE)} to allow conda to select appropriate versions, which should then be inserted into \code{packages}.
 #'
 #' It is possible to use the \code{pip} argument to install additional packages from PyPi after all the conda packages are installed.
 #' All packages listed here are also expected to have pinned versions, this time using the \code{==} notation.
@@ -112,7 +113,7 @@ setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL
 }
 
 .check_versions <- function(packages, pattern) {
-    if (!globals$get("no.version")) {
+    if (getBasiliskCheckVersions()) {
         if (any(failed <- !grepl(pattern, packages))) {
             stop(paste("versions must be explicitly specified for",
                 paste(sprintf("'%s'", packages[failed]), collapse=", ")))
