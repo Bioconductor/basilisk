@@ -51,7 +51,8 @@ snifter.env <- BasiliskEnvironment(
       "opentsne=0.4.3",
       "scikit-learn=0.23.1",
       if (basilisk.utils::isWindows()) "scipy=1.5.0" else "scipy=1.5.1",
-      "numpy=1.19.0"
+      "numpy=1.19.0",
+      "python=3.7"
     )
 )
 ```
@@ -76,39 +77,71 @@ out <- basiliskRun(
 )
 ```
 
+Technically, the above call to `basiliskRun()` consists of an internal `basiliskStart()` step to provision and load the appropriate environment, followed by the execution of the provided `fun=`.
+Advanced users can efficiently re-use the same environment across multiple Python steps by running `basiliskStart()` explicitly before any number of `basiliskRun()` calls:
+
+```r
+proc <- basiliskStart(env = snifter.env)
+# on.exit(basiliskStop(proc)) # for use inside functions
+
+out <- basiliskRun(proc, 
+    fun = function(x, ...) {
+        openTSNE <- reticulate::import("openTSNE", convert = FALSE)
+        obj <- openTSNE$TSNE(...)
+        out <- obj$fit(x)
+        list(
+            x = reticulate::py_to_r(out),
+            affinities = reticulate::py_to_r(out$affinities$P)
+        )
+    },
+    x = input_matrix
+)
+
+# Re-using the same basilisk process:
+ver <- basiliskRun(proc, fun = function() { 
+    mod <- reticulate::import("openTSNE")
+    mod$`__version__`
+})
+```
+
 # Managing Python environments
 
 `basilisk` uses `conda` to automatically manage the creation of Python environments on the user's device.
-Each `conda` environment required by a client package is lazily instantiated on the first call to `basiliskRun()` that uses the corresponding `BasiliskEnvironment` object.
-Subsequent uses of that `BasiliskEnvironment` via `basiliskRun()` will then re-use the cached `conda` environment. 
+On the first use of `basiliskStart()` anywhere, a local copy of `conda` is installed using an appropriate Miniconda installer for the user's system.
+Each `conda` environment required by a client package is lazily instantiated on the first call to `basiliskStart()` that uses the corresponding `BasiliskEnvironment` object.
+Subsequent uses of that `BasiliskEnvironment` via `basiliskStart()` will then re-use the cached `conda` environment.
 
 I used `conda` and lazy installation to reduce the burden on the user during installation of client packages.
 With `conda`, the user does not have to perform any system configuration such as installing Python or the relevant Python packages.
-(Nevertheless, developers of client packages may choose to install further Python packages from `pip` into the `basilisk`-constructed `conda` environment.)
-Client packages can also define any number of Python environments, but the use of lazy instantiation means that only the ones that are used will actually be created on the user's machine.
+Client packages can define any number of Python environments, but the use of lazy instantiation means that only the ones that are used will actually be created on the user's machine.
 Similarly, if a client package only uses Python for some optional functionality, the cost of installation is only paid when that functionality is requested.
 
-Lazy instantiation involves the construction of a user-owned cache of `conda` environments.
-These environments can consume a large amount of disk space, so `basilisk` will automatically remove old environments that have not been used in the past month.
+Lazy instantiation involves the construction of a user-owned cache of `conda` environments. 
+These environments can consume a large amount of disk space, so `basilisk` will automatically remove environments that have not been recently used.
 Some care is also taken to ensure that cache management is thread-safe -
-if multiple processes attempt to instantiate a particular environment, only one will proceed while the others will wait for its completion.
+if multiple processes attempt to create or delete a particular environment, only one will proceed while the others will wait for its completion.
+This ensures that multiple `basilisk`-dependent tasks can be run concurrently without corrupting the cache.
 
 In some scenarios, it is preferable to pay the environment instantiation cost during client package installation. 
-This avoids any delay on first use of `basiliskRun()` within the client package, which provides more predictable end-user experiences for R-based applications like Shiny.
+This avoids any delay on first use of `basiliskStart()` within the client package, which provides more predictable end-user experiences for R-based applications like Shiny.
 To do this, administrators of an R installation can set the `BASILISK_SYSTEM_DIR` environment variable, which will cause the `conda` environments to be created in the client package's installation directory.
 This "system-wide" installation is also useful on shared systems where a single environment is provisioned for any number of users, rather than requiring each user to create and cache their own.
+
+For developers, the use of `conda` provides a consistent cross-platform experience for easier maintenance and debugging.
+It also allows client packages to easily switch between Python versions in different environments, e.g., to run legacy code that is only compatible with older Python versions. 
+However, some Python packages may not be available from `conda`'s repositories, so we provide the `pip=` argument in the `BasiliskEnvironment` constructor to pull those packages from PyPI instead.
 
 # Integrating with `reticulate`
 
 `basilisk` naturally integrates with `reticulate` to seamlessly call Python code from R.
-`basiliskRun()` will automatically load the appropriate Python instance before evaluating `fun=`, ensuring that the correct packages are available.
-If a different Python instance is already loaded into the current R session, `basiliskRun()` will automatically spin up a new R process to run `fun=` before transferring the results back to the current session.
+`basiliskStart()` will automatically load the appropriate Python instance before `basiliskRun()` evaluates `fun=`, ensuring that the correct packages are available.
+If a different Python instance is already loaded into the current R session, `basiliskStart()` will automatically spin up a new R process to run `fun=` before transferring the results back to the current session.
 In this manner, `basilisk` supports the use of `reticulate` with multiple Python environments in a single analysis,
 despite the fact that `reticulate` is limited to only one Python instance for the lifetime of any given R session [@multienvreticulate].
 
 The use of new R processes ensures that a `basilisk` client package will always be able to successfully execute its Python-related code via `reticulate`.
 The client package remains functional even if other packages - or indeed, the user themselves - load a different Python instance into the current session.
-In fact, client packages can be forced to always start a new process in `basiliskRun()` by turning off the `getBasiliskShared()` option,
+In fact, client packages can be forced to always start a new process in `basiliskStart()` by turning off the `getBasiliskShared()` option,
 which avoids interfering with non-`basilisk` usage of other Python instances via `reticulate` in the current session.
 However, this robustness comes at the cost of performance due to the need to spin up a new R process (with the associated delay from package loading) as well as the overhead of communication between different R processes.
 As such, loading of Python into the current session is preferred by default. 
