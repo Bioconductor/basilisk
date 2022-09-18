@@ -209,6 +209,22 @@ As a workaround in such cases, users should set:
 parallel:::setDefaultClusterOptions(setup_strategy = "sequential")
 ```
 
+Conda installations and environments tend to use a lot of disk space,
+so `r Biocpkg("basilisk")` will automatically attempt to remove its old conda installations as well as unused environments for each client package.
+However, this removal may not be fast enough on systems with low disk usage quotas, resulting in incomplete or failed installations.
+In such cases, users can forcibly clear the external directory themselves to free up some space:
+
+```r
+# Remove obsolete environments for specific package:
+basilisk.utils::clearExternalDir(package = "pkg_name", obsolete.only = TRUE)
+
+# Remove all environments for a specific package:
+basilisk.utils::clearExternalDir(package = "pkg_name")
+
+# Remove all basilisk-managed conda installations and environments:
+basilisk.utils::clearExternalDir()
+```
+
 **IMPORTANT!** the automatic installation brokered by `r Biocpkg("basilisk")` assumes that the user accepts the [Anaconda terms of service](https://www.anaconda.com/terms-of-service).
 This mostly boils down to "don't hammer the Anaconda repository with requests", see the commentary [here](https://www.anaconda.com/blog/sustaining-our-stewardship-of-the-open-source-data-science-community).
 
