@@ -48,7 +48,9 @@ We will assume that readers are familiar with general R package development prac
 
 `.BBSoptions` should contain `UnsupportedPlatforms: win32`, as builds on Windows 32-bit are not supported.
 
-## Creating environments
+## Specifying environments
+
+### Defining `BasiliskEnvironment` objects
 
 Typically, we need to create some environments with the requisite packages using the `conda` package manager.
 A `basilisk.R` file should be present in the `R/` subdirectory containing commands to produce a `BasiliskEnvironment` object.
@@ -68,9 +70,17 @@ second_env <- BasiliskEnvironment(envname="second_env_name",
 
 As shown above, all listed Python packages should have valid version numbers that can be obtained by `conda`.
 It is strongly recommended to explicitly list the versions of any dependencies so as to future-proof the installation process.
-We suggest using `listPackages()` on the to identify the appropriate versions, see `?setupBasiliskEnv` for details.
+If the package versions are not known, we suggest using `setBasiliskCheckVersions(FALSE)` and `listPackages()` to identify the appropriate versions.
+
+If a different version of Python is required, it should be explicitly listed in the `packages=`, e.g., with `python=3.7`.
+Otherwise, `r Biocpkg("basilisk")` will automatically use the `conda`-provided version of Python (here, `r listPythonVersion()`) in all environments.
+It is often a good idea to explicitly list a version of Python in `packages=`, even if it is already version-compatible with the default;
+this ensures that the environment creation is robust to adminstrator overrides of the conda instance (see [below](#fine-tuning-basilisks-behavior)).
+
 It is also possible to install packages from PyPi via the `pip=` argument,
 but this should be done with [much caution](https://www.anaconda.com/blog/using-pip-in-a-conda-environment).
+
+### Populating environments on installation
 
 An executable `configure` file should be created in the top level of the client package, containing the command shown below.
 This enables creation of environments during `r Biocpkg("basilisk")` installation if `BASILISK_USE_SYSTEM_DIR` is set.
@@ -216,9 +226,14 @@ Similarly, all (correctly `configure`d) client packages will install their envir
 This is very useful for enterprise-level deployments as the conda instances and environments are (i) not duplicated in each user's home directory, and (ii) always available to any user with access to the R installation. 
 However, it requires installation from source and thus is not set by default.
 
-It is possible to direct `r Biocpkg("basilisk")` to use an existing Miniconda or Anaconda instance by setting the `BASILISK_EXTERNAL_CONDA` environment variable to an absolute path to the conda installation directory.
-This may be desirable to avoid redundant copies of the same installation.
-However, in such cases, it is the **user's responsibility** to administer their conda instance to ensure that the correct versions of all packages are available for `r Biocpkg("basilisk")`'s clients.
+It is possible to direct `r Biocpkg("basilisk")` to use an existing Miniconda or Anaconda instance,
+by setting the `BASILISK_EXTERNAL_CONDA` environment variable to an absolute path to the conda installation directory.
+This may be desirable to avoid redundant copies of the same conda installation.
+Any replacement conda instance should be using a similar version of Python as `r Biocpkg("basilisk")`'s default (`r listPythonVersion()`) to satisfy client packages that rely on the implict pinning.
+
+Setting `BASILISK_MINICONDA_VERSION` will change the Miniconda version installed by `r Biocpkg("basilisk")`.
+This should be set to a string that includes the version of Python, e.g., `"py38_4.12.0"` - see the [Miniconda installation page](https://repo.anaconda.com/miniconda/) for available versions.
+Again, the selected Miniconda should still use a similar version of Python as `r Biocpkg("basilisk")`'s default.
 
 Setting `BASILISK_NO_DESTROY` to `1` will instruct `r Biocpkg("basilisk")` to _not_ destroy previous conda instances and environments upon installation of a new version of `r Biocpkg("basilisk")`.
 This destruction is done by default to avoid accumulating many large obsolete conda instances.
