@@ -69,7 +69,7 @@ This instructs Conda to create an environment with the latest version of all unp
 We stress that this option should \emph{not} be used in any release of the R package, it is a development-phase-only utility.
 
 It is possible to specify a different version of Python in \code{packages} by supplying, e.g., \code{"python=2.7.10"}.
-If no Python version is listed, the version in the base conda installation is used by default.
+If no Python version is listed, the version in the base conda installation is used by default - check \code{\link{listPythonVersion}} for the version number.
 }
 \examples{
 \dontshow{basilisk.utils::installConda()}

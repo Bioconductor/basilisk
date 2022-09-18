@@ -3,11 +3,14 @@
 \name{listPackages}
 \alias{listPackages}
 \alias{listCorePackages}
+\alias{listPythonVersion}
 \title{List packages}
 \usage{
 listPackages(env = NULL)
 
 listCorePackages()
+
+listPythonVersion(env = NULL)
 }
 \arguments{
 \item{env}{A \linkS4class{BasiliskEnvironment} object specifying the \pkg{basilisk} environment to use.
@@ -17,7 +20,9 @@ Alternatively, a string specifying the path to an environment, though this shoul
 Alternatively, \code{NULL} to indicate that the base Conda installation should be used as the environment.}
 }
 \value{
-A data.frame containing the \code{full}, a versioned package string, and \code{package}, the package name.
+For \code{listPackages}, a data.frame containing the \code{full}, a versioned package string, and \code{package}, the package name.
+
+For \code{listPythonVersion}, a string containing the default version of Python.
 }
 \description{
 List the set of Python packages (and their version numbers) that are installed in an conda environment.
@@ -29,6 +34,7 @@ developers should not expect the same core packages to be present across operati
 }
 \examples{
 listPackages()
+listPythonVersion()
 
 }
 \author{

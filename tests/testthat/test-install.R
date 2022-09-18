@@ -23,6 +23,11 @@ test_that("setupBasiliskEnv obtains the correct version of the packages", {
     incoming <- basilisk:::.basilisk_freeze(target)
     expect_true(old.pandas %in% incoming)
     expect_true(all(old.pandas.deps %in% incoming))
+
+    # Listers also work as expected.
+    expect_match(listPythonVersion(target), "^3")
+    info <- listPackages(target)
+    expect_true("pandas" %in% info$package)
 })
 
 test_that("setupBasiliskEnv will install Python 2.7 if requested", {
@@ -31,6 +36,9 @@ test_that("setupBasiliskEnv will install Python 2.7 if requested", {
     env.py <- basilisk.utils::getPythonBinary(target)
     py.ver <- system2(env.py, "--version", stderr=TRUE, stdout=TRUE)
     expect_match(py.ver, "2\\.7")
+
+    # Same if we use the lister.
+    expect_match(listPythonVersion(target), "^2\\.7")
 })
 
 test_that("setupBasiliskEnv works with PyPi-hosted packages", {

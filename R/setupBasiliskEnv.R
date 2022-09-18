@@ -51,7 +51,7 @@
 #' We stress that this option should \emph{not} be used in any release of the R package, it is a development-phase-only utility.
 #'
 #' It is possible to specify a different version of Python in \code{packages} by supplying, e.g., \code{"python=2.7.10"}.
-#' If no Python version is listed, the version in the base conda installation is used by default.
+#' If no Python version is listed, the version in the base conda installation is used by default - check \code{\link{listPythonVersion}} for the version number.
 #'
 #' @examples
 #' \dontshow{basilisk.utils::installConda()}
@@ -75,13 +75,12 @@ setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL
 
     base.dir <- getCondaDir()
     conda.cmd <- getCondaBinary(base.dir)
-    py.cmd <- getPythonBinary(base.dir)
 
     # Determining the Python version to use (possibly from `packages=`).
     if (any(is.py <- grepl("^python=", packages))) {
         version <- sub("^python=+", "", packages[is.py][1])
     } else {
-        version <- sub("^Python ", "", system2(py.cmd, "--version", stdout=TRUE))
+        version <- .python_version(base.dir)
     }
 
     success <- FALSE
