@@ -302,7 +302,7 @@ if (!file.exists(tmp2)) {
         basilisk.utils::getCondaDir(), 
         basilisk.utils::getCondaBinary()
     )
-    conda_install(tmp2, packages=c("scipy==1.9.1"), conda=conda.bin)
+    conda_install(tmp2, packages=c("scipy==1.9.1"), python_version="3.8", conda=conda.bin)
 }
 
 basiliskRun(env=tmp2, fun=function(mat) {
