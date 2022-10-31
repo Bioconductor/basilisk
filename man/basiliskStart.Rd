@@ -199,7 +199,7 @@ if (!file.exists(tmploc)) {
 cl <- basiliskStart(tmploc)
 basiliskRun(proc=cl, function() { 
     X <- reticulate::import("pandas"); X$`__version__` 
-})
+}, testload="pandas")
 basiliskStop(cl)
 
 # This happily co-exists with our other environment:
@@ -211,7 +211,7 @@ if (!file.exists(tmploc2)) {
 cl2 <- basiliskStart(tmploc2)
 basiliskRun(proc=cl2, function() { 
     X <- reticulate::import("pandas"); X$`__version__` 
-})
+}, testload="pandas")
 basiliskStop(cl2)
 
 # Persistence of variables is possible within a Start/Stop pair.
