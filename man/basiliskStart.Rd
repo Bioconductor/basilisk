@@ -196,10 +196,10 @@ if (!file.exists(tmploc)) {
 }
 
 # Pulling out the pandas version, as a demonstration:
-cl <- basiliskStart(tmploc)
+cl <- basiliskStart(tmploc, testload="pandas")
 basiliskRun(proc=cl, function() { 
     X <- reticulate::import("pandas"); X$`__version__` 
-}, testload="pandas")
+})
 basiliskStop(cl)
 
 # This happily co-exists with our other environment:
@@ -208,10 +208,10 @@ if (!file.exists(tmploc2)) {
     setupBasiliskEnv(tmploc2, c('pandas=1.4.2'))
 }
 
-cl2 <- basiliskStart(tmploc2)
+cl2 <- basiliskStart(tmploc2, testload="pandas")
 basiliskRun(proc=cl2, function() { 
     X <- reticulate::import("pandas"); X$`__version__` 
-}, testload="pandas")
+})
 basiliskStop(cl2)
 
 # Persistence of variables is possible within a Start/Stop pair.
