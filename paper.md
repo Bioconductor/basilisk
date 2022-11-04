@@ -32,7 +32,7 @@ this includes the `reticulate` package to seamlessly call Python code from an R 
 and the `conda` package manager to provision environments with the appropriate Python packages [@conda].
 However, the configuration and management of the Python instances is typically the responsibility of the end user.
 R/Bioconductor packages with Python functionality often rely on the user to manually ensure that the correct versions of all Python packages are installed.
-This is burdensome, error-prone and does not scale to widespread integration of Python code into the Bioconductor ecosystem.
+This is burdensome, error-prone, and does not scale to widespread integration of Python code into the Bioconductor ecosystem.
 Moreover, `reticulate` only supports one Python environment for each R session.
 This compromises interoperability between multiple R/Bioconductor packages that have different (and possibly incompatible) Python dependencies.
 The [`basilisk`](https://bioconductor.org/packages/basilisk) package aims to automate the management of Python environments required by "client" R/Bioconductor packages,
