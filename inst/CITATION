@@ -1,0 +1,12 @@
+bibentry(
+    bibtype = "article",
+    author = person(c("Aaron", "T.", "L."), "Lun"),
+    title="basilisk: a Bioconductor package for managing Python environments",
+    journal="Journal of Open Source Software",
+    year="2022",
+    volume="7",
+    issue="79",
+    pages="4742",
+    doi = "10.21105/joss.04742"
+)
+
