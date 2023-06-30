@@ -31,6 +31,9 @@ test_that("setupBasiliskEnv obtains the correct version of the packages", {
 })
 
 test_that("setupBasiliskEnv will install Python 2.7 if requested", {
+    # Python 2.7 binaries aren't provided for Arm64, so we'll just skip it.
+    skip_on_os(c("mac", "linux"), arch="aarch64")
+
     basilisk.utils::unlink2(target)
     setupBasiliskEnv(target, "python=2.7")
     env.py <- basilisk.utils::getPythonBinary(target)
