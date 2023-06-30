@@ -203,7 +203,9 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
         clusterCall(proc, assigner, name="isWindows", value=isWindows)
         clusterCall(proc, activateEnvironment, envpath=envpath, loc=getCondaDir())
         clusterCall(proc, assigner, name="activateEnvironment", value=function(...) {}) # no-op as we already ran it.
-        clusterCall(proc, attachNamespace, ns="reticulate")
+        clusterCall(proc, function() {
+            library("reticulate", character.only=TRUE, lib.loc = file.path(R.home(), "library"))
+        })
 
         clusterCall(proc, useBasiliskEnv, envpath=envpath)
         clusterCall(proc, .instantiate_store)
