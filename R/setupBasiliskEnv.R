@@ -94,10 +94,12 @@ setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL
     conda_install(envname=normalizePath(envpath), conda=conda.cmd, 
         python_version=version, packages=packages, channel=channels)
 
+    pip.cmd <- c("-m", "pip", "install", "--no-user")
+
     if (length(pip)) {
         .check_versions(pip, "==")
         env.py <- getPythonBinary(envpath)
-        result <- system2(env.py, c("-m", "pip", "install", pip))
+        result <- system2(env.py, c(pip.cmd, pip))
         if (result!=0L) {
             stop("failed to install additional packages via pip")
         }
@@ -106,7 +108,7 @@ setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL
     if (length(paths)) {
         env.py <- getPythonBinary(envpath)
         for (p in paths) {
-            result <- system2(env.py, c("-m", "pip", "install", p))
+            result <- system2(env.py, c(pip.cmd, p))
         }
     }
 
