@@ -258,7 +258,7 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
         if (is(test, "try-error")) {
             # Switching to the last-resort fallback upon detecting GLIBCXX errors.
             msg <- attr(test, "condition")$message
-            if (grepl("GLIBCXX", msg)) {
+            if (grepl("ImportError:.*version.*LIB.*not found", msg)) {
                 glibcxx_failed$failures[[envpath]] <- TRUE
                 basiliskStop(proc)
                 proc <- basiliskStart(env)
