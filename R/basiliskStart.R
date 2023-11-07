@@ -197,15 +197,19 @@ basiliskStart <- function(env, fork=getBasiliskFork(), shared=getBasiliskShared(
         rscript <- file.path(getFallbackREnv(), "bin", "Rscript")
         proc <- makePSOCKcluster(1, rscript=rscript) # can't suppress the warning, oh well.
 
+        # load reticulate on child (avoid sending basilisk function environment)
+        libraryfunc <- function() {
+            library("reticulate", character.only=TRUE, lib.loc = file.path(R.home(), "library"))
+        }
+        environment(libraryfunc) <- .GlobalEnv
+        clusterCall(proc, libraryfunc)
+
         # Transmit internals required for useBasiliskEnv to work properly inside the mini-R.
         assigner <- function(name, value) assign(name, value, envir=.GlobalEnv)
         clusterCall(proc, assigner, name=".activate_condaenv", value=basilisk.utils:::.activate_condaenv)
         clusterCall(proc, assigner, name="isWindows", value=isWindows)
         clusterCall(proc, activateEnvironment, envpath=envpath, loc=getCondaDir())
         clusterCall(proc, assigner, name="activateEnvironment", value=function(...) {}) # no-op as we already ran it.
-        clusterCall(proc, function() {
-            library("reticulate", character.only=TRUE, lib.loc = file.path(R.home(), "library"))
-        })
 
         clusterCall(proc, useBasiliskEnv, envpath=envpath)
         clusterCall(proc, .instantiate_store)
