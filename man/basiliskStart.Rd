@@ -8,6 +8,7 @@
 \usage{
 basiliskStart(
   env,
+  full.activation = NA,
   fork = getBasiliskFork(),
   shared = getBasiliskShared(),
   testload = NULL
@@ -20,6 +21,7 @@ basiliskRun(
   fun,
   ...,
   env,
+  full.activation = NA,
   persist = FALSE,
   fork = getBasiliskFork(),
   shared = getBasiliskShared(),
@@ -32,6 +34,11 @@ basiliskRun(
 Alternatively, a string specifying the path to an environment, though this should only be used for testing purposes.
 
 Alternatively, \code{NULL} to indicate that the base Conda installation should be used as the environment.}
+
+\item{full.activation}{Logical scalar passed down to
+\code{activateEnvironment()}.
+See \code{\link[basilisk.utils]{activateEnvironment}} in the
+\pkg{basilisk.utils} package for more information.}
 
 \item{fork}{Logical scalar indicating whether forking should be performed on non-Windows systems, 
 see \code{\link{getBasiliskFork}}.
@@ -228,6 +235,9 @@ basiliskStop(cl)
 }
 \seealso{
 \code{\link{setupBasiliskEnv}}, to set up the conda environments.
+
+\code{\link[basilisk.utils]{activateEnvironment}} in the
+\pkg{basilisk.utils} package.
 
 \code{\link{getBasiliskFork}} and \code{\link{getBasiliskShared}}, to control various global options.
 }
