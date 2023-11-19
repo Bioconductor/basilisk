@@ -3,10 +3,7 @@
 #' Use \pkg{basilisk} environments for isolated execution of Python code with appropriate versions of all Python packages.
 #' 
 #' @param envpath String containing the path to the \pkg{basilisk} environment to use. 
-#' @param full.activation Logical scalar passed down to
-#' \code{activateEnvironment()}.
-#' See \code{\link[basilisk.utils]{activateEnvironment}} in the
-#' \pkg{basilisk.utils} package for more information.
+#' @param full.activation Logical scalar, see \code{\link{activateEnvironment}} for details.
 #' 
 #' @return 
 #' The function will attempt to load the specified \pkg{basilisk} environment into the R session,
@@ -43,9 +40,6 @@
 #'
 #' @seealso
 #' \code{\link{basiliskStart}}, for how these \pkg{basilisk} environments should be used.
-#'
-#' \code{\link[basilisk.utils]{activateEnvironment}} in the
-#' \pkg{basilisk.utils} package.
 #'
 #' @export
 #' @import basilisk.utils

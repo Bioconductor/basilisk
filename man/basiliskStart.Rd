@@ -35,10 +35,7 @@ Alternatively, a string specifying the path to an environment, though this shoul
 
 Alternatively, \code{NULL} to indicate that the base Conda installation should be used as the environment.}
 
-\item{full.activation}{Logical scalar passed down to
-\code{activateEnvironment()}.
-See \code{\link[basilisk.utils]{activateEnvironment}} in the
-\pkg{basilisk.utils} package for more information.}
+\item{full.activation}{Logical scalar, see \code{\link{activateEnvironment}} for more details.}
 
 \item{fork}{Logical scalar indicating whether forking should be performed on non-Windows systems, 
 see \code{\link{getBasiliskFork}}.

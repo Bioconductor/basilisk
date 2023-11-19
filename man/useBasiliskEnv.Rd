@@ -9,10 +9,7 @@ useBasiliskEnv(envpath, full.activation = NA)
 \arguments{
 \item{envpath}{String containing the path to the \pkg{basilisk} environment to use.}
 
-\item{full.activation}{Logical scalar passed down to
-\code{activateEnvironment()}.
-See \code{\link[basilisk.utils]{activateEnvironment}} in the
-\pkg{basilisk.utils} package for more information.}
+\item{full.activation}{Logical scalar, see \code{\link{activateEnvironment}} for details.}
 }
 \value{
 The function will attempt to load the specified \pkg{basilisk} environment into the R session,
@@ -51,9 +48,6 @@ stopifnot(is(status, "try-error") || basilisk.utils::isWindows())
 }
 \seealso{
 \code{\link{basiliskStart}}, for how these \pkg{basilisk} environments should be used.
-
-\code{\link[basilisk.utils]{activateEnvironment}} in the
-\pkg{basilisk.utils} package.
 }
 \author{
 Aaron Lun
