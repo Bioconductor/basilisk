@@ -11,7 +11,7 @@ Imports:
     parallel,
     reticulate,
     dir.expiry,
-    basilisk.utils (>= 1.15.1)
+    basilisk.utils (>= 1.14.1)
 Suggests:
     knitr,
     rmarkdown,
