@@ -201,18 +201,28 @@ basiliskStart <- function(env, full.activation=NA, fork=getBasiliskFork(), share
         rscript <- file.path(getFallbackREnv(), "bin", "Rscript")
         proc <- makePSOCKcluster(1, rscript=rscript) # can't suppress the warning, oh well.
 
-        # Transmit internals required for useBasiliskEnv to work properly inside the mini-R.
-        assigner <- function(name, value) assign(name, value, envir=.GlobalEnv)
-        clusterCall(proc, assigner, name=".activate_condaenv", value=basilisk.utils:::.activate_condaenv)
-        clusterCall(proc, assigner, name="isWindows", value=isWindows)
-        clusterCall(proc, activateEnvironment, envpath=envpath, full.activation=full.activation, loc=getCondaDir())
-        clusterCall(proc, assigner, name="activateEnvironment", value=function(...) {}) # no-op as we already ran it.
-        clusterCall(proc, function() {
-            library("reticulate", character.only=TRUE, lib.loc = file.path(R.home(), "library"))
-        })
+        # Transmit internals required for useBasiliskEnv to work properly
+        # inside the mini-R. This requires some work to strip the function
+        # environment so that we avoid sending the basilisk namespace to the
+        # child. Doing so would drag in the current session's reticulate in the
+        # child session, which defeats the purpose of the fallback.
+        envstripper <- function(fun) {
+            environment(fun) <- .GlobalEnv
+            fun
+        }
 
-        clusterCall(proc, useBasiliskEnv, envpath=envpath, full.activation=full.activation)
-        clusterCall(proc, .instantiate_store)
+        clusterCall(proc, envstripper(function() {
+            library("reticulate", character.only=TRUE, lib.loc = file.path(R.home(), "library"))
+        }))
+
+        assigner <- envstripper(function(name, value) assign(name, value, envir=.GlobalEnv))
+        clusterCall(proc, assigner, name=".activate_condaenv", value=envstripper(basilisk.utils:::.activate_condaenv))
+        clusterCall(proc, assigner, name="isWindows", value=isWindows)
+        clusterCall(proc, envstripper(activateEnvironment), envpath=envpath, full.activation=full.activation, loc=getCondaDir())
+        clusterCall(proc, assigner, name="activateEnvironment", value=list) # no-op as we already ran it.
+
+        clusterCall(proc, envstripper(useBasiliskEnv), envpath=envpath)
+        clusterCall(proc, envstripper(.instantiate_store))
         return(proc)
     }
 
