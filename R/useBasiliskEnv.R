@@ -3,6 +3,7 @@
 #' Use \pkg{basilisk} environments for isolated execution of Python code with appropriate versions of all Python packages.
 #' 
 #' @param envpath String containing the path to the \pkg{basilisk} environment to use. 
+#' @param full.activation Logical scalar, see \code{\link{activateEnvironment}} for details.
 #' 
 #' @return 
 #' The function will attempt to load the specified \pkg{basilisk} environment into the R session,
@@ -43,10 +44,10 @@
 #' @export
 #' @import basilisk.utils
 #' @importFrom reticulate use_condaenv py_config
-useBasiliskEnv <- function(envpath) {
+useBasiliskEnv <- function(envpath, full.activation=NA) {
     envpath <- normalizePath(envpath, mustWork=TRUE)
 
-    activateEnvironment(envpath)
+    activateEnvironment(envpath, full.activation=full.activation)
     use_condaenv(envpath, required=TRUE)
 
     # use_condaenv doesn't actually cause Python to be loaded immediately, 
