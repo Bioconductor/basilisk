@@ -1,3 +1,6 @@
+BASILISK_SCIKIT_LEARN_VERSION="1.3.2"
+BASILISK_PANDAS_VERSION="2.1.4"
+
 #' The BasiliskEnvironment class
 #'
 #' The BasiliskEnvironment class provides a simple structure 
@@ -23,7 +26,7 @@
 #' 
 #' @examples
 #' BasiliskEnvironment("my_env1", "AaronPackage", 
-#'     packages=c("scikit-learn=1.1.1", "pandas=1.43.1"))
+#'     packages=c(sprintf("scikit-learn=%s", basilisk:::BASILISK_SCIKIT_LEARN_VERSION), sprintf("pandas=%s", basilisk:::BASILISK_PANDAS_VERSION)))
 #' @docType class
 #' @name BasiliskEnvironment-class
 #' @aliases BasiliskEnvironment-class

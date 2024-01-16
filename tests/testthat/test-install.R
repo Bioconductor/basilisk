@@ -30,19 +30,20 @@ test_that("setupBasiliskEnv obtains the correct version of the packages", {
     expect_true("pandas" %in% info$package)
 })
 
-test_that("setupBasiliskEnv will install Python 2.7 if requested", {
-    # Python 2.7 binaries aren't provided for Arm64, so we'll just skip it.
-    skip_on_os(c("mac", "linux"), arch="aarch64")
-
-    basilisk.utils::unlink2(target)
-    setupBasiliskEnv(target, "python=2.7")
-    env.py <- basilisk.utils::getPythonBinary(target)
-    py.ver <- system2(env.py, "--version", stderr=TRUE, stdout=TRUE)
-    expect_match(py.ver, "2\\.7")
-
-    # Same if we use the lister.
-    expect_match(listPythonVersion(target), "^2\\.7")
-})
+# MOVE TO LONGTESTS
+# test_that("setupBasiliskEnv will install Python 2.7 if requested", {
+#     # Python 2.7 binaries aren't provided for Arm64, so we'll just skip it.
+#     skip_on_os(c("mac", "linux"), arch="aarch64")
+# 
+#     basilisk.utils::unlink2(target)
+#     setupBasiliskEnv(target, "python=2.7")
+#     env.py <- basilisk.utils::getPythonBinary(target)
+#     py.ver <- system2(env.py, "--version", stderr=TRUE, stdout=TRUE)
+#    expect_match(py.ver, "2\\.7")
+#
+#    # Same if we use the lister.
+#    expect_match(listPythonVersion(target), "^2\\.7")
+#})
 
 test_that("setupBasiliskEnv works with PyPi-hosted packages", {
     basilisk.utils::unlink2(target)
@@ -57,7 +58,7 @@ test_that("setupBasiliskEnv works with local packages", {
     basilisk.utils::unlink2(target)
     setupBasiliskEnv(target, packages=character(0), paths=system.file("example", "inst", "test_dummy", package="basilisk"))
     incoming <- basilisk:::.basilisk_freeze(target)
-    expect_true("test-dummy==0.1" %in% incoming)
+    expect_true("test_dummy==0.1" %in% incoming)
 })
 
 test_that("setupBasiliskEnv destroys directory on error", {

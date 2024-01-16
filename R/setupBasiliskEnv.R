@@ -61,7 +61,7 @@
 #'
 #' tmploc <- file.path(tempdir(), "my_package_A")
 #' if (!file.exists(tmploc)) {
-#'     setupBasiliskEnv(tmploc, c('pandas=1.4.3'))
+#'     setupBasiliskEnv(tmploc, c(sprintf('pandas=%s', basilisk:::BASILISK_PANDAS_VERSION)))
 #' }
 #'
 #' @seealso

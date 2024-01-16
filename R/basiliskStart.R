@@ -156,7 +156,7 @@
 #' # when supplying a BasiliskEnvironment to basiliskStart):
 #' tmploc <- file.path(tempdir(), "my_package_A")
 #' if (!file.exists(tmploc)) {
-#'     setupBasiliskEnv(tmploc, c('pandas=1.4.3'))
+#'     setupBasiliskEnv(tmploc, c(sprintf('pandas=%s', basilisk:::BASILISK_PANDAS_VERSION)))
 #' }
 #'
 #' # Pulling out the pandas version, as a demonstration:
@@ -169,7 +169,7 @@
 #' # This happily co-exists with our other environment:
 #' tmploc2 <- file.path(tempdir(), "my_package_B")
 #' if (!file.exists(tmploc2)) {
-#'     setupBasiliskEnv(tmploc2, c('pandas=1.4.2'))
+#'     setupBasiliskEnv(tmploc2, c(sprintf('pandas=%s', basilisk:::BASILISK_PANDAS_VERSION)))
 #' }
 #' 
 #' cl2 <- basiliskStart(tmploc2, testload="pandas")

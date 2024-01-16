@@ -17,12 +17,13 @@
 #'
 #' tmploc <- file.path(tempdir(), "my_package_A")
 #' if (!file.exists(tmploc)) {
-#'     setupBasiliskEnv(tmploc, c('pandas=1.4.3'))
+#'     setupBasiliskEnv(tmploc, c(sprintf('pandas=%s', basilisk:::BASILISK_PANDAS_VERSION)))
 #' }
 #' obtainEnvironmentPath(tmploc)
 #'
 #' env <- BasiliskEnvironment("test_env", "basilisk", 
-#'     packages=c("scikit-learn=1.1.1", "pandas=1.43.1"))
+#'     packages=c(sprintf("scikit-learn=%s", basilisk:::BASILISK_SCIKIT_LEARN_VERSION), 
+#'                  sprintf("pandas=%s", basilisk:::BASILISK_PANDAS_VERSION)))
 #' \dontrun{obtainEnvironmentPath(env)}
 #' @export
 #' @importFrom dir.expiry lockDirectory unlockDirectory touchDirectory

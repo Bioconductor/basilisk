@@ -54,17 +54,18 @@ We will assume that readers are familiar with general R package development prac
 
 Typically, we need to create some environments with the requisite packages using the `conda` package manager.
 A `basilisk.R` file should be present in the `R/` subdirectory containing commands to produce a `BasiliskEnvironment` object.
-These objects define the Python environments to be constructed by `r Biocpkg("basilisk")` on behalf of your client package.
+These objects define the Python environments to be constructed by `r Biocpkg("basilisk")` on behalf of your client package.  **Note that constraints may arise depending on which
+miniconda version is installed to support the version of basilisk in use.**
 
 ```{r}
 my_env <- BasiliskEnvironment(envname="my_env_name",
     pkgname="ClientPackage",
-    packages=c("pandas==1.4.3", "scikit-learn==1.1.1")
+    packages=c("pandas==2.1.4", "scikit-learn==1.3.2")
 )
 
 second_env <- BasiliskEnvironment(envname="second_env_name",
     pkgname="ClientPackage",
-    packages=c("scipy=1.9.1", "numpy==1.22.1") 
+    packages=c("scipy=1.11.4", "numpy==1.26.3") 
 )
 ```
 
@@ -269,7 +270,7 @@ For example, we can easily instantiate a conda environment in our working direct
 
 ```{r}
 tmp <- createLocalBasiliskEnv("basilisk-vignette-test",
-    packages=c("scikit-learn=1.1.1", "numpy=1.22.1"))
+    packages=c("scikit-learn=1.3.2", "numpy=1.26.3"))
 ```
 
 We can then supply this environment's path to `basiliskRun()` to execute Python-based calculations.
@@ -302,7 +303,7 @@ if (!file.exists(tmp2)) {
         basilisk.utils::getCondaDir(), 
         basilisk.utils::getCondaBinary()
     )
-    conda_install(tmp2, packages=c("scipy==1.9.1"), python_version="3.10", conda=conda.bin)
+    conda_install(tmp2, packages=c("scipy==1.11.4"), python_version="3.11", conda=conda.bin)
 }
 
 basiliskRun(env=tmp2, fun=function(mat) {
