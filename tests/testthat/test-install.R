@@ -57,7 +57,7 @@ test_that("setupBasiliskEnv works with local packages", {
     basilisk.utils::unlink2(target)
     setupBasiliskEnv(target, packages=character(0), paths=system.file("example", "inst", "test_dummy", package="basilisk"))
     incoming <- basilisk:::.basilisk_freeze(target)
-    expect_true("test-dummy==0.1" %in% incoming)
+    expect_true("test_dummy==0.1" %in% incoming)
 })
 
 test_that("setupBasiliskEnv destroys directory on error", {
