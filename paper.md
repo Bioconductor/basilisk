@@ -6,7 +6,7 @@ tags:
   - Bioconductor
   - bioinformatics
 authors:
-  - name: Aaron T. L. Lun
+  - name: Aaron Tin Long Lun
     orcid: 0000-0002-3564-4813
     affiliation: 1
 affiliations:
