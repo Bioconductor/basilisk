@@ -19,8 +19,8 @@
 #' and that concurrent access to the environment is done safely.
 #'
 #' @examples
-#' tmploc <- file.path(tempdir(), "my_package_C")
-#' tmp <- createLocalBasiliskEnv(tmploc, packages="pandas==1.4.3")
+#' tmploc <- file.path(tempdir(), "my_package_C") # pip notation!
+#' tmp <- createLocalBasiliskEnv(tmploc, packages="pandas==2.2.0")
 #' basiliskRun(env=tmp, fun=function() { 
 #'     X <- reticulate::import("pandas"); X$`__version__` 
 #' }, testload="pandas")

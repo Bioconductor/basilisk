@@ -79,7 +79,7 @@ Of course, it is possible to specify an entirely different version of Python in 
 
 tmploc <- file.path(tempdir(), "my_package_A")
 if (!file.exists(tmploc)) {
-    setupBasiliskEnv(tmploc, c('pandas=1.4.3'))
+    setupBasiliskEnv(tmploc, c(pandas_spec()))
 }
 
 }

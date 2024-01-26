@@ -29,7 +29,7 @@ These paths are interpreted relative to the system directory of \code{pkgname}, 
 
 \examples{
 BasiliskEnvironment("my_env1", "AaronPackage", 
-    packages=c("scikit-learn=1.1.1", "pandas=1.43.1"))
+    packages=c(scikit_learn_spec(), pandas_spec()))
 }
 \author{
 Aaron lun
