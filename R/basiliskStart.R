@@ -212,7 +212,8 @@ basiliskStart <- function(env, full.activation=NA, fork=getBasiliskFork(), share
         }
 
         clusterCall(proc, envstripper(function() {
-            library("reticulate", character.only=TRUE, lib.loc = file.path(R.home(), "library"))
+            #library("reticulate", character.only=TRUE, lib.loc = file.path(R.home(), "library"))
+            requireNamespace("reticulate", lib.loc = file.path(R.home(), "library"))
         }))
 
         assigner <- envstripper(function(name, value) assign(name, value, envir=.GlobalEnv))
