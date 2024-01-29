@@ -19,11 +19,13 @@
 #' and that concurrent access to the environment is done safely.
 #'
 #' @examples
-#' tmploc <- file.path(tempdir(), "my_package_C")
-#' tmp <- createLocalBasiliskEnv(tmploc, packages="pandas==1.4.3")
-#' basiliskRun(env=tmp, fun=function() { 
-#'     X <- reticulate::import("pandas"); X$`__version__` 
-#' }, testload="pandas")
+#' if (.Platform$OS.type != "windows") {
+#'  tmploc <- file.path(tempdir(), "my_package_C")
+#'  tmp <- createLocalBasiliskEnv(tmploc, packages="pandas==1.4.3")
+#'  basiliskRun(env=tmp, fun=function() { 
+#'      X <- reticulate::import("pandas"); X$`__version__` 
+#'  }, testload="pandas")
+#' }
 #'
 #' @export
 #' @importFrom basilisk.utils installConda

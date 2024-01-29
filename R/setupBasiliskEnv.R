@@ -57,11 +57,13 @@
 #' Of course, it is possible to specify an entirely different version of Python in \code{packages} by supplying, e.g., \code{"python=2.7.10"}.
 #'
 #' @examples
-#' \dontshow{basilisk.utils::installConda()}
+#' if (.Platform$OS.type != "windows") {
+#'  \dontshow{basilisk.utils::installConda()}
 #'
-#' tmploc <- file.path(tempdir(), "my_package_A")
-#' if (!file.exists(tmploc)) {
-#'     setupBasiliskEnv(tmploc, c('pandas=1.4.3'))
+#'  tmploc <- file.path(tempdir(), "my_package_A")
+#'  if (!file.exists(tmploc)) {
+#'      setupBasiliskEnv(tmploc, c('pandas=1.4.3'))
+#'  }
 #' }
 #'
 #' @seealso
