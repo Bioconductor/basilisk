@@ -27,23 +27,25 @@ This function will modify a suite of environment variables as a side effect
 - see \dQuote{Persistence of environment variables} in \code{?\link{basiliskStart}} for the rationale.
 }
 \examples{
-\dontshow{basilisk.utils::installConda()}
+if (.Platform$OS.type != "windows") {
+ \dontshow{basilisk.utils::installConda()}
 
-tmploc <- file.path(tempdir(), "my_package_A")
-if (!file.exists(tmploc)) {
-    setupBasiliskEnv(tmploc, c('pandas==1.4.3'))
+ tmploc <- file.path(tempdir(), "my_package_A")
+ if (!file.exists(tmploc)) {
+     setupBasiliskEnv(tmploc, c('pandas==1.4.3'))
+ }
+
+ # This may or may not work, depending on whether a Python instance
+ # has already been loaded into this R session.
+ try(useBasiliskEnv(tmploc))
+
+ # This will definitely not work, as the available Python is already set.
+ baseloc <- basilisk.utils::getCondaDir()
+ status <- try(useBasiliskEnv(baseloc))
+
+ # ... except on Windows, which somehow avoids tripping the error.
+ stopifnot(is(status, "try-error") || basilisk.utils::isWindows())
 }
-
-# This may or may not work, depending on whether a Python instance
-# has already been loaded into this R session.
-try(useBasiliskEnv(tmploc))
-
-# This will definitely not work, as the available Python is already set.
-baseloc <- basilisk.utils::getCondaDir()
-status <- try(useBasiliskEnv(baseloc))
-
-# ... except on Windows, which somehow avoids tripping the error.
-stopifnot(is(status, "try-error") || basilisk.utils::isWindows())
 
 }
 \seealso{

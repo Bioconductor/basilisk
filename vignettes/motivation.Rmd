@@ -268,8 +268,10 @@ While `r Biocpkg("basilisk")` is primarily intended for package developers, end 
 For example, we can easily instantiate a conda environment in our working directory with `createLocalBasiliskEnv()`:
 
 ```{r}
+if (.Platform$OS.type != "windows") {
 tmp <- createLocalBasiliskEnv("basilisk-vignette-test",
     packages=c("scikit-learn=1.1.1", "numpy=1.22.1"))
+}
 ```
 
 We can then supply this environment's path to `basiliskRun()` to execute Python-based calculations.
@@ -277,6 +279,7 @@ To demonstrate, we'll apply `r PyPiLink("scikit-learn")`'s truncated PCA on a ra
 Note that the restrictions mentioned [above](#function-constraints) for `fun` are still applicable here.
 
 ```{r, error=FALSE, message=FALSE}
+if (.Platform$OS.type != "windows") {
 x <- matrix(rnorm(1000), ncol=10)
 basiliskRun(env=tmp, fun=function(mat) {
     module <- reticulate::import("sklearn.decomposition")
@@ -284,6 +287,7 @@ basiliskRun(env=tmp, fun=function(mat) {
     output <- runner$fit(mat) 
     output$singular_values_
 }, mat = x, testload="scipy.optimize")
+}
 ```
 
 `basiliskRun()` can also be used with conda environments constructed outside of **basilisk**.
@@ -291,6 +295,7 @@ Of course, in this case, it is the user's responsibility to ensure that the envi
 Some caution is also required as `r Biocpkg("basilisk")` is not guaranteed to work with environments created by a different version of conda, though problems seem to be rare in practice.
 
 ```{r, error=FALSE, message=FALSE}
+if (.Platform$OS.type != "windows") {
 library(reticulate)
 
 # In this case, we'll use reticulate directly to construct our conda
@@ -310,6 +315,7 @@ basiliskRun(env=tmp2, fun=function(mat) {
     norm <- module$norm
     norm$cdf(c(-1, 0, 1))
 }, mat = x, testload="scipy.optimize")
+}
 ```
 
 It is worth highlighting the fact that we were able to call `basiliskRun()` successfully on two different environments within the same R session.

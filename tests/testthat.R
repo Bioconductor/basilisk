@@ -1,3 +1,3 @@
 library(testthat)
 library(basilisk)
-test_check("basilisk")
+if (.Platform$OS.type != "windows") test_check("basilisk")

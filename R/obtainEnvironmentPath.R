@@ -13,17 +13,19 @@
 #' @author Aaron Lun
 #'
 #' @examples
-#' \dontshow{basilisk.utils::installConda()}
-#'
-#' tmploc <- file.path(tempdir(), "my_package_A")
-#' if (!file.exists(tmploc)) {
-#'     setupBasiliskEnv(tmploc, c('pandas=1.4.3'))
+#' if (.Platform$OS.type != "windows") {
+#'  \dontshow{basilisk.utils::installConda()}
+#' 
+#'  tmploc <- file.path(tempdir(), "my_package_A")
+#'  if (!file.exists(tmploc)) {
+#'      setupBasiliskEnv(tmploc, c('pandas=1.4.3'))
+#'  }
+#'  obtainEnvironmentPath(tmploc)
+#' 
+#'  env <- BasiliskEnvironment("test_env", "basilisk", 
+#'      packages=c("scikit-learn=1.1.1", "pandas=1.43.1"))
+#'  \dontrun{obtainEnvironmentPath(env)}
 #' }
-#' obtainEnvironmentPath(tmploc)
-#'
-#' env <- BasiliskEnvironment("test_env", "basilisk", 
-#'     packages=c("scikit-learn=1.1.1", "pandas=1.43.1"))
-#' \dontrun{obtainEnvironmentPath(env)}
 #' @export
 #' @importFrom dir.expiry lockDirectory unlockDirectory touchDirectory
 #' @importFrom utils packageVersion

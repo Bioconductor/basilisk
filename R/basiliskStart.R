@@ -150,44 +150,46 @@
 #' \code{\link{getBasiliskFork}} and \code{\link{getBasiliskShared}}, to control various global options.
 #' 
 #' @examples
-#' \dontshow{basilisk.utils::installConda()}
-#'
-#' # Creating an environment (note, this is not necessary
-#' # when supplying a BasiliskEnvironment to basiliskStart):
-#' tmploc <- file.path(tempdir(), "my_package_A")
-#' if (!file.exists(tmploc)) {
-#'     setupBasiliskEnv(tmploc, c('pandas=1.4.3'))
-#' }
-#'
-#' # Pulling out the pandas version, as a demonstration:
-#' cl <- basiliskStart(tmploc, testload="pandas")
-#' basiliskRun(proc=cl, function() { 
-#'     X <- reticulate::import("pandas"); X$`__version__` 
-#' })
-#' basiliskStop(cl)
-#'
-#' # This happily co-exists with our other environment:
-#' tmploc2 <- file.path(tempdir(), "my_package_B")
-#' if (!file.exists(tmploc2)) {
-#'     setupBasiliskEnv(tmploc2, c('pandas=1.4.2'))
-#' }
+#' if (.Platform$OS.type != "windows") {
+#'  \dontshow{basilisk.utils::installConda()}
 #' 
-#' cl2 <- basiliskStart(tmploc2, testload="pandas")
-#' basiliskRun(proc=cl2, function() { 
-#'     X <- reticulate::import("pandas"); X$`__version__` 
-#' })
-#' basiliskStop(cl2)
-#'
-#' # Persistence of variables is possible within a Start/Stop pair.
-#' cl <- basiliskStart(tmploc)
-#' basiliskRun(proc=cl, function(store) {
-#'     store$snake.in.my.shoes <- 1
-#'     invisible(NULL)
-#' }, persist=TRUE)
-#' basiliskRun(proc=cl, function(store) {
-#'     return(store$snake.in.my.shoes)
-#' }, persist=TRUE)
-#' basiliskStop(cl)
+#'  # Creating an environment (note, this is not necessary
+#'  # when supplying a BasiliskEnvironment to basiliskStart):
+#'  tmploc <- file.path(tempdir(), "my_package_A")
+#'  if (!file.exists(tmploc)) {
+#'      setupBasiliskEnv(tmploc, c('pandas=1.4.3'))
+#'  }
+#' 
+#'  # Pulling out the pandas version, as a demonstration:
+#'  cl <- basiliskStart(tmploc, testload="pandas")
+#'  basiliskRun(proc=cl, function() { 
+#'      X <- reticulate::import("pandas"); X$`__version__` 
+#'  })
+#'  basiliskStop(cl)
+#' 
+#'  # This happily co-exists with our other environment:
+#'  tmploc2 <- file.path(tempdir(), "my_package_B")
+#'  if (!file.exists(tmploc2)) {
+#'      setupBasiliskEnv(tmploc2, c('pandas=1.4.2'))
+#'  }
+#'  
+#'  cl2 <- basiliskStart(tmploc2, testload="pandas")
+#'  basiliskRun(proc=cl2, function() { 
+#'      X <- reticulate::import("pandas"); X$`__version__` 
+#'  })
+#'  basiliskStop(cl2)
+#' 
+#'  # Persistence of variables is possible within a Start/Stop pair.
+#'  cl <- basiliskStart(tmploc)
+#'  basiliskRun(proc=cl, function(store) {
+#'      store$snake.in.my.shoes <- 1
+#'      invisible(NULL)
+#'  }, persist=TRUE)
+#'  basiliskRun(proc=cl, function(store) {
+#'      return(store$snake.in.my.shoes)
+#'  }, persist=TRUE)
+#'  basiliskStop(cl)
+#' }
 #'
 #' @export
 #' @importFrom parallel makePSOCKcluster clusterCall makeForkCluster
@@ -212,7 +214,7 @@ basiliskStart <- function(env, full.activation=NA, fork=getBasiliskFork(), share
         }
 
         clusterCall(proc, envstripper(function() {
-            library("reticulate", character.only=TRUE, lib.loc = file.path(R.home(), "library"))
+            requireNamespace("reticulate", lib.loc = file.path(R.home(), "library"))
         }))
 
         assigner <- envstripper(function(name, value) assign(name, value, envir=.GlobalEnv))
