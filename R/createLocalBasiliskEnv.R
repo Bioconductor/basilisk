@@ -21,7 +21,7 @@
 #' @examples
 #' if (.Platform$OS.type != "windows") {
 #'  tmploc <- file.path(tempdir(), "my_package_C")
-#'  tmp <- createLocalBasiliskEnv(tmploc, packages="pandas==1.4.3")
+#'  tmp <- createLocalBasiliskEnv(tmploc, packages=pandas_spec_pip())
 #'  basiliskRun(env=tmp, fun=function() { 
 #'      X <- reticulate::import("pandas"); X$`__version__` 
 #'  }, testload="pandas")

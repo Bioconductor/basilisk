@@ -18,12 +18,12 @@
 #' 
 #'  tmploc <- file.path(tempdir(), "my_package_A")
 #'  if (!file.exists(tmploc)) {
-#'      setupBasiliskEnv(tmploc, c('pandas=1.4.3'))
+#'      setupBasiliskEnv(tmploc, pandas_spec())
 #'  }
 #'  obtainEnvironmentPath(tmploc)
 #' 
 #'  env <- BasiliskEnvironment("test_env", "basilisk", 
-#'      packages=c("scikit-learn=1.1.1", "pandas=1.43.1"))
+#'      packages=c(scikit_learn_spec(), pandas_spec()))
 #'  \dontrun{obtainEnvironmentPath(env)}
 #' }
 #' @export

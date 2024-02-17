@@ -2,6 +2,13 @@
 \title{basilisk News}
 \encoding{UTF-8}
 
+\section{Version 1.5.0}{\itemize{
+\item Eliminate warning due to use of library()
+
+\item Consolidate specification of external python packages used in testing
+\item Reduce intensity of testing on windows platform to avoid timeouts
+}}
+
 \section{Version 1.4.0}{\itemize{
 \item Support installation from Python package directories on the file system.
 

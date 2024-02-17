@@ -1,10 +1,14 @@
 #' @importFrom basilisk BasiliskEnvironment
 env1 <- BasiliskEnvironment("env1", pkgname="son.of.basilisk",
-    packages=c("pandas==1.4.3", "python-dateutil==2.8.2", "pytz==2022.2.1"))
+    packages=c(basilisk::pandas_spec_pip(), 
+         basilisk::python_dateutil_spec_pip(),
+         basilisk::pytz_spec_pip()))
 
 #' @importFrom basilisk BasiliskEnvironment
 env2 <- BasiliskEnvironment("env2", pkgname="son.of.basilisk",
-    packages=c("scikit-learn==1.1.1", "python-dateutil==2.8.1", "pytz==2022.1"))
+    packages=c(basilisk::scikit_learn_spec_pip(), 
+         basilisk::python_dateutil_spec_pip("2.0.1"),
+         basilisk::pytz_spec_pip("2022.1")))
 
 #' @importFrom basilisk BasiliskEnvironment
 env3 <- BasiliskEnvironment("env3", pkgname="son.of.basilisk",

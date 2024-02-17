@@ -59,12 +59,12 @@ These objects define the Python environments to be constructed by `r Biocpkg("ba
 ```{r}
 my_env <- BasiliskEnvironment(envname="my_env_name",
     pkgname="ClientPackage",
-    packages=c("pandas==1.4.3", "scikit-learn==1.1.1")
+    packages=c(pandas_spec(), scikit_learn_spec())
 )
 
 second_env <- BasiliskEnvironment(envname="second_env_name",
     pkgname="ClientPackage",
-    packages=c("scipy=1.9.1", "numpy==1.22.1") 
+    packages=c(scikit_learn_spec(), "numpy=1.26.3")
 )
 ```
 
