@@ -1,6 +1,6 @@
 Package: basilisk
-Version: 1.15.4
-Date: 2024-01-26
+Version: 1.15.5
+Date: 2024-02-17
 Title: Freezing Python Dependencies Inside Bioconductor Packages
 Authors@R: c(person("Aaron", "Lun", role=c("aut", "cre", "cph"),
         email="infinite.monkeys.with.keyboards@gmail.com"),
