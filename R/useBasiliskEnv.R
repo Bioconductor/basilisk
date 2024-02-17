@@ -50,11 +50,11 @@ useBasiliskEnv <- function(envpath, full.activation=NA) {
     envpath <- normalizePath(envpath, mustWork=TRUE)
 
     activateEnvironment(envpath, full.activation=full.activation)
-    use_condaenv(envpath, required=TRUE)
+    reticulate::use_condaenv(envpath, required=TRUE)
 
     # use_condaenv doesn't actually cause Python to be loaded immediately, 
     # so we force the issue to seal the deal.
-    py_config() 
+    reticulate::py_config() 
 
     invisible(NULL)
 }
