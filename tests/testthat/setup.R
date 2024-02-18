@@ -5,7 +5,7 @@ test.pandas <- "pandas==2.0.2"
 test.pandas.deps <- c("python-dateutil==2.8.2", "pytz==2022.2.1")
 
 old.pandas <- "pandas==2.0.1"
-old.pandas.deps <- c("python-dateutil==2.8.1", "pytz==2022.1")
+old.pandas.deps <- c("python-dateutil==2.8.2", "pytz==2022.1") # dateutil 2.8.1 seems inconsistent in 2024
 
 client.dir <- "install-test-client"
 unlink(client.dir, recursive=TRUE)
