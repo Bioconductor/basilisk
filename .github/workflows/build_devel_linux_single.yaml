@@ -1,0 +1,120 @@
+# this is build_devel_linux.yaml, modified from build_all.yaml
+# uses bbs container for linux, bioc-devel
+# does install of package and declared dependencies
+# saves install log
+# does build, saves build log
+# does check, saves check log
+# creates gzipped source tarball
+# creates bbs-salt compatible binary
+on:
+  push:
+  workflow_dispatch:
+
+name: All ubuntu build and test
+
+jobs:
+  check:
+    runs-on: ${{ matrix.config.os }}
+    container:
+      image: ${{ matrix.config.container }}
+      options: --user ${{matrix.config.user}}
+    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          #- {os: macOS-latest,   r: 'release'}
+          #- {os: windows-latest, r: 'release'}
+          - {type: 'test', os: 'ubuntu-latest', container: 'ghcr.io/bioconductor/bioconductor_salt:devel-jammy-bioc-3.19-r-4.4.0', user: 'root'}
+          - {type: 'binary-build', os: 'ubuntu-latest', container: 'ghcr.io/bioconductor/bioconductor_salt:devel-jammy-bioc-3.19-r-4.4.0', user: 'root'}
+          #- {type: 'deb-build', os: 'ubuntu-latest', container: 'ghcr.io/bioconductor/bioc2u-builder:jammy-bioc-3.18-r-4.3.2', user: 'root'}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: common
+        run: |
+          LOGDIR="/tmp/logs"
+          OUTDIR="/tmp/build-products"
+          echo outdir=$OUTDIR >> $GITHUB_OUTPUT
+          echo logdir=$LOGDIR >> $GITHUB_OUTPUT
+          PKG="$(pwd | awk -F'/' '{print $NF}')"
+          echo pkg=$PKG >> $GITHUB_OUTPUT
+          mkdir -p $OUTDIR
+          mkdir -p $LOGDIR
+
+      - if: matrix.config.type == 'test'
+        shell: bash
+        run: |
+          set -x
+          cd ..
+          su biocbuild
+          BBS_R_PATH=$(echo /home/biocbuild/bbs-*-bioc/R)
+          $BBS_R_PATH/bin/Rscript -e 'BiocManager::install("${{steps.common.outputs.pkg}}", Ncpus=2, dependencies=TRUE, force=TRUE, type="source")'
+          $BBS_R_PATH/bin/R CMD INSTALL ${{steps.common.outputs.pkg}} &> ${{steps.common.outputs.logdir}}/${{steps.common.outputs.pkg}}-install.log
+
+          cat ${{steps.common.outputs.logdir}}/${{steps.common.outputs.pkg}}-install.log
+
+          $BBS_R_PATH/bin/R CMD build --keep-empty-dirs --no-resave-data ${{steps.common.outputs.pkg}} &> ${{steps.common.outputs.logdir}}/${{steps.common.outputs.pkg}}-build.log
+
+          cat ${{steps.common.outputs.logdir}}/${{steps.common.outputs.pkg}}-build.log
+
+          TARNAME="${{steps.common.outputs.pkg}}_$(grep '^Version: ' ${{steps.common.outputs.pkg}}/DESCRIPTION | awk '{print $NF}').tar.gz"
+          $BBS_R_PATH/bin/R CMD check --install=check:${{steps.common.outputs.logdir}}/${{steps.common.outputs.pkg}}-install.log --library=$BBS_R_PATH/site-library --timings $TARNAME &> ${{steps.common.outputs.logdir}}/${{steps.common.outputs.pkg}}-check.log
+
+          cat ${{steps.common.outputs.logdir}}/${{steps.common.outputs.pkg}}-check.log
+          
+          ls
+
+          mv $TARNAME ${{steps.common.outputs.outdir}}/
+
+      - if: matrix.config.type == 'binary-build'
+        run: |
+          cd ..
+          Rscript -e "Sys.setenv(BIOCONDUCTOR_USE_CONTAINER_REPOSITORY=FALSE); install.packages('$(pwd)/${{steps.common.outputs.pkg}}', INSTALL_opts = '--build', update = TRUE, quiet = FALSE, dependencies=TRUE, force = TRUE, keep_outputs = TRUE, repos = NULL, type='source'); if('${{steps.common.outputs.pkg}}' %in% rownames(installed.packages())) q(status = 0) else q(status = 1)" 2>&1 | tee ${{steps.common.outputs.logdir}}/${{steps.common.outputs.pkg}}-cont-binary.log
+          mv *.tar.gz ${{steps.common.outputs.outdir}}/
+
+      - if: matrix.config.type == 'deb-build'
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          export DEBEMAIL="maintainer@bioconductor.org"
+          export DEBFULLNAME="Bioc GHA Build"
+          export LOGNAME=$(whoami)
+
+          cat << "EOF" > /etc/apt/preferences.d/ignore-r-bioc
+          Package: r-bioc-*
+          Pin: release o=Debian
+          Pin-Priority: -1
+          EOF
+
+          wget -O /etc/apt/trusted.gpg.d/deb-s3-archive-keyring.gpg https://raw.githubusercontent.com/deb-s3/deb-s3/master/deb-s3-archive-keyring.gpg
+          echo "deb http://deb-s3-repo.s3.us-east-2.amazonaws.com/ubuntu/ jammy main" | tee -a /etc/apt/sources.list > /dev/null
+          apt update -yqq
+          apt -y install devscripts equivs deb-s3
+
+          BIOC_VERSION="$(Rscript -e 'cat(paste0(BiocManager::version()))')"
+
+          bash .github/scripts/make_deb.sh "$(pwd | awk -F'/' '{print $NF}')" $BIOC_VERSION ${{steps.common.outputs.logdir}}
+
+          mv ../r-bioc-* ${{steps.common.outputs.outdir}}/
+
+      - name: Push new file
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 50
+          shell: bash
+          command: |
+            set -x
+            BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+            git config --global --add safe.directory "$GITHUB_WORKSPACE"
+            git pull origin $BRANCH || git reset --hard origin/$BRANCH
+            git config user.name github-actions
+            git config user.email github-actions@github.com
+            rm -rf .github/logs
+            cp -r ${{steps.common.outputs.logdir}} .github/
+            cp -r ${{steps.common.outputs.outdir}} .github/
+            git add .github
+            git commit -m "Update GHA logs and build products $(TZ=EST date '+%Y-%m-%d_%H-%M')"
+            git push
+
+          
