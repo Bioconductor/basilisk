@@ -1,0 +1,151 @@
+on:
+  push:
+  workflow_dispatch:
+
+name: BBS Build
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    name: ${{ matrix.config.os }} (${{ matrix.config.type }})
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {type: 'bbs', os: 'ubuntu-latest', container: 'ghcr.io/almahmoud/bioconductor_salt:devel-jammy-bioc-3.19-r-4.4.0'}
+
+    steps:
+
+      - name: Free root space
+        uses: almahmoud/free-root-space@main
+
+      - uses: actions/checkout@v4
+
+      - id: common
+        run: |
+          LOGDIR="/tmp/logs"
+          OUTDIR="/tmp/build-products"
+          LIBRARYDIR="/tmp/library"
+          CYCLE_PREFIX="am-test-"
+          echo outdir=$OUTDIR >> $GITHUB_OUTPUT
+          echo logdir=$LOGDIR >> $GITHUB_OUTPUT
+          echo librarydir=$LIBRARYDIR >> $GITHUB_OUTPUT
+          echo cycleprefix=$CYCLE_PREFIX >> $GITHUB_OUTPUT
+          PKG="$(pwd | awk -F'/' '{print $NF}')"
+          echo pkg=$PKG >> $GITHUB_OUTPUT
+          mkdir -p $OUTDIR
+          mkdir -p $LOGDIR
+          mkdir -p $LIBRARYDIR
+
+      - name: Start container
+        if: matrix.config.type == 'bbs'
+        id: cont
+        shell: bash
+        run: |
+          CONT_ID=$(docker run -d --user root -v ${{github.workspace}}:${{github.workspace}} -v /tmp:/tmp ${{ matrix.config.container }} "sleep 21600")
+          echo id=$CONT_ID >> $GITHUB_OUTPUT
+
+      - name: Get deps
+        if: matrix.config.type == 'bbs'
+        id: deps
+        shell: bash
+        run: |
+          CONT_ID="${{steps.cont.outputs.id}}"
+
+          mkdir -p /tmp/scripts/
+
+          cat << "EOF" > /tmp/scripts/deps.R
+          if (!requireNamespace("desc", quietly = TRUE)) {install.packages("desc", repos="https://cloud.r-project.org/")}
+          inf <- desc::desc_get_deps("DESCRIPTION")
+          deps <- subset(inf, type %in% c("Depends", "Imports") & !(package %in% (installed.packages()[installed.packages()[, "Priority"] == "base", "Package"])) & package != "R")$package
+          
+          cat("'${{steps.common.outputs.cycleprefix}}", paste(deps, collapse = "','${{steps.common.outputs.cycleprefix}}"), "'", sep = "")
+          EOF
+          
+          cat << "EOF" > /tmp/scripts/deps.sh
+
+          cd ${{github.workspace}}
+          BBS_R_PATH=$(echo /home/biocbuild/bbs-*-bioc/R)
+
+          DEPS=$($BBS_R_PATH/bin/Rscript /tmp/scripts/deps.R)
+
+          echo $DEPS
+
+          EOF
+
+          DEPLIST=$(docker exec $CONT_ID bash /tmp/scripts/deps.sh)
+          if [ "$DEPLIST" == "'${{steps.common.outputs.cycleprefix}}'" ]; then DEPLIST=''; fi
+          echo deplist=$DEPLIST >> $GITHUB_OUTPUT
+
+      - uses: almahmoud/multi-cache-restore-action@main
+        if: matrix.config.type == 'bbs' && steps.deps.outputs.deplist != ''
+        name: Multi-cache
+        with:
+          keys: "${{steps.deps.outputs.deplist}}"
+          paths: "'${{steps.common.outputs.librarydir}}'"
+
+      - name: Run BBS scripts
+        if: matrix.config.type == 'bbs'
+        id: bbs
+        shell: bash
+        run: |
+          CONT_ID="${{steps.cont.outputs.id}}"
+          cat << "EOF" > /tmp/scripts/run-bbs.sh
+          set -x
+          cd ${{github.workspace}}/..
+          export R_LIBS_USER=${{steps.common.outputs.librarydir}}
+          BBS_R_PATH=$(echo /home/biocbuild/bbs-*-bioc/R)
+          $BBS_R_PATH/bin/R CMD INSTALL -l ${{steps.common.outputs.librarydir}} ${{steps.common.outputs.pkg}} &> ${{steps.common.outputs.logdir}}/${{steps.common.outputs.pkg}}-install.log
+          cat ${{steps.common.outputs.logdir}}/${{steps.common.outputs.pkg}}-install.log
+
+          $BBS_R_PATH/bin/R CMD build --keep-empty-dirs --no-resave-data ${{steps.common.outputs.pkg}} &> ${{steps.common.outputs.logdir}}/${{steps.common.outputs.pkg}}-build.log
+
+          cat ${{steps.common.outputs.logdir}}/${{steps.common.outputs.pkg}}-build.log
+
+          TARNAME="${{steps.common.outputs.pkg}}_$(grep '^Version: ' ${{steps.common.outputs.pkg}}/DESCRIPTION | awk '{print $NF}').tar.gz"
+          $BBS_R_PATH/bin/R CMD check --install=check:${{steps.common.outputs.logdir}}/${{steps.common.outputs.pkg}}-install.log --library=${{steps.common.outputs.librarydir}} --timings $TARNAME &> ${{steps.common.outputs.logdir}}/${{steps.common.outputs.pkg}}-check.log
+
+          cat ${{steps.common.outputs.logdir}}/${{steps.common.outputs.pkg}}-check.log
+          
+          ls
+
+          mv $TARNAME ${{steps.common.outputs.outdir}}/
+
+          EOF
+
+          docker exec $CONT_ID bash /tmp/scripts/run-bbs.sh
+
+
+      - name: Cache package library
+        if: matrix.config.type == 'bbs'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{steps.common.outputs.librarydir}}
+          key: ${{steps.common.outputs.cycleprefix}}${{steps.common.outputs.pkg}}
+
+      - name: Cleanup
+        if: matrix.config.type == 'bbs'
+        run: |
+          CONT_ID="${{steps.cont.outputs.id}}"
+          docker kill $CONT_ID
+
+      - name: Push new files
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 50
+          shell: bash
+          command: |
+            set -x
+            BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+            git config --global --add safe.directory "$GITHUB_WORKSPACE"
+            git pull origin $BRANCH || git reset --hard origin/$BRANCH
+            git config user.name github-actions
+            git config user.email github-actions@github.com
+            rm -rf .github/logs
+            cp -r ${{steps.common.outputs.logdir}} .github/
+            cp -r ${{steps.common.outputs.outdir}} .github/
+            git add .github
+            git commit -m "Update GHA logs and build products $(TZ=EST date '+%Y-%m-%d_%H-%M')"
+            git push
+
