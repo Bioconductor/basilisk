@@ -77,6 +77,10 @@ Otherwise, `r Biocpkg("basilisk")` will automatically use the `conda`-provided v
 It is often a good idea to explicitly list a version of Python in `packages=`, even if it is already version-compatible with the default;
 this ensures that the environment creation is robust to adminstrator overrides of the conda instance (see [below](#fine-tuning-basilisks-behavior)).
 
+By default, `r Biocpkg("basilisk")` will fetch Conda packages from the `conda-forge` channel (see `setupBasiliskEnv()` for details).
+This can be modified through the `channels=` argument in the `BasiliskEnvironment()` constructor, though some care is required with respect to licensing.
+In particular, the default Anaconda channel (i.e.,`defaults`) is not free for commercial usage, which restricts the usability of any Bioconductor packages that use Conda packages from this channel.
+
 It is also possible to install packages from PyPi via the `pip=` argument,
 but this should be done with [much caution](https://www.anaconda.com/blog/using-pip-in-a-conda-environment).
 

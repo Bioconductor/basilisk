@@ -18,7 +18,7 @@ setupBasiliskEnv(
 \item{packages}{Character vector containing the names of conda packages to install into the environment.
 Version numbers must be included.}
 
-\item{channels}{Character vector containing the names of additional conda channels to search.
+\item{channels}{Character vector containing the names of Conda channels to search.
 Defaults to the conda-forge repository.}
 
 \item{pip}{Character vector containing the names of additional packages to install from PyPi using \code{pip}.
@@ -34,7 +34,7 @@ A \code{NULL} is invisibly returned.
 Set up a conda environment for isolated execution of Python code with appropriate versions of all Python packages.
 }
 \details{
-Developers of client packages should never need to call this function directly.
+Developers of \pkg{basilisk} client packages should never need to call this function directly.
 For typical usage, \code{setupBasiliskEnv} is automatically called by \code{\link{basiliskStart}} to perform lazy installation.
 Developers should also create \code{configure(.win)} files to call \code{\link{configureBasiliskEnv}},
 which will call \code{setupBasiliskEnv} during R package installation when \code{BASILISK_USE_SYSTEM_DIR=1}.
@@ -42,6 +42,11 @@ which will call \code{setupBasiliskEnv} during R package installation when \code
 Pinned version numbers must be present for all desired conda packages in \code{packages}.
 This improves predictability and simplifies debugging across different systems.
 Note that the version notation for conda packages uses a single \code{=}, while the notation for Python packages uses \code{==}; any instances of the latter will be coerced to the former automatically.
+
+For \code{channels}, we recommend using open-source repositories like conda-forge and bioconda.
+This avoids problems with non-open-source licensing of the main Anaconda repositories (i.e., the \code{"defaults"} channel).
+If a client package relies on non-free channels, its users may inadvertently violate the Anaconda license,
+e.g., when used in a commercial environment.
 
 It is possible to use the \code{pip} argument to install additional packages from PyPi after all the conda packages are installed.
 All packages listed here are also expected to have pinned versions, this time using the \code{==} notation.
