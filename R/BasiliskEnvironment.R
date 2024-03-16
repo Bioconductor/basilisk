@@ -14,7 +14,8 @@
 #' \item \code{pkgname}, string containing the name of the package that owns the environment.
 #' \item \code{packages}, character vector containing the names of the required Python packages from conda,
 #' see \code{\link{setupBasiliskEnv}} for requirements.
-#' \item \code{channels}, character vector specifying the Conda channels to search.
+#' \item \code{channels}, character vector specifying the Conda channels to search,
+#' see \code{\link{setupBasiliskEnv}} for detials.
 #' \item \code{pip}, character vector containing names of additional Python packages from PyPi,
 #' see \code{\link{setupBasiliskEnv}} for requirements.
 #' \item \code{paths}, character vector containing relative paths to Python packages to be installed via \code{pip}.
