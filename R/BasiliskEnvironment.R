@@ -19,7 +19,9 @@
 #' \item \code{pip}, character vector containing names of additional Python packages from PyPi,
 #' see \code{\link{setupBasiliskEnv}} for requirements.
 #' \item \code{paths}, character vector containing relative paths to Python packages to be installed via \code{pip}.
-#' These paths are interpreted relative to the system directory of \code{pkgname}, i.e., they are appended to the output of \code{\link{system.file}}.
+#' These paths are interpreted relative to the system directory of \code{pkgname},
+#' i.e., they are appended to the output of \code{\link{system.file}} to obtain absolute paths for \code{\link{setupBasiliskEnv}}.
+#' Thus, any Python package vendored into the R package should be stored in the \code{inst} directory of the latter's source.
 #' }
 #' 
 #' @examples

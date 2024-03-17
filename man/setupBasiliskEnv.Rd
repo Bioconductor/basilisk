@@ -48,14 +48,15 @@ This avoids problems with non-open-source licensing of the main Anaconda reposit
 If a client package relies on non-free channels, its users may inadvertently violate the Anaconda license,
 e.g., when used in a commercial environment.
 
-It is possible to use the \code{pip} argument to install additional packages from PyPi after all the conda packages are installed.
+After all conda packages are installed, additional packages can be installed from PyPi using the \code{pip} argument.
 All packages listed here are also expected to have pinned versions, this time using the \code{==} notation.
 However, some caution is required when mixing packages from conda and pip,
 see \url{https://www.anaconda.com/using-pip-in-a-conda-environment} for more details.
 
-It is further possible to install Python packages from directories.
-In the package development context, this typically assumes that the Python directories are included in the \code{inst} subdirectory of the R package.
-\code{\link{basiliskStart}} will then convert the relative path to an absolute path before calling this function - see \code{\link{BasiliskEnvironment}} for details.
+After conda and PyPi, more Python packages can be installed from local directories via the \code{paths} argument.
+This is useful for \pkg{basilisk} clients vendoring Python packages that are not available in standard repositories.
+While \code{paths} expects absolute paths for general usage, this will be auto-generated in a package development context -
+see \code{\link{BasiliskEnvironment}} for details.
 
 It is also good practice to explicitly list the versions of the \emph{dependencies} of all desired packages.
 This protects against future changes in the behavior of your code if conda's solver decides to use a different version of a dependency.
