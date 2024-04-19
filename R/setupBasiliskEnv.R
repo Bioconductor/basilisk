@@ -98,8 +98,15 @@ setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL
     dir.create2(envpath)
     on.exit(if (!success) unlink2(envpath), add=TRUE, after=FALSE)
     
-    conda_install(envname=normalizePath(envpath), conda=conda.cmd, 
-        python_version=version, packages=packages, channel=channels)
+    conda_install(
+        envname=normalizePath(envpath), 
+        conda=conda.cmd, 
+        python_version=version, 
+        packages=packages,
+        channel=channels,
+        additional_create_args="--override-channels",
+        additional_install_args="--override-channels"
+    )
 
     pip.cmd <- c("-m", "pip", "install", "--no-user")
 
