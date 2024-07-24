@@ -26,7 +26,7 @@ As a result, we cannot easily guarantee that some Python code executed via `r CR
 It is also possible that two R packages depend on incompatible versions of Python modules, such that it is impossible to use both packages at the same time.
 These versioning issues represent a major obstacle to reliable execution of Python code across a variety of systems via R/Bioconductor packages.
 
-`r Biocpkg("basilisk")` uses [conda](https://repo.anaconda.com/) to provision a Python instance that is fully managed by the Bioconductor installation machinery.
+`r Biocpkg("basilisk")` uses Conda (or more specifically, [Miniforge](https://github.com/conda-forge/miniforge)) to provision a Python instance that is fully managed by the Bioconductor installation machinery.
 This provides developers of downstream Bioconductor packages with more control over their Python environment, most typically by the creation of package-specific `conda` environments containing all of their required Python packages.
 Additionally, `r Biocpkg("basilisk")` provides utilities to manage different Python environments within a single R session, enabling multiple Bioconductor packages to use incompatible versions of Python packages in the course of a single analysis.
 These features enable reproducible analysis, simplify debugging of code and improve interoperability between compliant packages.
@@ -196,13 +196,15 @@ Properly configured `r Biocpkg("basilisk")` clients should handle all aspects of
 That said, some system configurations are less cooperative than others:
 this section contains a list of known issues and possible fixes.
 
-The Miniconda/Anaconda installers do not work if the installation directory contains spaces.
-If this is the case for the default installation directory (check `basilisk.utils::getExternalDir()`), 
-consider setting the [`BASILISK_EXTERNAL_DIR`](#fine-tuning-basilisks-behavior) environment variable. 
+Historically, the Miniforge installers did not work if the installation directory contained spaces.
+Recent Conda versions have improved support for spaces but mileage may vary in the packages. 
+If spaces are causing problems in the default installation path (check `basilisk.utils::getExternalDir()`), 
+consider setting the [`BASILISK_EXTERNAL_DIR`](#fine-tuning-basilisks-behavior) environment variable to a location without spaces.
 
 Windows has a limit of 260 characters for its file paths.
 This is occasionally exceeded due to deeply nested directories for some packages, causing the conda installation to be incomplete or fail outright.
-Sometimes this can be circumvented by setting `BASILISK_EXTERNAL_DIR` to a shorter path and hoping that enough space is left for the environments.
+Furthermore, the Windows Miniforge installer has a limit of 46 characters for the top-level Conda installation directory.
+If either of these constraints are causing problems, it may be possible to circumvent them by setting `BASILISK_EXTERNAL_DIR` to a shorter path. 
 
 Builds for 32-bit Windows are not supported due to a lack of demand relative to the difficulty of setting it up.
 
@@ -246,14 +248,13 @@ Similarly, all (correctly `configure`d) client packages will install their envir
 This is very useful for enterprise-level deployments as the conda instances and environments are (i) not duplicated in each user's home directory, and (ii) always available to any user with access to the R installation. 
 However, it requires installation from source and thus is not set by default.
 
-It is possible to direct `r Biocpkg("basilisk")` to use an existing Miniconda or Anaconda instance,
+It is possible to direct `r Biocpkg("basilisk")` to use an existing Conda installation,
 by setting the `BASILISK_EXTERNAL_CONDA` environment variable to an absolute path to the conda installation directory.
 This may be desirable to avoid redundant copies of the same conda installation.
 Any replacement conda instance should be using a similar version of Python as `r Biocpkg("basilisk")`'s default (`r listPythonVersion()`) to satisfy client packages that rely on the implict pinning.
 
-Setting `BASILISK_MINICONDA_VERSION` will change the Miniconda version installed by `r Biocpkg("basilisk")`.
-This should be set to a string that includes the version of Python, e.g., `"py38_4.12.0"` - see the [Miniconda installation page](https://repo.anaconda.com/miniconda/) for available versions.
-Again, the selected Miniconda should still use a similar version of Python as `r Biocpkg("basilisk")`'s default.
+Setting `BASILISK_MINIFORGE_VERSION` will change the Miniforge version installed by `r Biocpkg("basilisk")`.
+This should be set to the name of the tagged releases on the [Miniforce installation page](https://github.com/conda-forge/miniforge/releases), .e.g, `"24.3.0-0"`.
 
 Setting `BASILISK_NO_DESTROY` to `1` will instruct `r Biocpkg("basilisk")` to _not_ destroy previous conda instances and environments upon installation of a new version of `r Biocpkg("basilisk")`.
 This destruction is done by default to avoid accumulating many large obsolete conda instances.
