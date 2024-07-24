@@ -7,6 +7,10 @@
 This is preconfigured to use the conda-forge channel and avoids issues with the non-FOSS licensing of the Anaconda repositories.
 Users can switch back to the old Miniconda installer by setting the \code{BASILISK_USE_MINIFORGE=0} environment variable,
 but this will likely be deprecated in the next release.
+
+\item Channel specifications in the user's \code{.condarc} are now ignored.
+Only the channels by the developer in \code{setupBasiliskEnv()} (e.g., via \code{BasiliskEnvironment}) will be respected,
+to improve the consistency of the constructed environments across devices.
 }}
 
 \section{Version 1.4.0}{\itemize{
