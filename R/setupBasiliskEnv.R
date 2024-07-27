@@ -111,6 +111,21 @@ setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL
 
     pip.cmd <- c("-m", "pip", "install", "--no-user")
 
+    # Hack to pick up the site-packages correctly for conda-forge-derived
+    # Python2, which doesn't seem to be configured correctly, unfortunately.
+    # (Based on testing with some of crisprScore's environments.)
+    if (!identical(Sys.getenv("BASILISK_USE_MINIFORGE", NA), "0")) {
+        if (version == "2" || startsWith(version, "2.")) {
+            old <- Sys.getenv("PYTHONPATH", NA)
+            if (is.na(old)) {
+                on.exit(Sys.unsetenv("PYTHONPATH"), add=TRUE, after=FALSE)
+            } else {
+                on.exit(Sys.setenv(PYTHONPATH=old), add=TRUE, after=FALSE)
+            }
+            Sys.setenv(PYTHONPATH=file.path(envpath, "site-packages"))
+        }
+    }
+
     if (length(pip)) {
         .check_versions(pip, "==")
         env.py <- getPythonBinary(envpath)
