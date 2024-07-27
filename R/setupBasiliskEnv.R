@@ -5,7 +5,7 @@
 #' @param envpath String containing the path to the environment to use. 
 #' @param packages Character vector containing the names of conda packages to install into the environment.
 #' Version numbers must be included.
-#' @param channels Character vector containing the names of additional conda channels to search.
+#' @param channels Character vector containing the names of Conda channels to search.
 #' Defaults to the conda-forge repository.
 #' @param pip Character vector containing the names of additional packages to install from PyPi using \code{pip}.
 #' Version numbers must be included.
@@ -16,7 +16,7 @@
 #' A \code{NULL} is invisibly returned.
 #'
 #' @details
-#' Developers of client packages should never need to call this function directly.
+#' Developers of \pkg{basilisk} client packages should never need to call this function directly.
 #' For typical usage, \code{setupBasiliskEnv} is automatically called by \code{\link{basiliskStart}} to perform lazy installation.
 #' Developers should also create \code{configure(.win)} files to call \code{\link{configureBasiliskEnv}},
 #' which will call \code{setupBasiliskEnv} during R package installation when \code{BASILISK_USE_SYSTEM_DIR=1}.
@@ -25,14 +25,20 @@
 #' This improves predictability and simplifies debugging across different systems.
 #' Note that the version notation for conda packages uses a single \code{=}, while the notation for Python packages uses \code{==}; any instances of the latter will be coerced to the former automatically.
 #'
-#' It is possible to use the \code{pip} argument to install additional packages from PyPi after all the conda packages are installed.
+#' For \code{channels}, we recommend using open-source repositories like conda-forge and bioconda.
+#' This avoids problems with non-open-source licensing of the main Anaconda repositories (i.e., the \code{"defaults"} channel).
+#' If a client package relies on non-free channels, its users may inadvertently violate the Anaconda license,
+#' e.g., when used in a commercial environment.
+#'
+#' After all conda packages are installed, additional packages can be installed from PyPi using the \code{pip} argument.
 #' All packages listed here are also expected to have pinned versions, this time using the \code{==} notation.
 #' However, some caution is required when mixing packages from conda and pip,
 #' see \url{https://www.anaconda.com/using-pip-in-a-conda-environment} for more details.
 #'
-#' It is further possible to install Python packages from directories.
-#' In the package development context, this typically assumes that the Python directories are included in the \code{inst} subdirectory of the R package.
-#' \code{\link{basiliskStart}} will then convert the relative path to an absolute path before calling this function - see \code{\link{BasiliskEnvironment}} for details.
+#' After conda and PyPi, more Python packages can be installed from local directories via the \code{paths} argument.
+#' This is useful for \pkg{basilisk} clients vendoring Python packages that are not available in standard repositories.
+#' While \code{paths} expects absolute paths for general usage, this will be auto-generated in a package development context -
+#' see \code{\link{BasiliskEnvironment}} for details.
 #'
 #' It is also good practice to explicitly list the versions of the \emph{dependencies} of all desired packages.
 #' This protects against future changes in the behavior of your code if conda's solver decides to use a different version of a dependency.
@@ -57,11 +63,13 @@
 #' Of course, it is possible to specify an entirely different version of Python in \code{packages} by supplying, e.g., \code{"python=2.7.10"}.
 #'
 #' @examples
-#' \dontshow{basilisk.utils::installConda()}
+#' if (.Platform$OS.type != "windows") {
+#'  \dontshow{basilisk.utils::installConda()}
 #'
-#' tmploc <- file.path(tempdir(), "my_package_A")
-#' if (!file.exists(tmploc)) {
-#'     setupBasiliskEnv(tmploc, c(pandas_spec()))
+#'  tmploc <- file.path(tempdir(), "my_package_A")
+#'  if (!file.exists(tmploc)) {
+#'      setupBasiliskEnv(tmploc, c('pandas=1.4.3'))
+#'  }
 #' }
 #'
 #' @seealso
@@ -91,13 +99,21 @@ setupBasiliskEnv <- function(envpath, packages, channels="conda-forge", pip=NULL
     dir.create2(envpath)
     on.exit(if (!success) unlink2(envpath), add=TRUE, after=FALSE)
     
-    conda_install(envname=normalizePath(envpath), conda=conda.cmd, 
-        python_version=version, packages=packages, channel=channels)
+    conda_install(
+        envname=normalizePath(envpath), 
+        conda=conda.cmd, 
+        python_version=version, 
+        packages=packages,
+        channel=channels,
+        additional_create_args="--override-channels",
+        additional_install_args="--override-channels"
+    )
 
     pip.cmd <- c("-m", "pip", "install", "--no-user")
 
-    # Hack to pick up the site-packages correctly for conda-forge-derived Python2.
-    if (identical(Sys.getenv("BASILISK_USE_MINIFORGE", NA), "1")) {
+    # Hack to pick up the site-packages correctly for conda-forge-derived Python2,
+    # which doesn't seem to be configured correctly, unfortunately.
+    if (!identical(Sys.getenv("BASILISK_USE_MINIFORGE", NA), "0")) {
         if (version == "2" || startsWith(version, "2.")) {
             old <- Sys.getenv("PYTHONPATH", NA)
             if (is.na(old)) {
